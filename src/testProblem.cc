@@ -4,25 +4,25 @@
 #include <math.h>
 
 #include "testProblem.hh"
+#include "Functions.hh"
 
-
-void TestProblem(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, int testProblem){
+void TestProblem(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, int testProblem, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){
 
 	if (testProblem == 1){
-		SodShock(mesh, g, b, rho, rhov, rhoE); //TODO, set D=1 inside, initialize
+		SodShock(mesh, g, b, rho, rhov, rhoE, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 	}
 
 	else if (testProblem == 2){
-		KHI(); //TODO, set D=2 inside, initialize
+		KHI(); //TODO: initialize
 	}
 
 	else if (testProblem == 3){
-		RTI(); //TODO, set D=2 inside, initialize
+		RTI(); //TODO: initialize
 	}
 }
 
 
-void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, double* rhoE, double rhoL, double rhoR, double PL, double PR){
+void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, double* rhoE, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double rhoL, double rhoR, double PL, double PR){
 	
 	int idx;
 	int Nx = N[0];
@@ -32,8 +32,6 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 	int Nvy = NV[1];
 	int Nvz = NV[2];
 
-
-	printf("Cv = %f\n", Cv);
 
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
@@ -56,7 +54,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 
 				}
 
-				//Rights State
+				//Right State
 				if(mesh[idx].x > 0.5){
 
 					//Conserved Variables
@@ -71,8 +69,38 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 				}
 
 
+				//TODO: Initialize g and b
+				for(int i = 0; i < N[0]; i++){
+					for(int j = 0; j < N[1]; j++){
+						for(int k = 0; k < N[2]; k++){
+							for(int vx = 0; vx < NV[0]; vx++){
+								for(int vy = 0; vy < NV[1]; vy++){
+									for(int vz = 0; vz < NV[2]; vz++){
+
+									int sidx = i + Nx*j + Nx*Ny*k; //spatial index
+									idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+									//printf("idx = %d", idx);
+
+									double U[3] = {rhov[D*sidx]/rho[sidx], rhov[D*sidx + 1]/rho[sidx], rhov[D*sidx + 2]/rho[sidx]};
+									double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
+
+									double effD = 1.0; //TODO: Check for Bugs
+									g[idx] = geq(vx, vy, vz, rho[sidx], U, T, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
+									b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
+									}
+								}
+							}
+						}
+
+					}
+
+				}
+
+
 			}
 		}
+
+		//printf("rho[idx] = %f, rhov[idx] = %f, rhoE[idx] = %f, idx = %d\n", rho[idx], rhov[D*idx], rhoE[idx], idx);
 
 	}
 

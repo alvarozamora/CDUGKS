@@ -13,13 +13,12 @@ extern int NV[3];
 extern double Cv;
 extern double R;
 extern double gma;
+extern double K;
 
-void TestProblem(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, int testProblem);
+void TestProblem(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, int testProblem, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ);
 
-void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, double rhoL = 1, double rhoR = 0.125, double PL= 1, double PR = 0.1); // rhoL, rhoR, PL, PR
+void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double rhoL = 1, double rhoR = 0.125, double PL= 1, double PR = 0.1); // rhoL, rhoR, PL, PR
 void KHI();
 void RTI();
 
 #endif
-
-//, double* rho, double* rhov, double* rhoE

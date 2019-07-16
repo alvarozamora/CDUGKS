@@ -6,6 +6,7 @@
 #include "Main.hh"
 #include "Mesh.hh"
 #include "testProblem.hh"
+#include "Functions.hh"
 
 
 int main(){
@@ -18,6 +19,9 @@ int main(){
 	double rhov[Nc*D];
 	double rhoE[Nc];
 
+	//Newton-Cotes Quadrature
+	double Co_X[NV[0]]; double Co_WX[NV[0]]; double Co_Y[NV[1]]; double Co_WY[NV[1]]; double Co_Z[NV[2]]; double Co_WZ[NV[2]]; // Cotes points and weights
+	Cotes(Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 
 	//Generate Mesh: Grid Cell Centers and Sizes
 	int MeshType = 1; // 0 is UserDefinedMesh, 1 is RectangularMesh, 2 is Nested Rectangular Mesh.
@@ -26,11 +30,12 @@ int main(){
 
 
 	//Initialize Grid
-	int testProblem = 0; //0 is None, 1 is Sod Shock, 2 is KHI, 3 is RTI.
-	if (testProblem > 0){TestProblem(mesh, g, b, rho, rhov, rhoE, testProblem);}
+	int testProblem = 1; //0 is None, 1 is Sod Shock, 2 is KHI, 3 is RTI.
+	if (testProblem > 0){TestProblem(mesh, g, b, rho, rhov, rhoE, testProblem, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);}
 	else{
 		//TODO
 	}
+
 
 
 
