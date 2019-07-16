@@ -1,33 +1,50 @@
 #include <iostream>
-#define D 1
-#define B 1
-#define Nv 128
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-struct cell
-{
-	double X[D];    //Position of Cell Center
-	double dX[D];   //Cell Size
-	double I[B][D]; //Interface Area Vectors
-};
+#include "Mesh.hh"
 
-int mesh()
-{
-	if(UserDefinedMesh){
+// This function generates the mesh structure. 
+// Computes cell centers and cell sizes.
+//
+//
 
+void Mesh(int* N, Cell* mesh, int MeshType){
+	if (MeshType == 0){ 
+		//TODO
+	}
+	else if (MeshType == 1){
+
+		int Nx = N[0];
+		int Ny = N[1];
+		int Nz = N[2];
+
+		double dX = 1.0/Nx;
+		double dY = 1.0/Nx;
+		double dZ = 1.0/Nx;
+
+		int idx;
+		for(int i = 0; i < Nx; i++){
+			for(int j = 0; j < Ny; j++){
+				for(int k = 0; k < Nz; k++){
+
+					idx = i + Nx*j + Nx*Ny*k;
+
+					mesh[idx].x = dX*(i + 1.0/2.0);
+					mesh[idx].y = dY*(j + 1.0/2.0);
+					mesh[idx].z = dZ*(k + 1.0/2.0);
+
+					mesh[idx].dx = dX;
+					mesh[idx].dy = dY;
+					mesh[idx].dz = dZ;
+
+				}
+			}
+		}
 
 	}
-	else if(UniformMesh){
-
-	int N = 128;
-
-
-
-
-	std::cout << "a = "<<a << std::endl;
-
-
-	}
-	else if(NestedMesh){
-		
+	else if(MeshType == 2){
+		//TODO
 	}
 }
