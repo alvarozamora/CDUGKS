@@ -5,16 +5,17 @@
 
 //Dimension and Resolution
 int D = 3;
-int N[3] =  {128, 1, 1};       // For Lower D problem, set size to 1.
-int NV[3] = {128, 1, 1};     //Both N and NV must be multiple of 4 -- (Newton-Cotes)
+int N[3] = {128, 1, 1};       // For Lower D problem, set size to 1.
+int NV[3] = {128, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
 int Nc = N[0]*N[1]*N[2];    // Cells
 int Nv = NV[0]*NV[1]*NV[2]; // Velocities
+int effD = 1.0; //TODO: POTENTIAL BUG
 
 //Physical Constants
-double R = 0.5;
-double K = 2.0;
-double Cv = (3+K)*R/2;
-double gma = (K+5)/(K+3); //gamma, variable name taken
+double R = 0.5;         // Gas Constant
+double K = 2.0;          //Internal DOF
+double Cv = (3+K)*R/2;   //Specific Heat
+double gma = (K+5)/(K+3); //gamma -- variable name taken
 
 double Vmin[3] = {-10,0,0};
 double Vmax[3] = {10,0,0};
@@ -29,6 +30,7 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   assert(NV[1]%4 == 0 || NV[1] == 1 && NV[2]%4 == 0 || NV[2] == 1); //Using np = 4 Newton Cotes
 
 
+  //First Dimension
   a=Vmin[0]; b=Vmax[0];
   n=(NV[0]-1)/4;
   dh=(b-a)/n;
@@ -47,6 +49,7 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   Co_WX[NV[0]-1]=7.0;
   for(int kx = 0; k < NV[0]; k++){Co_WX[kx]*=dh/90;}
 
+  //Second Dimension
   a=Vmin[1]; b=Vmax[1];
   n=(NV[1]-1)/4;
   dh=(b-a)/n;
@@ -66,8 +69,8 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   Co_WY[NV[1]-1]=7.0;
 
   for(int ky = 0; ky < NV[1]; ky++){Co_WY[ky]*=dh/90;}
-  }else if(NV[1] == 1){Co_WY[0] = 1;}
-  else{printf("Not Supported: 1 < NV[1] < 4\n");}
+  }else if(NV[1] == 1 && Vmin[1] == 0){Co_WY[0] = 1;}
+  else{printf("Not Supported: NV[1]!= 1 || NV[1] !>= 4\n");}
 
 
   if(NV[2] >= 4){
@@ -88,8 +91,8 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   Co_WZ[NV[2]-1]=7.0;
 
   for(int kz = 0; kz < N[2]; kz++){Co_WZ[kz]*=dh/90;}
-  } else if(NV[2] == 1){Co_WZ[0] = 1;}
-  else{printf("Not Supported: 1 < NV[2] < 4\n");}
+  } else if(NV[2] == 1 && Vmin[2] == 0){Co_WZ[0] = 1;}
+  else{printf("Not Supported: NV[2]!= 1 || NV[2] !>= 4\n");}
 
 
 }

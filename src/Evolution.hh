@@ -1,14 +1,28 @@
 #ifndef EVOLUTION_HH
 #define EVOLUTION_HH
 #include <assert.h>
+
 #include "Mesh.hh"
+#include "Functions.hh"
+
+extern int testProblem;
+extern int D;
+extern int Nc;
+extern int Nv;
+extern int N[3];
+extern int NV[3];
+
+extern double Cv;
+extern double R;
+extern double gma;
+extern double K;
 
 
-void TimeStep();
+double TimeStep();
 
-void Evolve();
+void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ);
 
-void Step1a();
+void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ);
 void Step1b();
 void Step1c();
 

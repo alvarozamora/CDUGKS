@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+
 #include "Mesh.hh"
 
 // This function generates the mesh structure. 
@@ -11,9 +12,11 @@
 //
 
 void Mesh(int* N, Cell* mesh, int MeshType){
+	//User-Specified
 	if (MeshType == 0){ 
 		//TODO
 	}
+	//Rectangular
 	else if (MeshType == 1){
 
 		int Nx = N[0];
@@ -44,6 +47,7 @@ void Mesh(int* N, Cell* mesh, int MeshType){
 		}
 
 	}
+	//Nested
 	else if(MeshType == 2){
 		//TODO
 	}

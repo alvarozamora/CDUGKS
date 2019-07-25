@@ -5,13 +5,9 @@
 
 #include "Functions.hh"
 
-extern double* Co_X;
-extern double* Co_WX;
-extern double* Co_Y;
-extern double* Co_WY;
-extern double* Co_Z;
-extern double* Co_WZ;
-
+extern double gma;
+extern double K;
+extern double R;
 
 double Temperature(double E, double u){
 
@@ -20,11 +16,11 @@ double Temperature(double E, double u){
 	return T;
 }
 
-double geq(int kx, int ky, int kz, double rho, double* U, double T, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ)
+double geq(double vx, double vy, double vz, double rho, double* U, double T, double wx, double wy, double wz)
 {
   double c2, x;
   double PI = 4.0*atan(1.0);
-  c2 = sqrt( (Co_X[kx]-U[0])*(Co_X[kx]-U[0]) + (Co_Y[ky]-U[1])*(Co_Y[ky]-U[1]) + (Co_Z[kz]-U[2])*(Co_Z[kz]-U[2]));
-  x  = Co_WX[kx]*Co_WY[ky]*Co_WZ[kx]*rho*exp(-c2/(2*R*T))/sqrt(2*PI*R*T)/sqrt(2*PI*R*T)/sqrt(2*PI*R*T); //TODO: POTENTIAL BUG (Dimensions)
+  c2 = sqrt( (vx-U[0])*(vx-U[0]) + (vy-U[1])*(vy-U[1]) + (vz-U[2])*(vz-U[2]));
+  x  = wx*wy*wz*rho*exp(-c2/(2*R*T))/sqrt(2*PI*R*T)/sqrt(2*PI*R*T)/sqrt(2*PI*R*T); //TODO: POTENTIAL BUG (Dimensions)
   return x;
 }

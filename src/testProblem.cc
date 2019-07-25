@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "testProblem.hh"
-#include "Functions.hh"
+
 
 void TestProblem(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, int testProblem, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){
 
@@ -84,8 +84,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 									double U[3] = {rhov[D*sidx]/rho[sidx], rhov[D*sidx + 1]/rho[sidx], rhov[D*sidx + 2]/rho[sidx]};
 									double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
 
-									double effD = 1.0; //TODO: POTENTIAL BUG
-									g[idx] = geq(vx, vy, vz, rho[sidx], U, T, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
+									g[idx] = geq(Co_X[vx], Co_Y[vy], Co_Z[vz], rho[sidx], U, T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
 									b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 									}
 								}
