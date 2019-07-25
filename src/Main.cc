@@ -7,7 +7,7 @@
 #include "Mesh.hh"
 #include "testProblem.hh"
 #include "Functions.hh"
-
+#include "Evolution.hh"
 
 int main(){
 
@@ -36,10 +36,15 @@ int main(){
 		//TODO
 	}
 
+	//Evolve
+	double Tsim = 0.;
+	double dt = 128.;
+	double Tf = 0.15;
 
+	while(Tsim < Tf){
+		Evolve();
 
-
-
-
+		Tsim += dt;
+	}
 
 }

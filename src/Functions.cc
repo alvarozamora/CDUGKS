@@ -25,6 +25,6 @@ double geq(int kx, int ky, int kz, double rho, double* U, double T, double* Co_X
   double c2, x;
   double PI = 4.0*atan(1.0);
   c2 = sqrt( (Co_X[kx]-U[0])*(Co_X[kx]-U[0]) + (Co_Y[ky]-U[1])*(Co_Y[ky]-U[1]) + (Co_Z[kz]-U[2])*(Co_Z[kz]-U[2]));
-  x  = Co_WX[kx]*Co_WY[ky]*Co_WZ[kx]*rho*exp(-c2/(2*R*T))/sqrt(2*PI*R*T)/sqrt(2*PI*R*T)/sqrt(2*PI*R*T);
+  x  = Co_WX[kx]*Co_WY[ky]*Co_WZ[kx]*rho*exp(-c2/(2*R*T))/sqrt(2*PI*R*T)/sqrt(2*PI*R*T)/sqrt(2*PI*R*T); //TODO: POTENTIAL BUG (Dimensions)
   return x;
 }

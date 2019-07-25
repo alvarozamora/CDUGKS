@@ -69,7 +69,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 				}
 
 
-				//TODO: Initialize g and b
+				//Initialize g and b
 				for(int i = 0; i < N[0]; i++){
 					for(int j = 0; j < N[1]; j++){
 						for(int k = 0; k < N[2]; k++){
@@ -84,7 +84,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 									double U[3] = {rhov[D*sidx]/rho[sidx], rhov[D*sidx + 1]/rho[sidx], rhov[D*sidx + 2]/rho[sidx]};
 									double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
 
-									double effD = 1.0; //TODO: Check for Bugs
+									double effD = 1.0; //TODO: POTENTIAL BUG
 									g[idx] = geq(vx, vy, vz, rho[sidx], U, T, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 									b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 									}
