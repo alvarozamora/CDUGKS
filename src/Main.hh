@@ -16,6 +16,9 @@ double R = 0.5;         // Gas Constant
 double K = 2.0;          //Internal DOF
 double Cv = (3+K)*R/2;   //Specific Heat
 double gma = (K+5)/(K+3); //gamma -- variable name taken
+double w = 0.5;  //Viscosity exponent
+double ur = 1.0; //Reference Visc
+double Tr = 1.0; //Reference Temp
 
 double Vmin[3] = {-10,0,0};
 double Vmax[3] = {10,0,0};

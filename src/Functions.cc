@@ -8,6 +8,9 @@
 extern double gma;
 extern double K;
 extern double R;
+extern double ur;
+extern double w;
+extern double Tr;
 
 double Temperature(double E, double u){
 
@@ -23,4 +26,9 @@ double geq(double vx, double vy, double vz, double rho, double* U, double T, dou
   c2 = sqrt( (vx-U[0])*(vx-U[0]) + (vy-U[1])*(vy-U[1]) + (vz-U[2])*(vz-U[2]));
   x  = wx*wy*wz*rho*exp(-c2/(2*R*T))/sqrt(2*PI*R*T)/sqrt(2*PI*R*T)/sqrt(2*PI*R*T); //TODO: POTENTIAL BUG (Dimensions)
   return x;
+}
+
+double visc(double T)
+{
+	return ur*pow(T/Tr,w);
 }
