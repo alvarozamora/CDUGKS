@@ -23,8 +23,12 @@ int main(){
 	double Sb[Nc];
 
 	double rho[Nc];    //Conserved Variables
-	double rhov[Nc*D];
+	double rhov[Nc*effD];
 	double rhoE[Nc];
+	double gsigma[Nc*Nv*effD];
+	double bsigma[Nc*Nv*effD];
+	double gsigma2[Nc*Nv*effD];
+	double bsigma2[Nc*Nv*effD];
 
 
 	//Newton-Cotes Quadrature
@@ -55,7 +59,7 @@ int main(){
 
 	printf("Entering Evolution Loop\n");
 	while(Tsim < Tf){
-		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
+		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2);
 
 		Tsim += dt;
 	}

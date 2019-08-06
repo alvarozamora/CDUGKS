@@ -12,6 +12,7 @@ extern int Nc;
 extern int Nv;
 extern int N[3];
 extern int NV[3];
+extern int effD;
 
 extern double Cv;
 extern double R;
@@ -26,13 +27,13 @@ double TimeStep(){
 }
 
 
-void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){	
+void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2){	
 
 	dt = fmin(TimeStep(), dtdump);
 	dt = fmin(dt, Tf-Tsim);
 
 	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
-	Step1b();
+	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2);
 	Step1c();
 	
 	Step2a();
@@ -87,11 +88,55 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 	}
 
 }
-void Step1b(){
+void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2){
+
+	int Nx = N[0];
+	int Ny = N[1];
+	int Nz = N[2];
+
+	for(int i = 0; i < N[0]; i++){
+		for(int j = 0; j < N[1]; j++){
+			for(int k = 0; k < N[2]; k++){
+				for(int vx = 0; vx < NV[0]; vx++){
+					for(int vy = 0; vy < NV[1]; vy++){
+						for(int vz = 0; vz < NV[2]; vz++){
+
+
+							//Compute Sigma
+							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+
+							for(int Dim = 0; Dim < effD; Dim++){
+								int IL, IR, JL, JR, KL, KR;
+
+								//Periodic Boundary Conditions
+								if(Dim == 0){IL = (i - 1)%N[0]; IR = (i + 1)%N[0];} 
+								if(Dim == 1){JL = (j - 1)%N[1]; JR = (j + 1)%N[1];}
+								if(Dim == 2){KL = (k - 1)%N[2]; KR = (k + 1)%N[2];}
+
+								int idxL = IL + Nx*JL + Nx*Ny*KL + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+								int idxR = IR + Nx*JR + Nx*Ny*KR + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+
+
+								gsigma[effD*idx + Dim] = 0;
+							}
+
+
+
+							//Compute gbarp/bbarp @ interfaces via interpolation 
+
+
+						}
+					}
+				}
+			}
+		}
+	}
+
 
 }
 void Step1c(){
 
+	//Compute gbar/bbar @ t=n+1/2  with interface sigma
 }
 
 //Step 2
