@@ -4,6 +4,7 @@
 #include <math.h>
 #include <cmath>
 
+#include "Mesh.hh"
 #include "Evolution.hh"
 
 extern int testProblem;
@@ -27,13 +28,13 @@ double TimeStep(){
 }
 
 
-void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2){	
+void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh){	
 
 	dt = fmin(TimeStep(), dtdump);
 	dt = fmin(dt, Tf-Tsim);
 
 	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
-	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2);
+	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2, mesh);
 	Step1c();
 	
 	Step2a();
@@ -88,7 +89,7 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 	}
 
 }
-void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2){
+void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh){
 
 	int Nx = N[0];
 	int Ny = N[1];
@@ -109,15 +110,33 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 								int IL, IR, JL, JR, KL, KR;
 
 								//Periodic Boundary Conditions
-								if(Dim == 0){IL = (i - 1)%N[0]; IR = (i + 1)%N[0];} 
-								if(Dim == 1){JL = (j - 1)%N[1]; JR = (j + 1)%N[1];}
-								if(Dim == 2){KL = (k - 1)%N[2]; KR = (k + 1)%N[2];}
+								if(Dim == 0){IL = (i - 1)%N[0]; IR = (i + 1)%N[0]; JL = j; JR = j; KL = k; KR = k;} 
+								if(Dim == 1){JL = (j - 1)%N[1]; JR = (j + 1)%N[1]; IL = i; IR = i; KL = k; KR = k;}
+								if(Dim == 2){KL = (k - 1)%N[2]; KR = (k + 1)%N[2]; IL = i; IR = i; JL = j; JR = k;}
+
+								/*
+								//Reflective Boundary Conditions
+								if(Dim == 0){IL = (i - 1); IR = (i + 1);} 
+								if(Dim == 1){JL = (j - 1); JR = (j + 1);}
+								if(Dim == 2){KL = (k - 1); KR = (k + 1);}
+
+								if(IL < 0){IL = 0;} if(IR == N[0]){IR = N[0] - 1;}
+								if(JL < 0){JL = 0;} if(JR == N[1]){JR = N[1] - 1;}
+								if(KL < 0){KL = 0;} if(KR == N[2]){KR = N[2] - 1;}
+								*/
 
 								int idxL = IL + Nx*JL + Nx*Ny*KL + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 								int idxR = IR + Nx*JR + Nx*Ny*KR + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
 
-								gsigma[effD*idx + Dim] = 0;
+								double xL[3] = {mesh[idxL].x, mesh[idxL].y, mesh[idxL].z};
+								double xR[3] = {mesh[idxR].x, mesh[idxR].y, mesh[idxR].z};
+								double xC[3] = {mesh[idx].x,  mesh[idx].y,  mesh[idx].z};
+
+								gsigma[effD*idx + Dim] = VanLeer(gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
+								bsigma[effD*idx + Dim] = VanLeer(bbarp[idxL], bbarp[idx], bbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
+
+
 							}
 
 

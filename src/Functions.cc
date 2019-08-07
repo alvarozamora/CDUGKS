@@ -32,3 +32,11 @@ double visc(double T)
 {
 	return ur*pow(T/Tr,w);
 }
+
+double VanLeer(double L, double C, double R, double xL, double xC, double xR)
+{
+	double s1 = (C - L)/(xC - xL);
+	double s2 = (R - C)/(xR - xC);
+
+	return (sgn(s1) + sgn(s1))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2));
+}
