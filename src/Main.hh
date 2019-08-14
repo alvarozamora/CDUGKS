@@ -36,7 +36,8 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   //First Dimension
   a=Vmin[0]; b=Vmax[0];
   n=(NV[0]-1)/4;
-  dh=(b-a)/n;
+  dh=(b-a)/n; //old from dugks
+  dh=(b-a)/(NV[0]-1)*4; //mine (Al)
 
   for(int kx = 0; kx < NV[0];kx++){
   	Co_X[kx]=Vmin[0]+kx*dh/4;
@@ -55,7 +56,9 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   //Second Dimension
   a=Vmin[1]; b=Vmax[1];
   n=(NV[1]-1)/4;
-  dh=(b-a)/n;
+  dh=(b-a)/n; //old from dugks
+  dh=(b-a)/(NV[1]-1)*4; //mine (Al)
+
   for(int ky = 0; ky < NV[1]; ky++){
   	Co_Y[ky]=Vmin[1]+ky*dh/4;
   }
@@ -72,15 +75,17 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   Co_WY[NV[1]-1]=7.0;
 
   for(int ky = 0; ky < NV[1]; ky++){Co_WY[ky]*=dh/90;}
-  }else if(NV[1] == 1 && Vmin[1] == 0){Co_WY[0] = 1;}
-  else{printf("Not Supported: NV[1]!= 1 || NV[1] !>= 4\n");}
+  }else if(NV[1] == 1 && Vmin[1] == 0){Co_WY[0] = 1; Co_Y[0] = 0;}
+  else{printf("Not Supported: NV[1]!= 1 && NV[1] < 4\n");}
 
 
   if(NV[2] >= 4){
   a=Vmin[2]; b=Vmax[2];
   n=(NV[2]-1)/4;
-  dh=(b-a)/n;
-  for(int kz = 0; kz < NV[2];kz++){
+  dh=(b-a)/n; //old from dugks
+  dh=(b-a)/(NV[1]-1)*4; //mine (Al)
+
+    for(int kz = 0; kz < NV[2];kz++){
   	Co_Z[kz]=Vmin[2]+kz*dh/4;
   }
   for(int kz = 0; kz < NV[2];kz++)
@@ -94,8 +99,8 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   Co_WZ[NV[2]-1]=7.0;
 
   for(int kz = 0; kz < N[2]; kz++){Co_WZ[kz]*=dh/90;}
-  } else if(NV[2] == 1 && Vmin[2] == 0){Co_WZ[0] = 1;}
-  else{printf("Not Supported: NV[2]!= 1 || NV[2] !>= 4\n");}
+  } else if(NV[2] == 1 && Vmin[2] == 0){Co_WZ[0] = 1; Co_Z[0] = 0;}
+  else{printf("Not Supported: NV[2]!= 1 && NV[2] < 4\n");}
 
 
 }

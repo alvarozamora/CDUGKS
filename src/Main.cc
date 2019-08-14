@@ -19,6 +19,10 @@ int main(){
 	double gbarp[Nc*Nv];   //gbarp and bbarp are reduced distrubution functions (Vel and E distribution)
 	double bbarp[Nc*Nv];
 
+
+	double gbarpbound[Nc*Nv*effD];
+	double bbarpbound[Nc*Nv*effD];
+
 	double Sg[Nc]; //Source Terms
 	double Sb[Nc];
 
@@ -59,7 +63,7 @@ int main(){
 
 	printf("Entering Evolution Loop\n");
 	while(Tsim < Tf){
-		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh);
+		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound);
 
 		Tsim += dt;
 	}

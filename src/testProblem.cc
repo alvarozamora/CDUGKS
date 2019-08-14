@@ -67,25 +67,39 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 					rhoE[idx] += Cv*PR/R; // T = P/(rho*R), Ideal Gas 
 
 				}
+				//printf("idx = %d, rho[idx] = %f\n", idx, rho[idx]);
 
+			}
+		}
+	}
+				
 
 				//Initialize g and b
 				for(int i = 0; i < N[0]; i++){
 					for(int j = 0; j < N[1]; j++){
 						for(int k = 0; k < N[2]; k++){
+
+							int sidx = i + Nx*j + Nx*Ny*k; //spatial index
+
+							double U[3] = {rhov[D*sidx]/rho[sidx], rhov[D*sidx + 1]/rho[sidx], rhov[D*sidx + 2]/rho[sidx]};
+							double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
+
+
 							for(int vx = 0; vx < NV[0]; vx++){
 								for(int vy = 0; vy < NV[1]; vy++){
 									for(int vz = 0; vz < NV[2]; vz++){
 
-									int sidx = i + Nx*j + Nx*Ny*k; //spatial index
+									
 									idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 									//printf("idx = %d", idx);
 
-									double U[3] = {rhov[D*sidx]/rho[sidx], rhov[D*sidx + 1]/rho[sidx], rhov[D*sidx + 2]/rho[sidx]};
-									double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
 
 									g[idx] = geq(Co_X[vx], Co_Y[vy], Co_Z[vz], rho[sidx], U, T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
 									b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
+
+									//printf("Initial g[idx] = %f\n", g[idx]);
+									//printf("Initial b[idx] = %f\n", b[idx]);
+
 									}
 								}
 							}
@@ -96,12 +110,9 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 				}
 
 
-			}
-		}
 
 		//printf("rho[idx] = %f, rhov[idx] = %f, rhoE[idx] = %f, idx = %d\n", rho[idx], rhov[D*idx], rhoE[idx], idx);
 
-	}
 
 }
 
