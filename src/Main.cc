@@ -14,12 +14,11 @@ int main(){
 	printf("Declaring Variables\n");
 	double g[Nc*Nv];   //g and b are reduced distrubution functions (Vel and E distribution)
 	double b[Nc*Nv];
-	double gbar[Nc*Nv];   //gbar and bbar are reduced distrubution functions (Vel and E distribution)
-	double bbar[Nc*Nv];
 	double gbarp[Nc*Nv];   //gbarp and bbarp are reduced distrubution functions (Vel and E distribution)
 	double bbarp[Nc*Nv];
-
-
+	//At interface
+	double gbar[Nc*Nv*effD];   //gbar and bbar are reduced distrubution functions (Vel and E distribution)
+	double bbar[Nc*Nv*effD];
 	double gbarpbound[Nc*Nv*effD];
 	double bbarpbound[Nc*Nv*effD];
 
@@ -29,16 +28,24 @@ int main(){
 	double rho[Nc];    //Conserved Variables
 	double rhov[Nc*effD];
 	double rhoE[Nc];
-	double gsigma[Nc*Nv*effD];
+
+	double gsigma[Nc*Nv*effD]; //Gradients
 	double bsigma[Nc*Nv*effD];
-	double gsigma2[Nc*Nv*effD];
-	double bsigma2[Nc*Nv*effD];
+	double gsigma2[Nc*Nv*effD*effD];
+	double bsigma2[Nc*Nv*effD*effD];
 
 
 	//Newton-Cotes Quadrature
 	printf("Setting up NC-Quadrature\n");
-	double Co_X[NV[0]]; double Co_WX[NV[0]]; double Co_Y[NV[1]]; double Co_WY[NV[1]]; double Co_Z[NV[2]]; double Co_WZ[NV[2]]; // Cotes points and weights
+	double Co_X[NV[0]];   // Cotes points and weights
+	double Co_WX[NV[0]]; 
+	double Co_Y[NV[1]]; 
+	double Co_WY[NV[1]]; 
+	double Co_Z[NV[2]]; 
+	double Co_WZ[NV[2]]; 
 	Cotes(Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
+
+	for(int i = 0; i < 128; i++){printf("Main.cc Co_X[%d] = %f\n", i, Co_X[i]);printf("Main.cc Co_WX[%d] = %f\n", i, Co_WX[i]);}
 
 	//Generate Mesh: Grid Cell Centers and Sizes
 	printf("Generating Mesh\n");

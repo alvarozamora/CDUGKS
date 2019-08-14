@@ -94,6 +94,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 									//printf("idx = %d", idx);
 
 
+									//printf("Co_X[%d] = %f\n", vx, Co_X[vx]);
 									g[idx] = geq(Co_X[vx], Co_Y[vy], Co_Z[vz], rho[sidx], U, T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
 									b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 

@@ -41,6 +41,7 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
 
   for(int kx = 0; kx < NV[0];kx++){
   	Co_X[kx]=Vmin[0]+kx*dh/4;
+    printf("Main.hh Co_X[%d] = %f\n", kx, Co_X[kx]);
   } 
   for(int kx = 0;kx < NV[0];kx++)
   {
@@ -101,8 +102,6 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   for(int kz = 0; kz < N[2]; kz++){Co_WZ[kz]*=dh/90;}
   } else if(NV[2] == 1 && Vmin[2] == 0){Co_WZ[0] = 1; Co_Z[0] = 0;}
   else{printf("Not Supported: NV[2]!= 1 && NV[2] < 4\n");}
-
-
 }
 
 
