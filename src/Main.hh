@@ -61,8 +61,10 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   for(int kx = 0; kx < NV[0]; kx ++){
     printf("Main.hh Co_WX[%d] = %f\n", kx, Co_WX[kx]);
   }
-   for(int kx = 0; kx < NV[0]; kx++){Co_WX[kx]*=dh/90.;}
   */
+   
+  for(int kx = 0; kx < NV[0]; kx++){Co_WX[kx]*=dh/90.;}
+  
 
   //Second Dimension
   a=Vmin[1]; b=Vmax[1];

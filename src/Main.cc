@@ -45,8 +45,9 @@ int main(){
 	double Co_WZ[NV[2]]; 
 	Cotes(Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 
+	//Checking NC Weights
 	//for(int i = 0; i < 128; i++){printf("Main.cc Co_X[%d] = %f\n", i, Co_X[i]);}
-	//sfor(int i = 0; i < 128; i++){printf("Main.cc Co_WX[%d] = %f\n", i, Co_WX[i]);}
+	//for(int i = 0; i < 128; i++){printf("Main.cc Co_WX[%d] = %f\n", i, Co_WX[i]);}
 
 	//Generate Mesh: Grid Cell Centers and Sizes
 	printf("Generating Mesh\n");

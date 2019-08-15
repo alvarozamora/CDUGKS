@@ -23,7 +23,7 @@ extern double K;
 
 double TimeStep(){
 
-	double dt = 128;
+	double dt = 128.;
 	return dt;
 }
 
@@ -111,6 +111,8 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 							//Compute Sigma
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
+							int sidx = i + Nx*j + Nx*Ny*k;
+
 							for(int Dim = 0; Dim < effD; Dim++){
 								int IL, IR, JL, JR, KL, KR;
 
@@ -133,6 +135,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 								int idxL = IL + Nx*JL + Nx*Ny*KL + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 								int idxR = IR + Nx*JR + Nx*Ny*KR + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
+								
 
 								double xL[3] = {mesh[idxL].x, mesh[idxL].y, mesh[idxL].z};
 								double xR[3] = {mesh[idxR].x, mesh[idxR].y, mesh[idxR].z};
@@ -171,19 +174,26 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									int idxL2 = IL2 + Nx*JL2 + Nx*Ny*KL2 + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 									int idxR2 = IR2 + Nx*JR2 + Nx*Ny*KR2 + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
-									double xL2[3] = {mesh[idxL2].x, mesh[idxL2].y, mesh[idxL2].z};
-									double xR2[3] = {mesh[idxR2].x, mesh[idxR2].y, mesh[idxR2].z};
-									double xC2[3] = {mesh[idx].x,  mesh[idx].y,  mesh[idx].z};
-
-									double sL2[3] = {mesh[idxL2].dx, mesh[idxL2].dy, mesh[idxL2].dz};
-									double sR2[3] = {mesh[idxR2].dx, mesh[idxR2].dy, mesh[idxR2].dz};
-									double sC2[3] = {mesh[idx].dx,  mesh[idx].dy,  mesh[idx].dz};
-
-
-									gsigma2[effD*effD*idx + effD*Dim + Dim2] = gsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(gsigma[effD*idxL2 + Dim], gsigma[effD*idx + Dim], gsigma[effD*idxR2 + Dim], xL2[Dim2], xC2[Dim2], xR2[Dim2]);
-									bsigma2[effD*effD*idx + effD*Dim + Dim2] = bsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(bsigma[effD*idxL2 + Dim], bsigma[effD*idx + Dim], bsigma[effD*idxR2 + Dim], xL2[Dim2], xC2[Dim2], xR2[Dim2]);
+									int sidxL2 = IL2 + Nx*JL2 + Nx*Ny*KL2;
+									int sidxR2 = IR2 + Nx*JR2 + Nx*Ny*KR2;
 									
-									//printf("gbarp[idxL] = %f\n", gbarp[idx]);
+
+									double xL2[3] = {mesh[sidxL2].x, mesh[sidxL2].y, mesh[sidxL2].z};
+									double xR2[3] = {mesh[sidxR2].x, mesh[sidxR2].y, mesh[sidxR2].z};
+									double xC[3] = {mesh[sidx].x,  mesh[sidx].y,  mesh[sidx].z};
+
+									printf("xL2 = {%f, %f, %f}\n", xL2[0], xL2[1], xL2[2]);
+									printf("xC = {%f, %f, %f}\n", xC[0], xC[1], xC[2]);
+
+									double sL2[3] = {mesh[sidxL2].dx, mesh[sidxL2].dy, mesh[sidxL2].dz};
+									double sR2[3] = {mesh[sidxR2].dx, mesh[sidxR2].dy, mesh[sidxR2].dz};
+									double sC2[3] = {mesh[sidx].dx,  mesh[sidx].dy,  mesh[sidx].dz};
+
+
+									gsigma2[effD*effD*idx + effD*Dim + Dim2] = gsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(gsigma[effD*idxL2 + Dim], gsigma[effD*idx + Dim], gsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
+									bsigma2[effD*effD*idx + effD*Dim + Dim2] = bsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(bsigma[effD*idxL2 + Dim], bsigma[effD*idx + Dim], bsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
+									
+									//printf("gbarp[%d] = %f\n", idxL, gbarp[idx]);
 									//printf("gsigma = %f\n" ,gsigma[effD*idx + Dim]);
 									//printf("gsigma2 = %f\n",gsigma2[effD*effD*idx + effD*Dim + Dim2]);
 									
