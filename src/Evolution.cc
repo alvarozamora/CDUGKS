@@ -21,6 +21,11 @@ extern double gma;
 extern double K;
 
 
+int Nx = N[0];
+int Ny = N[1];
+int Nz = N[2];
+
+
 double TimeStep(){
 
 	double dt = 128.;
@@ -28,16 +33,16 @@ double TimeStep(){
 }
 
 
-void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound){	
+void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh){	
 
 	dt = fmin(TimeStep(), dtdump);
 	dt = fmin(dt, Tf-Tsim);
 
 	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound);
-	Step1c(gbar, bbar, gbarpbound, bbarpbound, effD, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
+	Step1c(gbar, bbar, gbarpbound, bbarpbound, effD, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, dt);
 	
-	Step2a();
+	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, dt, rhoh, rhovh, rhoEh);
 	Step2b();
 	Step2c();
 	
@@ -54,9 +59,7 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 
 	double tau = 1e-5;
 
-	int Nx = N[0];
-	int Ny = N[1];
-	int Nz = N[2];
+	
 
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
@@ -103,9 +106,6 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 }
 void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound){
 
-	int Nx = N[0];
-	int Ny = N[1];
-	int Nz = N[2];
 
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
@@ -170,7 +170,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 								gsigma[effD*idx + Dim] = VanLeer(gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 								bsigma[effD*idx + Dim] = VanLeer(bbarp[idxL], bbarp[idx], bbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 
-								printf("checking gsigma[%d] = %f\n", effD*idx + Dim, gsigma[effD*idx + Dim] );
+								//printf("checking gsigma[%d] = %f\n", effD*idx + Dim, gsigma[effD*idx + Dim] );
 								//Computing phisigma, at interface
 								for(int Dim2 = 0; Dim2 < effD; Dim2++){
 
@@ -238,7 +238,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 
 
 }
-void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, int effD, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){
+void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, int effD, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma2, double dt){
 	//Compute gbar/bbar @ t=n+1/2  with interface sigma
 
 	int Nx = N[0];
@@ -256,7 +256,11 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, i
 
 							for(int Dim = 0; Dim < effD; Dim++){
 
-								gbar[effD*idx + Dim] = gbarpbound[effD*idx + Dim];
+								//Phibar at Interface, at t = n+1/2
+								gbar[effD*idx + Dim] = gbarpbound[effD*idx + Dim] - dt/2.0*(Co_X[vx]*gsigma2[effD*effD*idx + effD*Dim + 0] + Co_Y[vy]*gsigma2[effD*effD*idx + effD*Dim + 1] + Co_Z[vz]*gsigma2[effD*effD*idx + effD*Dim + 2]);
+
+								//printf("gbar[%d] = %f\n", effD*idx + Dim, gbar[effD*idx + Dim]);
+
 
 
 						
@@ -273,7 +277,38 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, i
 }
 
 //Step 2
-void Step2a(){
+void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z, double* Co_WX, double* Co_WY, double* Co_WZ, double dt, double* rhoh, double* rhovh, double* rhoEh){
+	//Compute conserved variables W at t+1/2
+
+	for(int i = 0; i < N[0]; i++){
+		for(int j = 0; j < N[1]; j++){
+			for(int k = 0; k < N[2]; k++){
+
+				int sidx = i + Nx*j + Nx*Ny*k;
+
+				rhoh[sidx] = 0; 
+				for(int Dim = 0; Dim < effD; Dim++){
+					rhovh[effD*sidx + Dim] = dt/2*0; //TODO: In future, replace 0 with acceleration field!
+					}
+
+				for(int vx = 0; vx < NV[0]; vx++){
+					for(int vy = 0; vy < NV[1]; vy++){
+						for(int vz = 0; vz < NV[2]; vz++){
+
+							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+
+							rhoh[sidx] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[idx]
+
+							for(int Dim = 0; Dim < effD; Dim++){
+								rhovh[effD*sidx + Dim] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*Co_X[vz]*gbar[idx]
+							}
+
+						}
+					}
+				}
+			}
+		}
+	}
 
 }
 void Step2b(){
