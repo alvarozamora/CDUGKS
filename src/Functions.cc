@@ -39,14 +39,16 @@ double visc(double T)
 
 double VanLeer(double L, double C, double R, double xL, double xC, double xR)
 {
+	if(xR < xC){ xR = xR + 1.0;}
+	if(xL > xR){ xL = xL - 1.0;}
+
 	double s1 = (C - L)/(xC - xL);
 	double s2 = (R - C)/(xR - xC);
 
 
-
-	if(s1 == 0. && s2 == 0.)
+	if(C - L == 0. && R - C == 0.)
 		{return 0;}
 	else{
-		printf("L = %f, C = %f, R = %f, xL = %f, xL = %f, xR = %f, s1 = %f, s2 = %f, VL = %f\n", L, C, R, xL, xC, xR, s1, s2, (sgn(s1) + sgn(s2))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2)));
+		//printf("L = %f, C = %f, R = %f, xL = %f, xL = %f, xR = %f, s1 = %f, s2 = %f, VL = %f\n", L, C, R, xL, xC, xR, s1, s2, (sgn(s1) + sgn(s2))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2)));
 		return (sgn(s1) + sgn(s2))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2));}
 }

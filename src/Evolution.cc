@@ -61,11 +61,13 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
+				int sidx = i + Nx*j + Nx*Ny*k; //spatial index
+
 				for(int vx = 0; vx < NV[0]; vx++){
 					for(int vy = 0; vy < NV[1]; vy++){
 						for(int vz = 0; vz < NV[2]; vz++){
 
-							int sidx = i + Nx*j + Nx*Ny*k; //spatial index
+							
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 							//printf("idx = %d", idx);
 
@@ -82,7 +84,12 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 							bbarp[idx] = (2*tau - dt/2.)/(2*tau)*b[idx] + dt/(4*tau)*b_eq + dt/4*Sb[sidx];
 
 
-							//printf("g[idx] = %f\n", g[idx]);
+							
+							
+							//printf("g[%d] = %f, g_eq = %f\n",idx, g[idx], g_eq);
+							//printf("geq debug:");
+							//printf("Co_X[vx]= %f, Co_Y[vy] = %f, Co_Z[vz] = %f, rho[sidx] = %f, U[0] = %f, U[1] = %f, U[2] = %f, T = %f, WX = %f, WY = %f, WZ = %f\n", Co_X[vx], Co_Y[vy], Co_Z[vz], rho[sidx], U[0], U[1], U[2], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
+
 							//printf("g_eq = %f\n", g_eq);
 							//printf("b[idx] = %f\n", b[idx]);
 							//printf("gbarp[idx] = %f\n", gbarp[idx]);
@@ -103,6 +110,12 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
+
+				int sidx = i + Nx*j + Nx*Ny*k;
+
+				double xC[3] = {mesh[sidx].x,  mesh[sidx].y,  mesh[sidx].z};
+				double sC[3] = {mesh[sidx].dx,  mesh[sidx].dy,  mesh[sidx].dz};
+
 				for(int vx = 0; vx < NV[0]; vx++){
 					for(int vy = 0; vy < NV[1]; vy++){
 						for(int vz = 0; vz < NV[2]; vz++){
@@ -111,7 +124,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 							//Compute Sigma
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
-							int sidx = i + Nx*j + Nx*Ny*k;
+							
 
 							for(int Dim = 0; Dim < effD; Dim++){
 								int IL, IR, JL, JR, KL, KR;
@@ -119,7 +132,9 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 								//Periodic Boundary Conditions
 								if(Dim == 0){IL = (i - 1)%N[0]; IR = (i + 1)%N[0]; JL = j; JR = j; KL = k; KR = k;} 
 								if(Dim == 1){JL = (j - 1)%N[1]; JR = (j + 1)%N[1]; IL = i; IR = i; KL = k; KR = k;}
-								if(Dim == 2){KL = (k - 1)%N[2]; KR = (k + 1)%N[2]; IL = i; IR = i; JL = j; JR = k;}
+								if(Dim == 2){KL = (k - 1)%N[2]; KR = (k + 1)%N[2]; IL = i; IR = i; JL = j; JR = j;}
+
+								//printf("Checking Indices: {IL = %d, i = %d, IR = %d}, {JL = %d, j = %d, JR = %d},  {KL = %d, k = %d, KR = %d}\n", IL, i, IR, JL, j, JR, KL, k, KR);
 
 								/*
 								//Reflective Boundary Conditions
@@ -135,21 +150,27 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 								int idxL = IL + Nx*JL + Nx*Ny*KL + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 								int idxR = IR + Nx*JR + Nx*Ny*KR + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
+								int sidxL = IL + Nx*JL + Nx*Ny*KL;
+								int sidxR = IR + Nx*JR + Nx*Ny*KR;
 								
 
-								double xL[3] = {mesh[idxL].x, mesh[idxL].y, mesh[idxL].z};
-								double xR[3] = {mesh[idxR].x, mesh[idxR].y, mesh[idxR].z};
-								double xC[3] = {mesh[idx].x,  mesh[idx].y,  mesh[idx].z};
+								double xL[3] = {mesh[sidxL].x, mesh[sidxL].y, mesh[sidxL].z};
+								double xR[3] = {mesh[sidxR].x, mesh[sidxR].y, mesh[sidxR].z};
+								
 
-								double sL[3] = {mesh[idxL].dx, mesh[idxL].dy, mesh[idxL].dz};
-								double sR[3] = {mesh[idxR].dx, mesh[idxR].dy, mesh[idxR].dz};
-								double sC[3] = {mesh[idx].dx,  mesh[idx].dy,  mesh[idx].dz};
+								//printf("L = {%f, %f, %f}, C = {%f, %f, %f}, R = {%f, %f, %f}\n", xL[0], xL[1], xL[2], xC[0], xC[1], xC[2], xR[0], xR[1], xR[2]);
+
+								double sL[3] = {mesh[sidxL].dx, mesh[sidxL].dy, mesh[sidxL].dz};
+								double sR[3] = {mesh[sidxR].dx, mesh[sidxR].dy, mesh[sidxR].dz};
+								
 
 
 								//Computating phisigma, at cell 
+								//printf("Checking VanLeer Input: gbarp[idxL] = %f , gbarp[idx] = %f, gbarp[idxR] = %f, xL[Dim] = %f, xC[Dim] = %f, xR[Dim] = %f\n", gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 								gsigma[effD*idx + Dim] = VanLeer(gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 								bsigma[effD*idx + Dim] = VanLeer(bbarp[idxL], bbarp[idx], bbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 
+								printf("checking gsigma[%d] = %f\n", effD*idx + Dim, gsigma[effD*idx + Dim] );
 								//Computing phisigma, at interface
 								for(int Dim2 = 0; Dim2 < effD; Dim2++){
 
@@ -182,8 +203,8 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									double xR2[3] = {mesh[sidxR2].x, mesh[sidxR2].y, mesh[sidxR2].z};
 									double xC[3] = {mesh[sidx].x,  mesh[sidx].y,  mesh[sidx].z};
 
-									printf("xL2 = {%f, %f, %f}\n", xL2[0], xL2[1], xL2[2]);
-									printf("xC = {%f, %f, %f}\n", xC[0], xC[1], xC[2]);
+									//printf("xL2 = {%f, %f, %f}\n", xL2[0], xL2[1], xL2[2]);
+									//printf("xC = {%f, %f, %f}\n", xC[0], xC[1], xC[2]);
 
 									double sL2[3] = {mesh[sidxL2].dx, mesh[sidxL2].dy, mesh[sidxL2].dz};
 									double sR2[3] = {mesh[sidxR2].dx, mesh[sidxR2].dy, mesh[sidxR2].dz};
@@ -193,7 +214,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									gsigma2[effD*effD*idx + effD*Dim + Dim2] = gsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(gsigma[effD*idxL2 + Dim], gsigma[effD*idx + Dim], gsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									bsigma2[effD*effD*idx + effD*Dim + Dim2] = bsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(bsigma[effD*idxL2 + Dim], bsigma[effD*idx + Dim], bsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									
-									//printf("gbarp[%d] = %f\n", idxL, gbarp[idx]);
+									//printf("gbarp[%d] = %f\n", idxR, gbarp[idxR]);
 									//printf("gsigma = %f\n" ,gsigma[effD*idx + Dim]);
 									//printf("gsigma2 = %f\n",gsigma2[effD*effD*idx + effD*Dim + Dim2]);
 									

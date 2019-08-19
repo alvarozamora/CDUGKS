@@ -46,7 +46,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 					rho[idx] = rhoL; 
 					rhoE[idx] = 0.0; //Initialize for Reduction
 					for(int dim = 0; dim < D; dim++){
-						rhov[D*idx + dim] = 0.0;
+						rhov[effD*idx + dim] = 0.0;
 						rhoE[idx] += 0.5*rhov[D*idx+dim]*rhov[D*idx+dim]/rho[idx]; // 0.5* rhov**2/rho
 					}
 					rhoE[idx] += Cv*PL/R; // T = P/(rho*R), Ideal Gas 
