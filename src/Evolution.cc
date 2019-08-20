@@ -28,7 +28,7 @@ int Nz = N[2];
 
 double TimeStep(){
 
-	double dt = 1/128.;
+	double dt = 1/2048.;
 	return dt;
 }
 
@@ -54,10 +54,10 @@ void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 }
 
 
-//Step 2
+//Step 1: Phibar at interface
 void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){
 
-	double tau = 1.0;
+	double tau = 1e-5;
 
 	
 
@@ -90,6 +90,10 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 
 							double g_eq = geq(c2, rho[sidx], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
 							double b_eq = g_eq*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
+
+							//For Now...
+							Sg[sidx] = 0.;
+							Sb[sidx] = 0.;
 
 							gbarp[idx] = (2*tau - dt/2.)/(2*tau)*g[idx] + dt/(4*tau)*g_eq + dt/4*Sg[sidx];
 							bbarp[idx] = (2*tau - dt/2.)/(2*tau)*b[idx] + dt/(4*tau)*b_eq + dt/4*Sb[sidx];
@@ -227,7 +231,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									
 									//printf("xL2[%d], xC[%d], xR2[%d] = %f, %f, %f\n", Dim2, Dim2, Dim2, xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									//printf("sidx = %d, gbarp[%d] = %f\n", sidx, idxR, gbarp[idxR]);
-									//printf("gsigma = %f\n" ,gsigma[effD*idx + Dim]);
+									printf("gsigma = %f\n" ,gsigma[effD*idx + Dim]);
 									//printf("gsigma2 = %f\n",gsigma2[effD*effD*idx + effD*Dim + Dim2]);
 									
 								}
@@ -292,7 +296,7 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, i
 
 }
 
-//Step 2
+//Step 2: Microflux
 void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z, double* Co_WX, double* Co_WY, double* Co_WZ, double dt, double* rhoh, double* rhovh, double* rhoEh){
 	//Compute conserved variables W at t+1/2
 
@@ -350,7 +354,7 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 							for(int Dim = 0; Dim < effD; Dim++){
 								for(int Dim2 = 0; Dim2 < effD; Dim2++){
 
-									rhovh[effD*effD*sidx + effD*Dim + Dim2] += U[Dim]*gbar[effD*idx + Dim]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* do I multiply these weights or not?
+									rhovh[effD*effD*sidx + effD*Dim + Dim2] += U[Dim2]*gbar[effD*idx + Dim]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* do I multiply these weights or not?
 									
 								}
 
@@ -360,7 +364,7 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 					}
 				}
 
-				printf("Half-Step x-dim W[%d] = {%f, %f, %f}\n", sidx, rhoh[effD*sidx + 0], rhovh[effD*effD*sidx + effD*0 + 0], rhoEh[effD*sidx + 0]);
+				//printf("Half-Step x-dim W[%d] = {%f, %f, %f}\n", sidx, rhoh[effD*sidx + 0], rhovh[effD*effD*sidx + effD*0 + 0], rhoEh[effD*sidx + 0]);
 
 			}
 		}
@@ -375,17 +379,17 @@ void Step2c(){
 
 }
 
-//Step 3
+//Step 3: Source Terms
 void Step3(){
 
 }
 
-//Step 4
+//Step 4: Conservative Variables W at cell center at next timestep
 void Step4(){
 
 }
 
-//Step 5
+//Step 5: Phi at cell center at next timestep
 void Step5(){
 
 }

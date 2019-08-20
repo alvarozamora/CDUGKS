@@ -40,7 +40,7 @@ double visc(double T)
 double VanLeer(double L, double C, double R, double xL, double xC, double xR)
 {
 	if(xR < xC){ xR = xR + 1.0;}
-	if(xL > xR){ xL = xL - 1.0;}
+	if(xL > xC){ xL = xL - 1.0;}
 
 	double s1 = (C - L)/(xC - xL);
 	double s2 = (R - C)/(xR - xC);
