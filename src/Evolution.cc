@@ -74,13 +74,21 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 							//printf("idx = %d", idx);
 
-							double U[3] = {rhov[effD*sidx]/rho[sidx], rhov[effD*sidx + 1]/rho[sidx], rhov[effD*sidx + 2]/rho[sidx]};
-							double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
+							double u = 0;
+							for(int dim = 0; dim < effD; dim++){u += rhov[effD*sidx + dim]/rho[sidx]*rhov[effD*sidx + dim]/rho[sidx];} u = sqrt(u);
+							double T = Temperature(rhoE[sidx]/rho[sidx], u);
 
 
 							double mu = visc(T);
 
-							double g_eq = geq(Co_X[vx], Co_Y[vy], Co_Z[vz], rho[sidx], U, T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
+
+
+							double c2 = 0;
+							double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
+
+							for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhov[effD*sidx + dim]/rho[sidx])*(Xi[dim]-rhov[effD*sidx + dim]/rho[sidx]);} //TODO: Potential BUG, did not double check algebra.
+
+							double g_eq = geq(c2, rho[sidx], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
 							double b_eq = g_eq*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 
 							gbarp[idx] = (2*tau - dt/2.)/(2*tau)*g[idx] + dt/(4*tau)*g_eq + dt/4*Sg[sidx];
@@ -90,8 +98,8 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 							
 							
 							//printf("g[%d] = %f, g_eq = %f\n",idx, g[idx], g_eq);
-							//printf("geq debug:");
-							//printf("Co_X[vx]= %f, Co_Y[vy] = %f, Co_Z[vz] = %f, rho[sidx] = %f, U[0] = %f, U[1] = %f, U[2] = %f, T = %f, WX = %f, WY = %f, WZ = %f\n", Co_X[vx], Co_Y[vy], Co_Z[vz], rho[sidx], U[0], U[1], U[2], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
+							//printf("geq debug: ");
+							//printf("c2 = %f, rho[sidx] = %f, T = %f, WX = %f, WY = %f, WZ = %f\n", c2, rho[sidx], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
 
 							//printf("g_eq = %f\n", g_eq);
 							//printf("b[idx] = %f\n", b[idx]);
@@ -166,7 +174,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 
 
 								//Computating phisigma, at cell 
-								printf("Checking VanLeer Input: gbarp[idxL] = %f , gbarp[idx] = %f, gbarp[idxR] = %f, xL[Dim] = %f, xC[Dim] = %f, xR[Dim] = %f\n", gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
+								//printf("Checking VanLeer Input: gbarp[idxL] = %f , gbarp[idx] = %f, gbarp[idxR] = %f, xL[Dim] = %f, xC[Dim] = %f, xR[Dim] = %f\n", gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 								gsigma[effD*idx + Dim] = VanLeer(gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 								bsigma[effD*idx + Dim] = VanLeer(bbarp[idxL], bbarp[idx], bbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 

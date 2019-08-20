@@ -37,7 +37,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
 
-				idx = i + Nx*j + Nx*Ny*k;
+				idx = i + Nx*j + Nx*Ny*k; //spatial index
 
 				//Left State
 				if(mesh[idx].x <= 0.5){
@@ -81,9 +81,11 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 
 				int sidx = i + Nx*j + Nx*Ny*k; //spatial index
 
-				double U[3] = {rhov[effD*sidx]/rho[sidx], rhov[effD*sidx + 1]/rho[sidx], rhov[effD*sidx + 2]/rho[sidx]};
+				double u = 0;
+				for(int dim = 0; dim < effD; dim++){u += rhov[effD*sidx + dim]/rho[sidx]*rhov[effD*sidx + dim]/rho[sidx];}
+				u = sqrt(u);
 
-				double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
+				double T = Temperature(rhoE[sidx]/rho[sidx], u);
 
 
 				for(int vx = 0; vx < NV[0]; vx++){
@@ -94,7 +96,11 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 						idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
 
-						g[idx] = geq(Co_X[vx], Co_Y[vy], Co_Z[vz], rho[sidx], U, T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
+						double c2 = 0;
+						double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
+
+						for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhov[effD*sidx + dim]/rho[sidx])*(Xi[dim]-rhov[effD*sidx + dim]/rho[sidx]);} //TODO: Potential BUG, did not double check algebra.
+						g[idx] = geq(c2, rho[sidx], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
 						b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 
 
