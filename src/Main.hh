@@ -52,7 +52,7 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   Co_WX[0]=7.0;
   Co_WX[NV[0]-1]=7.0;
 
-  //Check
+  //Check Weights
   /*
   for(int kx = 0; kx < NV[0]; kx++){
     printf("Main.hh Co_X[%d] = %f\n", kx, Co_X[kx]);

@@ -28,7 +28,7 @@ int Nz = N[2];
 
 double TimeStep(){
 
-	double dt = 128.;
+	double dt = 1/128.;
 	return dt;
 }
 
@@ -40,7 +40,7 @@ void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 
 	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound);
-	Step1c(gbar, bbar, gbarpbound, bbarpbound, effD, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, dt);
+	Step1c(gbar, bbar, gbarpbound, bbarpbound, effD, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, bsigma2, dt);
 	
 	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, dt, rhoh, rhovh, rhoEh);
 	Step2b();
@@ -57,7 +57,7 @@ void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 //Step 2
 void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){
 
-	double tau = 1e-5;
+	double tau = 1.0;
 
 	
 
@@ -95,7 +95,6 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 							bbarp[idx] = (2*tau - dt/2.)/(2*tau)*b[idx] + dt/(4*tau)*b_eq + dt/4*Sb[sidx];
 
 
-							
 							
 							//printf("g[%d] = %f, g_eq = %f\n",idx, g[idx], g_eq);
 							//printf("geq debug: ");
@@ -220,6 +219,9 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									double sC2[3] = {mesh[sidx].dx,  mesh[sidx].dy,  mesh[sidx].dz};
 
 
+									//Dim 1 is vector component that is being interpolated.
+									//Dim 2 is direction of interpolation.
+
 									gsigma2[effD*effD*idx + effD*Dim + Dim2] = gsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(gsigma[effD*idxL2 + Dim], gsigma[effD*idx + Dim], gsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									bsigma2[effD*effD*idx + effD*Dim + Dim2] = bsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(bsigma[effD*idxL2 + Dim], bsigma[effD*idx + Dim], bsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									
@@ -233,9 +235,11 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 
 
 								//Dot Product is just a single product when using rectangular mesh
-								gbarpbound[effD*idx + Dim] = gbarp[idx] + (xR[Dim]-xC[Dim])*gsigma[effD*idx + Dim];
-								bbarpbound[effD*idx + Dim] = bbarp[idx] + (xR[Dim]-xC[Dim])*bsigma[effD*idx + Dim];
-
+								//For some reason i was interpolating all the way to next cell.
+								//gbarpbound[effD*idx + Dim] = gbarp[idx] + (xR[Dim]-xC[Dim])*gsigma[effD*idx + Dim];
+								//bbarpbound[effD*idx + Dim] = bbarp[idx] + (xR[Dim]-xC[Dim])*bsigma[effD*idx + Dim];
+								gbarpbound[effD*idx + Dim] = gbarp[idx] + sC[Dim]/2*gsigma[effD*idx + Dim];
+								bbarpbound[effD*idx + Dim] = bbarp[idx] + sC[Dim]/2*bsigma[effD*idx + Dim];
 
 							}
 						}
@@ -248,7 +252,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 
 
 }
-void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, int effD, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma2, double dt){
+void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, int effD, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma2, double* bsigma2, double dt){
 	//Compute gbar/bbar @ t=n+1/2  with interface sigma
 
 	int Nx = N[0];
@@ -267,8 +271,8 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, i
 							for(int Dim = 0; Dim < effD; Dim++){
 
 								//Phibar at Interface, at t = n+1/2
-
-								gbar[effD*idx + Dim] = gbarpbound[effD*idx + Dim] - dt/2.0*(Co_X[vx]*gsigma2[effD*effD*idx + effD*Dim + 0] + Co_Y[vy]*gsigma2[effD*effD*idx + effD*Dim + 1] + Co_Z[vz]*gsigma2[effD*effD*idx + effD*Dim + 2]);
+								gbar[effD*idx + Dim] = gbarpbound[effD*idx + Dim] - dt/2.0*(Co_X[vx]*gsigma2[effD*effD*idx + effD*0 + Dim] + Co_Y[vy]*gsigma2[effD*effD*idx + effD*1 + Dim] + Co_Z[vz]*gsigma2[effD*effD*idx + effD*2 + Dim]);
+								bbar[effD*idx + Dim] = bbarpbound[effD*idx + Dim] - dt/2.0*(Co_X[vx]*bsigma2[effD*effD*idx + effD*0 + Dim] + Co_Y[vy]*bsigma2[effD*effD*idx + effD*1 + Dim] + Co_Z[vz]*bsigma2[effD*effD*idx + effD*2 + Dim]);
 
 								//printf("gsigma2[%d] = {%f, %f, %f}\n", effD*idx + Dim, gsigma2[effD*effD*idx + effD*Dim + 0], gsigma2[effD*effD*idx + effD*Dim + 1], gsigma2[effD*effD*idx + effD*Dim + 2]);
 								//printf("gbar[%d] = %f\n", effD*idx + Dim, gbar[effD*idx + Dim]);
@@ -307,13 +311,17 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
-							rhoh[effD*sidx + d] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[effD*idx + d];
+							rhoh[effD*sidx + d] += gbar[effD*idx + d]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* what is the purpose of these weights??? why dont I multiply them? :\
+
+							//printf("Wprod[%d] = {%f, %f, %f} = %f, gbar[%d] = %f\n", idx, Co_WX[vx], Co_WY[vy], Co_WZ[vz], Co_WX[vx]*Co_WY[vy]*Co_WZ[vz], effD*idx + d, gbar[effD*idx + d]);
 
 							
 
 						}
 					}
 				}
+
+				//printf("computed x-boundary rhoh[%d] = %f\n", sidx, rhoh[effD*sidx + 0]);
 
 				}
 			}
@@ -326,9 +334,9 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 			
 				int sidx = i + Nx*j + Nx*Ny*k;
 				//Inialize E and momentum with source term
-				rhoEh[sidx] = dt/2.*rhoh[sidx]*0; //TODO: In future replace 0 with u.dot(a), vel dot acc.
+				rhoEh[sidx] = dt/2.*rhoh[sidx]*0; //TODO: In future replace 0 with u.dot(a), vel dot acc
 				for(int Dim = 0; Dim < effD; Dim++){
-					rhovh[effD*sidx + Dim] = dt/2*rhoh[sidx]*0; //TODO: In future, replace 0 with acceleration field!
+					rhovh[effD*sidx + Dim] = dt/2*rhoh[sidx]*0; //TODO: In future, replace 0 with acceleration field
 				}
 
 				for(int vx = 0; vx < NV[0]; vx++){
@@ -340,17 +348,19 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 							double U[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
 
 							for(int Dim = 0; Dim < effD; Dim++){
+								for(int Dim2 = 0; Dim2 < effD; Dim2++){
 
-								rhovh[effD*sidx + Dim] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*U[Dim]*gbar[idx];
-								rhoEh[sidx] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*bbar[idx];
+									rhovh[effD*effD*sidx + effD*Dim + Dim2] += U[Dim]*gbar[effD*idx + Dim]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* do I multiply these weights or not?
+									
+								}
 
-								//printf("Evol: gbar[%d] = %f\n", sidx, gbar[idx]);
-							}
+								rhoEh[effD*sidx + Dim] += bbar[effD*idx + Dim]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* do I multiply these weights or not?
+							}	
 						}
 					}
 				}
 
-				//printf("Half-Step W[%d] = {%f, %f, %f}\n", sidx, rhoh[sidx], rhovh[effD*sidx + 0], rhoEh[sidx]);
+				printf("Half-Step x-dim W[%d] = {%f, %f, %f}\n", sidx, rhoh[effD*sidx + 0], rhovh[effD*effD*sidx + effD*0 + 0], rhoEh[effD*sidx + 0]);
 
 			}
 		}
