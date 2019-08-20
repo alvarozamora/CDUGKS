@@ -74,7 +74,7 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 							//printf("idx = %d", idx);
 
-							double U[3] = {rhov[D*sidx]/rho[sidx], rhov[D*sidx + 1]/rho[sidx], rhov[D*sidx + 2]/rho[sidx]};
+							double U[3] = {rhov[effD*sidx]/rho[sidx], rhov[effD*sidx + 1]/rho[sidx], rhov[effD*sidx + 2]/rho[sidx]};
 							double T = Temperature(rhoE[sidx]/rho[sidx], sqrt(U[0]*U[0] + U[1]*U[1] + U[2]*U[2]));
 
 
@@ -130,9 +130,9 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 								int IL, IR, JL, JR, KL, KR;
 
 								//Periodic Boundary Conditions
-								if(Dim == 0){IL = (i - 1)%N[0]; IR = (i + 1)%N[0]; JL = j; JR = j; KL = k; KR = k;} 
-								if(Dim == 1){JL = (j - 1)%N[1]; JR = (j + 1)%N[1]; IL = i; IR = i; KL = k; KR = k;}
-								if(Dim == 2){KL = (k - 1)%N[2]; KR = (k + 1)%N[2]; IL = i; IR = i; JL = j; JR = j;}
+								if(Dim == 0){IL = (i - 1 + N[0])%N[0]; IR = (i + 1)%N[0]; JL = j; JR = j; KL = k; KR = k;} 
+								if(Dim == 1){JL = (j - 1 + N[1])%N[1]; JR = (j + 1)%N[1]; IL = i; IR = i; KL = k; KR = k;}
+								if(Dim == 2){KL = (k - 1 + N[2])%N[2]; KR = (k + 1)%N[2]; IL = i; IR = i; JL = j; JR = j;}
 
 								//printf("Checking Indices: {IL = %d, i = %d, IR = %d}, {JL = %d, j = %d, JR = %d},  {KL = %d, k = %d, KR = %d}\n", IL, i, IR, JL, j, JR, KL, k, KR);
 
@@ -166,7 +166,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 
 
 								//Computating phisigma, at cell 
-								//printf("Checking VanLeer Input: gbarp[idxL] = %f , gbarp[idx] = %f, gbarp[idxR] = %f, xL[Dim] = %f, xC[Dim] = %f, xR[Dim] = %f\n", gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
+								printf("Checking VanLeer Input: gbarp[idxL] = %f , gbarp[idx] = %f, gbarp[idxR] = %f, xL[Dim] = %f, xC[Dim] = %f, xR[Dim] = %f\n", gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 								gsigma[effD*idx + Dim] = VanLeer(gbarp[idxL], gbarp[idx], gbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 								bsigma[effD*idx + Dim] = VanLeer(bbarp[idxL], bbarp[idx], bbarp[idxR], xL[Dim], xC[Dim], xR[Dim]);
 
@@ -177,9 +177,9 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									int IL2, IR2, JL2, JR2, KL2, KR2;
 
 									//Periodic Boundary Conditions
-									if(Dim2 == 0){IL2 = (i - 1)%N[0]; IR2 = (i + 1)%N[0]; JL2 = j; JR2 = j; KL2 = k; KR2 = k;} 
-									if(Dim2 == 1){JL2 = (j - 1)%N[1]; JR2 = (j + 1)%N[1]; IL2 = i; IR2 = i; KL2 = k; KR2 = k;}
-									if(Dim2 == 2){KL2 = (k - 1)%N[2]; KR2 = (k + 1)%N[2]; IL2 = i; IR2 = i; JL2 = j; JR2 = k;}
+									if(Dim2 == 0){IL2 = (i - 1 + N[0])%N[0]; IR2 = (i + 1)%N[0]; JL2 = j; JR2 = j; KL2 = k; KR2 = k;} 
+									if(Dim2 == 1){JL2 = (j - 1 + N[1])%N[1]; JR2 = (j + 1)%N[1]; IL2 = i; IR2 = i; KL2 = k; KR2 = k;}
+									if(Dim2 == 2){KL2 = (k - 1 + N[2])%N[2]; KR2 = (k + 1)%N[2]; IL2 = i; IR2 = i; JL2 = j; JR2 = j;}
 	
 									/*
 									//Reflective Boundary Conditions
@@ -203,6 +203,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									double xR2[3] = {mesh[sidxR2].x, mesh[sidxR2].y, mesh[sidxR2].z};
 									double xC[3] = {mesh[sidx].x,  mesh[sidx].y,  mesh[sidx].z};
 
+									//printf("sidx = %d, sidxL2 = %d, sidxR2 = %d\n", sidx, sidxL2, sidxR2);
 									//printf("xL2 = {%f, %f, %f}\n", xL2[0], xL2[1], xL2[2]);
 									//printf("xC = {%f, %f, %f}\n", xC[0], xC[1], xC[2]);
 
@@ -214,7 +215,8 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									gsigma2[effD*effD*idx + effD*Dim + Dim2] = gsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(gsigma[effD*idxL2 + Dim], gsigma[effD*idx + Dim], gsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									bsigma2[effD*effD*idx + effD*Dim + Dim2] = bsigma[effD*idx + Dim] + (sC2[Dim2]/2)*VanLeer(bsigma[effD*idxL2 + Dim], bsigma[effD*idx + Dim], bsigma[effD*idxR2 + Dim], xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									
-									//printf("gbarp[%d] = %f\n", idxR, gbarp[idxR]);
+									//printf("xL2[%d], xC[%d], xR2[%d] = %f, %f, %f\n", Dim2, Dim2, Dim2, xL2[Dim2], xC[Dim2], xR2[Dim2]);
+									//printf("sidx = %d, gbarp[%d] = %f\n", sidx, idxR, gbarp[idxR]);
 									//printf("gsigma = %f\n" ,gsigma[effD*idx + Dim]);
 									//printf("gsigma2 = %f\n",gsigma2[effD*effD*idx + effD*Dim + Dim2]);
 									
@@ -257,8 +259,10 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, i
 							for(int Dim = 0; Dim < effD; Dim++){
 
 								//Phibar at Interface, at t = n+1/2
+
 								gbar[effD*idx + Dim] = gbarpbound[effD*idx + Dim] - dt/2.0*(Co_X[vx]*gsigma2[effD*effD*idx + effD*Dim + 0] + Co_Y[vy]*gsigma2[effD*effD*idx + effD*Dim + 1] + Co_Z[vz]*gsigma2[effD*effD*idx + effD*Dim + 2]);
 
+								//printf("gsigma2[%d] = {%f, %f, %f}\n", effD*idx + Dim, gsigma2[effD*effD*idx + effD*Dim + 0], gsigma2[effD*effD*idx + effD*Dim + 1], gsigma2[effD*effD*idx + effD*Dim + 2]);
 								//printf("gbar[%d] = %f\n", effD*idx + Dim, gbar[effD*idx + Dim]);
 
 
@@ -283,13 +287,11 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
+				for(int d = 0; d < effD; d++){
 
 				int sidx = i + Nx*j + Nx*Ny*k;
 
-				rhoh[sidx] = 0; 
-				for(int Dim = 0; Dim < effD; Dim++){
-					rhovh[effD*sidx + Dim] = dt/2*0; //TODO: In future, replace 0 with acceleration field!
-					}
+				rhoh[effD*sidx + d] = 0; 
 
 				for(int vx = 0; vx < NV[0]; vx++){
 					for(int vy = 0; vy < NV[1]; vy++){
@@ -297,18 +299,55 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
-							rhoh[sidx] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[idx]
+							rhoh[effD*sidx + d] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[effD*idx + d];
 
-							for(int Dim = 0; Dim < effD; Dim++){
-								rhovh[effD*sidx + Dim] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*Co_X[vz]*gbar[idx]
-							}
+							
 
 						}
 					}
 				}
+
+				}
 			}
 		}
 	}
+
+	for(int i = 0; i < N[0]; i++){
+		for(int j = 0; j < N[1]; j++){
+			for(int k = 0; k < N[2]; k++){
+			
+				int sidx = i + Nx*j + Nx*Ny*k;
+				//Inialize E and momentum with source term
+				rhoEh[sidx] = dt/2.*rhoh[sidx]*0; //TODO: In future replace 0 with u.dot(a), vel dot acc.
+				for(int Dim = 0; Dim < effD; Dim++){
+					rhovh[effD*sidx + Dim] = dt/2*rhoh[sidx]*0; //TODO: In future, replace 0 with acceleration field!
+				}
+
+				for(int vx = 0; vx < NV[0]; vx++){
+					for(int vy = 0; vy < NV[1]; vy++){
+						for(int vz = 0; vz < NV[2]; vz++){
+
+							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+
+							double U[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
+
+							for(int Dim = 0; Dim < effD; Dim++){
+
+								rhovh[effD*sidx + Dim] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*U[Dim]*gbar[idx];
+								rhoEh[sidx] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*bbar[idx];
+
+								//printf("Evol: gbar[%d] = %f\n", sidx, gbar[idx]);
+							}
+						}
+					}
+				}
+
+				//printf("Half-Step W[%d] = {%f, %f, %f}\n", sidx, rhoh[sidx], rhovh[effD*sidx + 0], rhoEh[sidx]);
+
+			}
+		}
+	}
+
 
 }
 void Step2b(){

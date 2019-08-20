@@ -5,8 +5,8 @@
 
 //Dimension and Resolution
 int D = 3;
-int N[3] = {128, 1, 1};       // For Lower D problem, set size to 1.
-int NV[3] = {128, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
+int N[3] = {16, 1, 1};       // For Lower D problem, set size to 1.
+int NV[3] = {16, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
 int Nc = N[0]*N[1]*N[2];    // Cells
 int Nv = NV[0]*NV[1]*NV[2]; // Velocities
 int effD = 1.0; //TODO: POTENTIAL BUG

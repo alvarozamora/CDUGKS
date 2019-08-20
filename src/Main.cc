@@ -25,12 +25,12 @@ int main(){
 	double Sg[Nc]; //Source Terms
 	double Sb[Nc];
 
-	double rho[Nc];    //Conserved Variables
+	double rho[Nc];    //Conserved Variables at t
 	double rhov[Nc*effD];
 	double rhoE[Nc];
-	double rhoh[Nc]; // at t + 1/2, h
-	double rhovh[Nc*effD];
-	double rhoEh[Nc];
+	double rhoh[Nc*effD];   //Conserved Variables at t + h, at interfaces
+	double rhovh[Nc*effD*effD];
+	double rhoEh[Nc*effD];
 
 	double gsigma[Nc*Nv*effD]; //Gradients
 	double bsigma[Nc*Nv*effD];
@@ -49,7 +49,7 @@ int main(){
 	double Co_WZ[NV[2]]; 
 	Cotes(Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 
-	//Checking NC Weights
+	//Checking NC Weights on 128-cell Sod Problem
 	//for(int i = 0; i < 128; i++){printf("Main.cc Co_X[%d] = %f\n", i, Co_X[i]);}
 	//for(int i = 0; i < 128; i++){printf("Main.cc Co_WX[%d] = %f\n", i, Co_WX[i]);}
 
