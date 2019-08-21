@@ -231,7 +231,7 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 									
 									//printf("xL2[%d], xC[%d], xR2[%d] = %f, %f, %f\n", Dim2, Dim2, Dim2, xL2[Dim2], xC[Dim2], xR2[Dim2]);
 									//printf("sidx = %d, gbarp[%d] = %f\n", sidx, idxR, gbarp[idxR]);
-									printf("gsigma = %f\n" ,gsigma[effD*idx + Dim]);
+									//printf("gsigma = %f\n" ,gsigma[effD*idx + Dim]);
 									//printf("gsigma2 = %f\n",gsigma2[effD*effD*idx + effD*Dim + Dim2]);
 									
 								}
@@ -315,7 +315,7 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
-							rhoh[effD*sidx + d] += gbar[effD*idx + d]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* what is the purpose of these weights??? why dont I multiply them? :\
+							rhoh[effD*sidx + d] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[effD*idx + d]; //  what is the purpose of these weights??? why dont I multiply them? :\
 
 							//printf("Wprod[%d] = {%f, %f, %f} = %f, gbar[%d] = %f\n", idx, Co_WX[vx], Co_WY[vy], Co_WZ[vz], Co_WX[vx]*Co_WY[vy]*Co_WZ[vz], effD*idx + d, gbar[effD*idx + d]);
 
@@ -354,11 +354,11 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 							for(int Dim = 0; Dim < effD; Dim++){
 								for(int Dim2 = 0; Dim2 < effD; Dim2++){
 
-									rhovh[effD*effD*sidx + effD*Dim + Dim2] += U[Dim2]*gbar[effD*idx + Dim]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* do I multiply these weights or not?
+									rhovh[effD*effD*sidx + effD*Dim + Dim2] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*U[Dim2]*gbar[effD*idx + Dim]; //  do I multiply these weights or not?
 									
 								}
 
-								rhoEh[effD*sidx + Dim] += bbar[effD*idx + Dim]; // Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]* do I multiply these weights or not?
+								rhoEh[effD*sidx + Dim] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*bbar[effD*idx + Dim]; //  do I multiply these weights or not?
 							}	
 						}
 					}

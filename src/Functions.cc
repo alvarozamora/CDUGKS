@@ -26,7 +26,7 @@ double geq(double c2, double rho, double T, double wx, double wy, double wz)
   double PI = 4.0*atan(1.0);
   //printf("vx = %f, vy = %f, vz %f, U0 = %f, U1 = %f, U2 = %f\n", vx, vy, vz, U[0], U[1], U[2]);
 
-  x  = wx*wy*wz*rho*exp(-c2/(2*R*T));
+  x  = rho*exp(-c2/(2*R*T));
   for(int dim = 0; dim < effD; dim++){x = x/sqrt(2*PI*R*T);}
 
   return x;

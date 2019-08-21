@@ -87,6 +87,9 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 
 				double T = Temperature(rhoE[sidx]/rho[sidx], u);
 
+				//double rhotest = 0;
+				//double rhovxtest = 0;
+				//double rhoEtest = 0;
 
 				for(int vx = 0; vx < NV[0]; vx++){
 					for(int vy = 0; vy < NV[1]; vy++){
@@ -104,12 +107,17 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 						b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 
 
+						//rhotest += g[idx]*Co_WX[vx]*Co_WY[vy]*Co_WZ[vz];//;
+						//rhovxtest += g[idx]*Co_X[vx]*Co_WX[vx]*Co_WY[vy]*Co_WZ[vz];
+						//rhoEtest += b[idx]*Co_WX[vx]*Co_WY[vy]*Co_WZ[vz];
 						//printf("Initial g[%d] = %f\n", idx, g[idx]);
 						//printf("Initial b[%d] = %f\n", idx, b[idx]);
 
 						}
 					}
 				}
+
+				//printf("Initialization W[%d] = {%f, %f, %f}\n", sidx, rhotest, rhovxtest, rhoEtest);
 			}
 
 		}

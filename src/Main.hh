@@ -6,7 +6,7 @@
 //Dimension and Resolution
 int D = 3;
 int N[3] = {16, 1, 1};       // For Lower D problem, set size to 1.
-int NV[3] = {16, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
+int NV[3] = {64, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
 int Nc = N[0]*N[1]*N[2];    // Cells
 int Nv = NV[0]*NV[1]*NV[2]; // Velocities
 int effD = 1.0; //TODO: POTENTIAL BUG
@@ -35,8 +35,8 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
 
   //First Dimension
   a=Vmin[0]; b=Vmax[0];
-  n=(NV[0])/4;
-  dh=(b-a)/n; //old from dugks
+  n=(NV[0])/4; //no longer subtracting 1
+  //dh=(b-a)/n; //old from dugks
   dh=(b-a)/(NV[0]-1)*4; //mine (Al)
 
   for(int kx = 0; kx < NV[0];kx++){
@@ -48,6 +48,11 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
     Co_WX[4*kx+1]=32.0;
     Co_WX[4*kx+2]=12.0;
     Co_WX[4*kx+3]=32.0;
+
+    //printf("Changing %d\n", 4*kx);
+    //printf("Changing %d\n", 4*kx+1);
+    //printf("Changing %d\n", 4*kx+2);
+    //printf("Changing %d\n", 4*kx+3);
   }
   Co_WX[0]=7.0;
   Co_WX[NV[0]-1]=7.0;
@@ -68,8 +73,8 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
 
   //Second Dimension
   a=Vmin[1]; b=Vmax[1];
-  n=(NV[1]-1)/4;
-  dh=(b-a)/n; //old from dugks
+  n=(NV[1])/4; //no longer subtracting 1
+  //dh=(b-a)/n; //old from dugks
   dh=(b-a)/(NV[1]-1)*4; //mine (Al)
 
   for(int ky = 0; ky < NV[1]; ky++){
@@ -94,8 +99,8 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
 
   if(NV[2] >= 4){
   a=Vmin[2]; b=Vmax[2];
-  n=NV[2]/4;
-  dh=(b-a)/n; //old from dugks
+  n=NV[2]/4; //no longer subtracting 1
+  //dh=(b-a)/n; //old from dugks
   dh=(b-a)/(NV[2]-1)*4; //mine (Al)
 
   for(int kz = 0; kz < NV[2];kz++){
