@@ -37,6 +37,9 @@ int main(){
 	double gsigma2[Nc*Nv*effD*effD];
 	double bsigma2[Nc*Nv*effD*effD];
 
+	//Flux
+	double F[Nc*Nv*effD];
+
 
 
 	//Newton-Cotes Quadrature
@@ -76,7 +79,7 @@ int main(){
 
 	printf("Entering Evolution Loop\n");
 	while(Tsim < Tf){
-		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound,rhoh, rhovh, rhoEh);
+		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound,rhoh, rhovh, rhoEh, F);
 
 		Tsim += dt;
 	}
