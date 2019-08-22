@@ -20,8 +20,8 @@ double w = 0.5;  //Viscosity exponent
 double ur = 1.0; //Reference Visc
 double Tr = 1.0; //Reference Temp
 
-double Vmin[3] = {-10,0,0};
-double Vmax[3] = {10,0,0};
+double Vmin[3] = {-5,0,0};
+double Vmax[3] = {5,0,0};
 
 
 void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ)

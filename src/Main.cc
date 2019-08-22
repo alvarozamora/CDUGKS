@@ -75,7 +75,7 @@ int main(){
 
 	//Evolve
 	double Tsim = 0.;
-	double dt = 1/2048.;
+	double dt = 128.;
 	double Tf = 0.15;
 	double dtdump = Tf/300;
 
@@ -85,7 +85,7 @@ int main(){
 		iter++;
 		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh);
 
-		//printf("iteration = %d, timestep = %f\n", iter, dt);
+		printf("iteration = %d, timestep = %f\n", iter, dt);
 		Tsim += dt;
 	}
 

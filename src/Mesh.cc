@@ -24,8 +24,8 @@ void Mesh(int* N, Cell* mesh, int MeshType){
 		int Nz = N[2];
 
 		double dX = 1.0/Nx;
-		double dY = 1.0/Nx;
-		double dZ = 1.0/Nx;
+		double dY = 1.0/Ny;
+		double dZ = 1.0/Nz;
 
 		int idx;
 		for(int i = 0; i < Nx; i++){
