@@ -4,7 +4,7 @@
 
 double Temperature(double E, double u);
 
-double geq(double c2, double rho, double T, double wx, double wy, double wz);
+double geq(double c2, double rho, double T);
 
 double visc(double T);
 

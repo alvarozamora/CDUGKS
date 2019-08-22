@@ -20,7 +20,7 @@ double Temperature(double E, double u){
 	return T;
 }
 
-double geq(double c2, double rho, double T, double wx, double wy, double wz)
+double geq(double c2, double rho, double T)
 {
   double x;
   double PI = 4.0*atan(1.0);

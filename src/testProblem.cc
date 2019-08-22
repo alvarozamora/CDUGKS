@@ -103,7 +103,7 @@ void SodShock(Cell* mesh,  double* g, double* b, double* rho, double* rhov, doub
 						double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
 
 						for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhov[effD*sidx + dim]/rho[sidx])*(Xi[dim]-rhov[effD*sidx + dim]/rho[sidx]);} //TODO: Potential BUG, did not double check algebra.
-						g[idx] = geq(c2, rho[sidx], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
+						g[idx] = geq(c2, rho[sidx], T);
 						b[idx] = g[idx]*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 
 

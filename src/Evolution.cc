@@ -43,7 +43,7 @@ void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 	Step1c(gbar, bbar, gbarpbound, bbarpbound, effD, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, bsigma2, dt);
 	
 	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, dt, rhoh, rhovh, rhoEh);
-	Step2b(gbar, bbar, dt);
+	Step2b(gbar, bbar, dt, rhoh, rhovh, rhoEh, Co_X, Co_Y, Co_Z);
 	Step2c();
 	
 	Step3();
@@ -58,7 +58,6 @@ void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){
 
 	double tau = 1e-5;
-
 	
 
 	for(int i = 0; i < N[0]; i++){
@@ -79,7 +78,7 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 							double T = Temperature(rhoE[sidx]/rho[sidx], u);
 
 
-							double mu = visc(T);
+							tau = visc(T)/rho[sidx]/R/T; // tau = mu/P, P = rho*R*T.
 
 
 
@@ -88,7 +87,7 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 
 							for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhov[effD*sidx + dim]/rho[sidx])*(Xi[dim]-rhov[effD*sidx + dim]/rho[sidx]);} //TODO: Potential BUG, did not double check algebra.
 
-							double g_eq = geq(c2, rho[sidx], T, Co_WX[vx], Co_WY[vy], Co_WZ[vz]);
+							double g_eq = geq(c2, rho[sidx], T);
 							double b_eq = g_eq*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
 
 							//For Now...
@@ -338,9 +337,14 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 			
 				int sidx = i + Nx*j + Nx*Ny*k;
 				//Inialize E and momentum with source term
-				rhoEh[sidx] = dt/2.*rhoh[sidx]*0; //TODO: In future replace 0 with u.dot(a), vel dot acc
+				
+				//Dim is vector component that was interpolated
+				//Dim2 is direction of interpolation (toward interface)
 				for(int Dim = 0; Dim < effD; Dim++){
-					rhovh[effD*sidx + Dim] = dt/2*rhoh[sidx]*0; //TODO: In future, replace 0 with acceleration field
+					for(int Dim2 = 0; Dim < effD; Dim++){
+						rhovh[effD*effD*sidx + effD*Dim + Dim2] = dt/2*rhoh[effD*sidx+Dim2]*0; //TODO: In future, replace 0 with acceleration field
+						rhoEh[effD*sidx + Dim2] = dt/2.*rhoh[effD*sidx + Dim]*0; //TODO: In future replace 0 with u.dot(a), vel dot acc
+					}
 				}
 
 				for(int vx = 0; vx < NV[0]; vx++){
@@ -351,14 +355,16 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 
 							double U[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
 
+							//Dim is vector component that was interpolated
+							//Dim2 is direction of interpolation (toward interface)
 							for(int Dim = 0; Dim < effD; Dim++){
 								for(int Dim2 = 0; Dim2 < effD; Dim2++){
 
-									rhovh[effD*effD*sidx + effD*Dim + Dim2] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*U[Dim2]*gbar[effD*idx + Dim]; //  do I multiply these weights or not?
+									rhovh[effD*effD*sidx + effD*Dim + Dim2] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*U[Dim2]*gbar[effD*idx + Dim]; 
 									
 								}
 
-								rhoEh[effD*sidx + Dim] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*bbar[effD*idx + Dim]; //  do I multiply these weights or not?
+								rhoEh[effD*sidx + Dim] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*bbar[effD*idx + Dim]; 
 							}	
 						}
 					}
@@ -372,7 +378,55 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 
 
 }
-void Step2b(double* gbar, double* bbar, double dt){
+void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, double* rhoEh, double* Co_X, double* Co_Y, double* Co_Z){
+
+	double tau;
+	double u;
+	double T;
+	int idx;
+	int sidx;
+	double g_eq;
+	double b_eq;
+
+	for(int i = 0; i < N[0]; i++){
+		for(int j = 0; j < N[1]; j++){
+			for(int k = 0; k < N[2]; k++){
+				sidx = i + Nx*j + Nx*Ny*k;
+				for(int dim2 = 0; dim2 < effD; dim2++){ 
+
+					u = 0;
+					//Dim is vector component that was interpolated
+					//Dim2 is direction of interpolation (toward interface)
+					for(int dim = 0; dim < effD; dim++){u += rhovh[effD*effD*sidx + dim*effD + dim2]/rhoh[effD*sidx + dim2]*rhovh[effD*effD*sidx + dim*effD + dim2]/rhoh[effD*sidx + dim2];} u = sqrt(u);
+					T = Temperature(rhoEh[effD*sidx+ dim2]/rhoh[effD*sidx + dim2], u);
+
+					tau = visc(T)/rhoh[effD*sidx + dim2]/R/T;
+
+					for(int vx = 0; vx < NV[0]; vx++){
+						for(int vy = 0; vy < NV[1]; vy++){
+							for(int vz = 0; vz < NV[2]; vz++){
+								idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;		
+							
+								double c2 = 0;
+								double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
+
+								for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2])*(Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2]);} //TODO: Potential BUG, did not double check algebra.
+
+								g_eq = geq(c2, rhoh[effD*sidx + dim2], T);
+								b_eq = g_eq*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
+
+								// this is actually the original distribution function, recycling memory from gbar
+								gbar[effD*idx + dim2] = 2*tau/(2*tau + dt/2.)*gbar[effD*idx + dim2] + dt/(4*tau + dt)*g_eq + dt*tau/(4*tau + dt)*0; //TODO replace this last *0 with source term 
+								bbar[effD*idx + dim2] = 2*tau/(2*tau + dt/2.)*bbar[effD*idx + dim2] + dt/(4*tau + dt)*b_eq + dt*tau/(4*tau + dt)*0; //TODO replace this last *0 with source term
+
+							
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 }
 void Step2c(){
