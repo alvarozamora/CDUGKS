@@ -28,29 +28,30 @@ int Nz = N[2];
 
 double TimeStep(){
 
-	double dt = 1/2048.;
-	return dt;
+	double timestep = 1/2048.;
+	return timestep;
 }
 
 
-void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh, double* F){	
+void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, int effD, double dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh){	
 
+	printf("Initially, timestep = %f\n", dt);
 	dt = fmin(TimeStep(), dtdump);
 	dt = fmin(dt, Tf-Tsim);
+	printf("After fmin's, timestep = %f\n", dt);
 
 	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound);
 	Step1c(gbar, bbar, gbarpbound, bbarpbound, effD, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, bsigma2, dt);
 	
 	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, dt, rhoh, rhovh, rhoEh);
-	Step2b(gbar, bbar, dt, rhoh, rhovh, rhoEh, Co_X, Co_Y, Co_Z);
-	Step2c();
+	Step2b(gbar, bbar, dt, rhoh, rhovh, rhoEh, Co_X, Co_Y, Co_Z); //gbar, bbar are actually g/b at interface
+	Step2c(gbar, bbar, Co_X, Co_Y, Co_Z, mesh, gbarp, bbarp); //gbar, bbar are actually g/b at interface, gbarp/bbarp are actually Fg/Fb -- Recycling memory
 	
 	Step3();
 	
-	Step4();
+	Step4and5(rho, rhov, rhoE, dt, mesh, gbarp, bbarp, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, g, b);
 	
-	Step5();
 }
 
 
@@ -405,7 +406,9 @@ void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, 
 					for(int vx = 0; vx < NV[0]; vx++){
 						for(int vy = 0; vy < NV[1]; vy++){
 							for(int vz = 0; vz < NV[2]; vz++){
-								idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;		
+								idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+
+
 							
 								double c2 = 0;
 								double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
@@ -418,8 +421,6 @@ void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, 
 								// this is actually the original distribution function, recycling memory from gbar
 								gbar[effD*idx + dim2] = 2*tau/(2*tau + dt/2.)*gbar[effD*idx + dim2] + dt/(4*tau + dt)*g_eq + dt*tau/(4*tau + dt)*0; //TODO replace this last *0 with source term 
 								bbar[effD*idx + dim2] = 2*tau/(2*tau + dt/2.)*bbar[effD*idx + dim2] + dt/(4*tau + dt)*b_eq + dt*tau/(4*tau + dt)*0; //TODO replace this last *0 with source term
-
-							
 							}
 						}
 					}
@@ -429,21 +430,142 @@ void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, 
 	}
 
 }
-void Step2c(){
+void Step2c(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z, Cell* mesh, double* Fg, double* Fb){
+	int sidx;
+	int idx;
+	for(int i = 0; i < N[0]; i++){
+		for(int j = 0; j < N[1]; j++){
+			for(int k = 0; k < N[2]; k++){
 
+				//Spatial Index
+				sidx = i + Nx*j + Nx*Ny*k;
+
+				//Area of Interface
+				double A[3] = {mesh[sidx].dy*mesh[sidx].dz, mesh[sidx].dx*mesh[sidx].dz, mesh[sidx].dx*mesh[sidx].dy};
+
+				for(int vx = 0; vx < NV[0]; vx++){
+					for(int vy = 0; vy < NV[1]; vy++){
+						for(int vz = 0; vz < NV[2]; vz++){
+							idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+								
+							Fg[idx] = 0;
+							Fb[idx] = 0;
+
+							for(int dim = 0; dim < effD; dim++){
+								int IL, JL, KL;
+
+								//Periodic Boundary Conditions
+								if(dim == 0){IL = (i - 1 + N[0])%N[0]; JL = j; KL = k;} 
+								if(dim == 1){JL = (j - 1 + N[1])%N[1]; IL = i; KL = k;}
+								if(dim == 2){KL = (k - 1 + N[2])%N[2]; IL = i; JL = j;}
+
+								int idxL = IL + Nx*JL + Nx*Ny*KL + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+
+								double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
+
+								Fg[idx] += Xi[dim]*A[dim]*(gbar[effD*idx + dim] - gbar[effD*idxL + dim]);
+								Fb[idx] += Xi[dim]*A[dim]*(bbar[effD*idx + dim] - bbar[effD*idxL + dim]);
+
+							}
+
+						//printf("Flux[%d] = {%f, %f}\n", idx, Fg[idx], Fb[idx]);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 //Step 3: Source Terms
 void Step3(){
 
-}
-
-//Step 4: Conservative Variables W at cell center at next timestep
-void Step4(){
 
 }
 
-//Step 5: Phi at cell center at next timestep
-void Step5(){
+//Step 4: Update Conservative Variables W at cell center at next timestep
+//Step 5: Update Phi at cell center at next time step
+void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, double* Fg, double* Fb, double* Co_X, double* Co_Y, double* Co_Z, double* Co_WX, double* Co_WY, double* Co_WZ, double* g, double* b){
+	int idx; 
+	int sidx; //spatial index
+	double V; // Cell Volume
+	double tgo; //old tg
+	double tbo; //old tb
+	double tg; 
+	double tb;
+	double g_eqo; //old g_eq
+	double g_eq;
+	double b_eqo; //odl b_eq
+	double b_eq;
 
+	for(int i = 0; i < N[0]; i++){
+		for(int j = 0; j < N[1]; j++){
+			for(int k = 0; k < N[2]; k++){
+	
+				sidx = i + Nx*j + Nx*Ny*k;
+
+				V = mesh[sidx].dx * mesh[sidx].dy * mesh[sidx].dz;
+				for(int vx = 0; vx < NV[0]; vx++){
+					for(int vy = 0; vy < NV[1]; vy++){
+						for(int vz = 0; vz < NV[2]; vz++){
+							
+							idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+							double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
+
+							//Compute Flow velocity uo and temperature To before updating rho
+							double uo = 0; //old flow velocity
+							for(int dim = 0; dim < effD; dim++){uo += rhov[effD*sidx + dim]/rho[sidx]*rhov[effD*sidx + dim]/rho[sidx];} uo = sqrt(uo);
+							double To = Temperature(rhoE[sidx]/rho[sidx], uo); //old temp
+							//Compute old taus
+							tgo = visc(To)/rho[sidx]/R/To; // tau = mu/P, P = rho*R*T.
+							tbo = tgo/1.0; //TODO replace 1.0 with prandtl number.
+
+							//Compute old eq's
+							double c2 = 0;
+							for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhov[effD*sidx + dim]/rho[sidx])*(Xi[dim]-rhov[effD*sidx + dim]/rho[sidx]);} //TODO: Potential BUG, did not double check algebra.
+							g_eqo = geq(c2, rho[sidx],To);
+							b_eqo = g_eqo*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*To)/2;
+
+
+							//Step 4: Update W at cell center
+							rho[sidx] += -(dt/V*Fg[idx] + dt*0)*Co_WX[vx]*Co_WY[vy]*Co_Z[vz]; //TODO replace 0 with source term.
+							for(int dim = 0; dim < effD; dim++){
+								rhov[effD*sidx + dim] += -dt/V*Fg[idx]*Xi[dim]*Co_WX[vx]*Co_WY[vy]*Co_Z[vz];
+							}
+
+							rhoE[sidx] += -dt/V*Fb[idx]*Co_WX[vx]*Co_WY[vy]*Co_Z[vz];
+
+							//Step 5: Update Phi at cell center, need new eq and tau
+							//Compute Flow velocity u and temperature T
+							double u = 0; //old flow velocity
+							for(int dim = 0; dim < effD; dim++){u += rhov[effD*sidx + dim]/rho[sidx]*rhov[effD*sidx + dim]/rho[sidx];} u = sqrt(u);
+							double T = Temperature(rhoE[sidx]/rho[sidx], u); //old temp
+							//Compute new taus
+							tg = visc(T)/rho[sidx]/R/T; // tau = mu/P, P = rho*R*T.
+							tb = tg/1.0; //TODO replace 1.0 with Prandtl number.
+
+							//printf("taus are = {%f, %f}\n", tg, tb);
+
+							//Compute new eq's
+							c2 = 0; //reset c2 from beforeßßß
+							for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhov[effD*sidx + dim]/rho[sidx])*(Xi[dim]-rhov[effD*sidx + dim]/rho[sidx]);} //TODO: Potential BUG, did not double check algebra.
+							g_eq = geq(c2, rho[sidx], T);
+							b_eq = g_eq*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*To)/2;
+
+
+							//Update phi
+							double testold = g[idx];
+							g[idx] = (g[idx] + dt/2*(g_eq/tg + (g_eqo-g[idx])/tgo - dt/V*Fg[idx] + dt*0))/(1+dt/2/tg); //TODO replace 0 with source term
+							b[idx] = (b[idx] + dt/2*(b_eq/tb + (b_eqo-b[idx])/tbo - dt/V*Fb[idx] + dt*0))/(1+dt/2/tb); //TODO replace 0 with source term
+
+							if(sidx == 0)
+							printf("test change testold[%d] = %0.20f\n", idx, g[idx]-testold);
+						}
+					}
+				}
+			}
+		}
+	}
 }
+
+

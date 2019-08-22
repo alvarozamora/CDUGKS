@@ -17,10 +17,11 @@ int main(){
 	double gbarp[Nc*Nv];   //gbarp and bbarp are reduced distrubution functions (Vel and E distribution)
 	double bbarp[Nc*Nv];
 	//At interface
-	double gbar[Nc*Nv*effD];   //gbar and bbar are reduced distrubution functions (Vel and E distribution)
-	double bbar[Nc*Nv*effD];
-	double gbarpbound[Nc*Nv*effD];
+	double gbarpbound[Nc*Nv*effD]; // gbar/p and bbar/p are reduced distrubution functions (Vel and E distribution)
 	double bbarpbound[Nc*Nv*effD];
+	double gbar[Nc*Nv*effD];  
+	double bbar[Nc*Nv*effD];
+	
 
 	double Sg[Nc]; //Source Terms
 	double Sb[Nc];
@@ -38,7 +39,8 @@ int main(){
 	double bsigma2[Nc*Nv*effD*effD];
 
 	//Flux
-	double F[Nc*Nv*effD];
+	//double Fg[Nc*Nv];
+	//double Fb[Nc*Nv];
 
 
 
@@ -73,15 +75,28 @@ int main(){
 
 	//Evolve
 	double Tsim = 0.;
-	double dt = 128.;
+	double dt = 1/2048.;
 	double Tf = 0.15;
 	double dtdump = Tf/300;
 
 	printf("Entering Evolution Loop\n");
+	int iter = 0;
 	while(Tsim < Tf){
-		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound,rhoh, rhovh, rhoEh, F);
+		iter++;
+		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh);
 
+		//printf("iteration = %d, timestep = %f\n", iter, dt);
 		Tsim += dt;
+	}
+
+	//show data
+	for(int i = 0; i < N[0]; i++){
+		for(int j = 0; j < N[1]; j++){
+			for(int k = 0; k < N[2]; k++){
+				int sidx = i + N[0]*j + N[0]*N[1]*k;
+				printf("rho[%d] = %1.20f\n", sidx, rho[sidx]);
+			}
+		}
 	}
 
 }
