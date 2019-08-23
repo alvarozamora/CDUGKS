@@ -1,4 +1,5 @@
-Add Viscosity to Functions file
+Test both PBC and RBC on sigma.
 
+gsigma2 (and maybe gsigma) may be wrong.
 
-Test both PBC and RBC on sigma, 
+for some reason rho is not updating. need to check all gradients. may be connected to issue above

@@ -26,15 +26,23 @@ int Ny = N[1];
 int Nz = N[2];
 
 
+double TimeStep(double dt, double dtdump, double tend){
+
+	double calcdt = 1.0;
+
+	double timestep = fmin(fmin(calcdt, dtdump), tend);
+	return timestep;
+}
+
 
 void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, double* dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh){	
 
-	printf("Initially, timestep = %f\n", *dt);
+	//printf("Initially, timestep = %f\n", *dt);
 	*dt = TimeStep(*dt, dtdump, Tf-Tsim);
 	
 
 	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, effD, *dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
-	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound);
+	Step1b(gbarp, bbarp, effD, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, Co_X, Co_Y, Co_Z);
 	Step1c(gbar, bbar, gbarpbound, bbarpbound, effD, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, bsigma2, *dt);
 	
 	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, *dt, rhoh, rhovh, rhoEh);
@@ -45,7 +53,7 @@ void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 	
 	Step4and5(rho, rhov, rhoE, *dt, mesh, gbarp, bbarp, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, g, b);
 	
-	printf("After fmin's, and all evolution functions, timestep = %f\n", *dt);
+	//printf("After fmin's, and all evolution functions, timestep = %f\n", *dt);
 }
 
 
@@ -111,7 +119,7 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 	}
 
 }
-void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound){
+void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* Co_X, double* Co_Y, double* Co_Z){
 
 
 	for(int i = 0; i < N[0]; i++){
@@ -238,8 +246,26 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 								//For some reason i was interpolating all the way to next cell.
 								//gbarpbound[effD*idx + Dim] = gbarp[idx] + (xR[Dim]-xC[Dim])*gsigma[effD*idx + Dim];
 								//bbarpbound[effD*idx + Dim] = bbarp[idx] + (xR[Dim]-xC[Dim])*bsigma[effD*idx + Dim];
-								gbarpbound[effD*idx + Dim] = gbarp[idx] + sC[Dim]/2*gsigma[effD*idx + Dim];
-								bbarpbound[effD*idx + Dim] = bbarp[idx] + sC[Dim]/2*bsigma[effD*idx + Dim];
+
+
+								
+
+								//gbarpbound[effD*idx + Dim] = gbarp[idx] + sC[Dim]/2*gsigma[effD*idx + Dim];
+								//bbarpbound[effD*idx + Dim] = bbarp[idx] + sC[Dim]/2*bsigma[effD*idx + Dim];
+								//attempt to fix things:
+
+								int interpidx = idx;
+								     if(Co_X[vx] < 0 && Dim == 0){interpidx = idxR;}
+								else if(Co_Y[vy] < 0 && Dim == 1){interpidx = idxR;}
+								else if(Co_Z[vz] < 0 && Dim == 2){interpidx = idxR;}
+
+								double swap = 1.;
+								if(interpidx != idx){swap = -1;}
+								
+
+								gbarpbound[effD*idx + Dim] = gbarp[interpidx] + swap*sC[Dim]/2*gsigma[effD*interpidx + Dim];
+								bbarpbound[effD*idx + Dim] = bbarp[interpidx] + swap*sC[Dim]/2*bsigma[effD*interpidx + Dim];
+
 
 							}
 						}
@@ -262,6 +288,7 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, i
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
+				int sidx = i + Nx*j + Nx*Ny*k;
 				for(int vx = 0; vx < NV[0]; vx++){
 					for(int vy = 0; vy < NV[1]; vy++){
 						for(int vz = 0; vz < NV[2]; vz++){
@@ -270,11 +297,40 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, i
 
 							for(int Dim = 0; Dim < effD; Dim++){
 
-								//Phibar at Interface, at t = n+1/2
-								gbar[effD*idx + Dim] = gbarpbound[effD*idx + Dim] - dt/2.0*(Co_X[vx]*gsigma2[effD*effD*idx + effD*0 + Dim] + Co_Y[vy]*gsigma2[effD*effD*idx + effD*1 + Dim] + Co_Z[vz]*gsigma2[effD*effD*idx + effD*2 + Dim]);
-								bbar[effD*idx + Dim] = bbarpbound[effD*idx + Dim] - dt/2.0*(Co_X[vx]*bsigma2[effD*effD*idx + effD*0 + Dim] + Co_Y[vy]*bsigma2[effD*effD*idx + effD*1 + Dim] + Co_Z[vz]*bsigma2[effD*effD*idx + effD*2 + Dim]);
+								/*
+								int IR, JR, KR;
+								//Periodic Boundary Conditions
+								if(Dim == 0){IR = (i + 1)%N[0]; JR = j; KR = k;} 
+								if(Dim == 1){JR = (j + 1)%N[1]; IR = i; KR = k;}
+								if(Dim == 2){KR = (k + 1)%N[2]; IR = i; JR = j;}
 
-								//printf("gsigma2[%d] = {%f, %f, %f}\n", effD*idx + Dim, gsigma2[effD*effD*idx + effD*Dim + 0], gsigma2[effD*effD*idx + effD*Dim + 1], gsigma2[effD*effD*idx + effD*Dim + 2]);
+								int idxR = IR + Nx*JR + Nx*Ny*KR + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
+
+								//Positive vs Negative Xi
+								int sigmaidx = idx;
+								     if(Co_X[vx] < 0 && Dim == 0){sigmaidx = idxR;}
+								else if(Co_Y[vy] < 0 && Dim == 1){sigmaidx = idxR;}
+								else if(Co_Z[vz] < 0 && Dim == 2){sigmaidx = idxR;}
+
+
+								double change[3] = {1,1,1};
+								if(sigmaidx != idx){change[Dim] = -1;}
+								*/
+
+								double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
+
+								int sigmaidx = idx;
+								//Phibar at Interface, at t = n+1/2
+								gbar[effD*idx + Dim] = gbarpbound[effD*idx + Dim];
+								bbar[effD*idx + Dim] = bbarpbound[effD*idx + Dim];
+
+								if(sidx == 7 || sidx == 8 || sidx == 15){ if(vx == 31 || vx == 32 || vx == 33) {printf("gbarpbound[%d][%d = %f] = %f\n", sidx, vx, Co_X[vx], gbarpbound[effD*idx + Dim]);}}
+								for(int Dim2 = 0; Dim2 < effD; Dim2++){
+									gbar[effD*idx + Dim] -= dt/2.0*Xi[Dim2]*gsigma2[effD*effD*sigmaidx + effD*Dim2 + Dim];
+									bbar[effD*idx + Dim] -= dt/2.0*Xi[Dim2]*bsigma2[effD*effD*sigmaidx + effD*Dim2 + Dim];
+								}	
+								
+								//printf("gsigma2[%d][%d] = %f\n", sidx, effD*idx + Dim, gsigma2[effD*effD*idx + 0]);
 								//printf("gbar[%d] = %f\n", effD*idx + Dim, gbar[effD*idx + Dim]);
 
 
@@ -321,7 +377,7 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 					}
 				}
 
-				//printf("computed x-boundary rhoh[%d] = %f\n", sidx, rhoh[effD*sidx + 0]);
+				printf("computed x-boundary rhoh[%d] = %f\n", sidx, rhoh[effD*sidx + 0]);
 
 				}
 			}
@@ -500,7 +556,7 @@ void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, d
 	
 				sidx = i + Nx*j + Nx*Ny*k;
 
-				V = mesh[sidx].dx * mesh[sidx].dy * mesh[sidx].dz;
+				V = mesh[sidx].dx*mesh[sidx].dy*mesh[sidx].dz;
 
 				double rhotest = 0;
 				for(int vx = 0; vx < NV[0]; vx++){
@@ -562,18 +618,14 @@ void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, d
 						}
 					}
 				}
-				printf("rhotest[%d] = %f\n", sidx, rhotest);
+				//printf("rhotest[%d] = %f\n", sidx, rhotest);
+
+				printf("rho[%d] = %1.20f\n", sidx, rho[sidx]);
 			}
 		}
 	}
 }
 
-double TimeStep(double dt, double dtdump, double tend){
 
-	double calcdt = 1/2048.;
-
-	double timestep = fmin(fmin(calcdt, dtdump), tend);
-	return timestep;
-}
 
 

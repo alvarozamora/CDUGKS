@@ -77,19 +77,20 @@ int main(){
 	double Tsim = 0.;
 	double dt = 128.;
 	double Tf = 0.15;
-	double dtdump = Tf/300;
+	double dtdump = Tf/1;
 
 	printf("Entering Evolution Loop\n");
 	int iter = 0;
-	while(Tsim < Tf){
+	while(Tsim < Tf || iter < 1){
 		iter++;
 		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh);
 
-		printf("iteration = %d, timestep = %f\n", iter, dt);
+		//printf("iteration = %d, timestep = %f\n", iter, dt);
 		Tsim += dt;
 	}
 
 	//show data
+	/*
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
@@ -98,5 +99,6 @@ int main(){
 			}
 		}
 	}
+	*/
 
 }
