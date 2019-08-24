@@ -20,8 +20,8 @@ double w = 0.5;  //Viscosity exponent
 double ur = 1.0; //Reference Visc
 double Tr = 1.0; //Reference Temp
 
-double Vmin[3] = {-5,0,0};
-double Vmax[3] = {5,0,0};
+double Vmin[3] = {-10,0,0};
+double Vmax[3] = {10,0,0};
 
 
 void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ)
@@ -53,12 +53,23 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
     //printf("Changing %d\n", 4*kx+1);
     //printf("Changing %d\n", 4*kx+2);
     //printf("Changing %d\n", 4*kx+3);
+
+    //TODO Trying Lower Order Integration
+    Co_WX[4*kx] = 1.0;
+    Co_WX[4*kx+1]=1.0;
+    Co_WX[4*kx+2]=1.0;
+    Co_WX[4*kx+3]=1.0;
   }
   Co_WX[0]=7.0;
   Co_WX[NV[0]-1]=7.0;
 
+  //TODO Trying Lower Order Integration
+  Co_WX[0]=1.0;
+  Co_WX[NV[0]-1]=1.0;
+
+
   //Check Weights
-  /*
+  
   for(int kx = 0; kx < NV[0]; kx++){
     printf("Main.hh Co_X[%d] = %f\n", kx, Co_X[kx]);
 
@@ -66,9 +77,9 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   for(int kx = 0; kx < NV[0]; kx ++){
     printf("Main.hh Co_WX[%d] = %f\n", kx, Co_WX[kx]);
   }
-  */
+  
    
-  for(int kx = 0; kx < NV[0]; kx++){Co_WX[kx]*=dh/90.;}
+  for(int kx = 0; kx < NV[0]; kx++){Co_WX[kx]*=dh/4.;} //TODO Trying Lower Order Integration old factor was /90.;}
   
 
   //Second Dimension

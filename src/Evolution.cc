@@ -243,17 +243,6 @@ void Step1b(double* gbarp, double* bbarp, int effD, double* gsigma, double* bsig
 
 
 								//Dot Product is just a single product when using rectangular mesh
-								//For some reason i was interpolating all the way to next cell.
-								//gbarpbound[effD*idx + Dim] = gbarp[idx] + (xR[Dim]-xC[Dim])*gsigma[effD*idx + Dim];
-								//bbarpbound[effD*idx + Dim] = bbarp[idx] + (xR[Dim]-xC[Dim])*bsigma[effD*idx + Dim];
-
-
-								
-
-								//gbarpbound[effD*idx + Dim] = gbarp[idx] + sC[Dim]/2*gsigma[effD*idx + Dim];
-								//bbarpbound[effD*idx + Dim] = bbarp[idx] + sC[Dim]/2*bsigma[effD*idx + Dim];
-								//attempt to fix things:
-
 								int interpidx = idx;
 								     if(Co_X[vx] < 0 && Dim == 0){interpidx = idxR;}
 								else if(Co_Y[vy] < 0 && Dim == 1){interpidx = idxR;}
@@ -367,17 +356,16 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 
 							int idx = i + Nx*j + Nx*Ny*k + Nx*Ny*Nz*vx + Nx*Ny*Nz*NV[0]*vy + Nx*Ny*Nz*NV[0]*NV[1]*vz;
 
-							rhoh[effD*sidx + d] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[effD*idx + d]; //  what is the purpose of these weights??? why dont I multiply them? :\
+							rhoh[effD*sidx + d] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[effD*idx + d]; 
 
-							//printf("Wprod[%d] = {%f, %f, %f} = %f, gbar[%d] = %f\n", idx, Co_WX[vx], Co_WY[vy], Co_WZ[vz], Co_WX[vx]*Co_WY[vy]*Co_WZ[vz], effD*idx + d, gbar[effD*idx + d]);
-
+							//if(sidx == 7 || sidx == 8 || sidx == 15) printf("rho reduction[%d][%d] = %f\n", sidx, vx, Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*gbar[effD*idx + d]);
 							
 
 						}
 					}
 				}
 
-				printf("computed x-boundary rhoh[%d] = %f\n", sidx, rhoh[effD*sidx + 0]);
+				//printf("computed x-boundary rhoh[%d] = %f\n", sidx, rhoh[effD*sidx + 0]);
 
 				}
 			}
