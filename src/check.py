@@ -28,7 +28,7 @@ for i in range(len(glob.glob("Data/rho*"))):
 	rho = np.genfromtxt(file)
 	
 	plt.plot(x, rho)
-	plt.savefig("check"+num+".png")
+	plt.savefig("Check/check"+num+".png")
 
 	plt.cla()
 

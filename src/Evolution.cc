@@ -460,7 +460,7 @@ void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, 
 								double c2 = 0;
 								double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
 
-								for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2])*(Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2]);} //TODO: Potential BUG, did not double check algebra.
+								for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2])*(Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2]);} //TODO: Potential BUG, did not double check algebra or access dim order
 
 								g_eq = geq(c2, rhoh[effD*sidx + dim2], T);
 								b_eq = g_eq*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
@@ -556,7 +556,7 @@ void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, d
 							double To = Temperature(rhoE[sidx]/rho[sidx], uo); //old temp
 							//Compute old taus
 							double tgo = visc(To)/rho[sidx]/R/To; // tau = mu/P, P = rho*R*T.
-							double tbo = tgo/Pr; //TODO replace 1.0 with prandtl number.
+							double tbo = tgo/Pr; 
 
 							//Compute old eq's
 							double c2 = 0;
@@ -566,8 +566,6 @@ void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, d
 
 
 							//Step 4: Update W at cell center
-							rhotest += -(dt/V*Fg[idx] + dt*0)*Co_WX[vx]*Co_WY[vy]*Co_WZ[vz];
-							//printf("cumulative rhotest[%d][%d] = %.15f, current update = {%f, %f, %f}\n", sidx, vx, rhotest, dt, V, Fg[idx]);
 							rho[sidx] += -(dt/V*Fg[idx] + dt*0)*Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]; //TODO replace 0 with source term.
 							for(int dim = 0; dim < effD; dim++){
 								rhov[effD*sidx + dim] += -dt/V*Fg[idx]*Xi[dim]*Co_WX[vx]*Co_WY[vy]*Co_WZ[vz];
@@ -582,7 +580,7 @@ void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, d
 							double T = Temperature(rhoE[sidx]/rho[sidx], u); //old temp
 							//Compute new taus
 							double tg = visc(T)/rho[sidx]/R/T; // tau = mu/P, P = rho*R*T.
-							double tb = tg/Pr; //TODO replace 1.0 with Prandtl number.
+							double tb = tg/Pr; 
 
 							//printf("taus are = {%f, %f}\n", tg, tb);
 
@@ -595,8 +593,8 @@ void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, d
 
 							//Update phi
 							double testold = g[idx];
-							g[idx] = (g[idx] + dt/2*(g_eq/tg + (g_eqo-g[idx])/tgo - dt/V*Fg[idx] + dt*0))/(1+dt/2/tg); //TODO replace 0 with source term
-							b[idx] = (b[idx] + dt/2*(b_eq/tb + (b_eqo-b[idx])/tbo - dt/V*Fb[idx] + dt*0))/(1+dt/2/tb); //TODO replace 0 with source term
+							g[idx] = (g[idx] + dt/2*(g_eq/tg + (g_eqo-g[idx])/tgo) - dt/V*Fg[idx] + dt*0)/(1+dt/2/tg); //TODO replace 0 with source term
+							b[idx] = (b[idx] + dt/2*(b_eq/tb + (b_eqo-b[idx])/tbo) - dt/V*Fb[idx] + dt*0)/(1+dt/2/tb); //TODO replace 0 with source term
 
 							//if(sidx == 0)
 							//printf("test change testold[%d][%d] = %0.20f\n", sidx, vx, g[idx]-testold);
