@@ -12,10 +12,6 @@ type = 'd' #d is double, f is float,
 x = np.genfromtxt('Data/x.txt')
 
 plt.figure()
-plt.grid()
-plt.xlabel("Distance")
-plt.ylabel("Density")
-plt.title("Sod Shock Tube")
 
 
 for i in range(len(glob.glob("Data/rho*"))):
@@ -28,6 +24,11 @@ for i in range(len(glob.glob("Data/rho*"))):
 	rho = np.genfromtxt(file)
 	
 	plt.plot(x, rho)
+	plt.ylim(0,1.2)
+	plt.grid()
+	plt.title("Sod Shock Tube")
+	plt.xlabel("Distance")
+	plt.ylabel("Density")
 	plt.savefig("Check/check"+num+".png")
 
 	plt.cla()

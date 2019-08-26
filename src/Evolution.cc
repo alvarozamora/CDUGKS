@@ -20,6 +20,7 @@ extern double R;
 extern double gma;
 extern double K;
 extern double Pr;
+extern double Vmax[3];
 
 
 int Nx = N[0];
@@ -27,37 +28,42 @@ int Ny = N[1];
 int Nz = N[2];
 
 
-double TimeStep(double dt, double dtdump, double tend){
+double TimeStep(double calcdt, double dumptime, double tend){
 
-	double CFL = 0.9;
-	double dxmin = 1.0/N[0];
-
-	double calcdt = CFL*dxmin/(1.0+20.0);
-
-	double timestep = fmin(fmin(calcdt, dtdump), tend);
+	
+	double timestep = fmin(fmin(calcdt, dumptime), tend);
 	return timestep;
 }
 
 
-void Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, double* dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh){	
+int Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, double* dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh, double* Tdump){	
 
-	//printf("Initially, timestep = %f\n", *dt);
-	*dt = TimeStep(*dt, dtdump, Tf-Tsim);
+	//Find timestep
+	double CFL = 0.9; //safety factor
+	double dxmin = 1.0/fmax(fmax(N[0],N[1]),N[2]); //smallest cell width 
+	double umax = 2.0; // estimated maximum flow velocity , TODO calculate at each iteration for stronger problems
+	double calcdt = CFL*dxmin/(1.0+sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]));
+
+	*dt = TimeStep(calcdt, dtdump-*Tdump, Tf-Tsim);
 	
+	int dump = (*dt < calcdt);
 
+
+	//Evolution Cycle
 	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, *dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 	Step1b(gbarp, bbarp, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, Co_X, Co_Y, Co_Z);
 	Step1c(gbar, bbar, gbarpbound, bbarpbound, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, bsigma2, *dt);
 	
 	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, *dt, rhoh, rhovh, rhoEh);
-	Step2b(gbar, bbar, *dt, rhoh, rhovh, rhoEh, Co_X, Co_Y, Co_Z); //gbar, bbar are actually g/b at interface
+	Step2b(gbar, bbar, *dt, rhoh, rhovh, rhoEh, Co_X, Co_Y, Co_Z); //gbar, bbar are actually g/b at interface, recycling memory
 	Step2c(gbar, bbar, Co_X, Co_Y, Co_Z, mesh, gbarp, bbarp); //gbar, bbar are actually g/b at interface, gbarp/bbarp are actually Fg/Fb -- Recycling memory
 	
 	Step3();
 	
 	Step4and5(rho, rhov, rhoE, *dt, mesh, gbarp, bbarp, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, g, b);
 	
-	//printf("After fmin's, and all evolution functions, timestep = %f\n", *dt);
+
+	return dump;
 }
 
 

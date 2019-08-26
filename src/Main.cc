@@ -77,21 +77,30 @@ int main(){
 
 	//Evolve
 	double Tsim = 0.;
-	double dt = 128.;
-	//double Tf = 0.013;
-	double Tf = 0.04;
-	double dtdump = Tf/1.0;
+	double dt;
+	double Tf = 0.15;
+	double Tdump = 0.0;
+	double dtdump = Tf/200.;
 
-	printf("Entering Evolution Loop\n");
+	
 	int iter = 0;
+	int dumpiter = 0;
 	datadeal(mesh, rho, iter);
+	printf("Entering Evolution Loop\n");
 	while(Tsim < Tf){ // && iter < itermax
 		iter++;
-		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh);
+		int dump = Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh, &Tdump);
 
 		Tsim += dt;
-		printf("iteration = %d, timestep = %f, Tsim = %f\n", iter, dt, Tsim);
-		datadeal(mesh, rho, iter);
+		Tdump += dt;
+ 
+		if(dump == 1){
+			Tdump = 0.0;
+			dumpiter++;
+			datadeal(mesh, rho, dumpiter);
+		}
+		printf("iteration = %d, timestep = %f, Tsim = %f, Tdump = %f, dtdump = %f, dumpiter = %d\n", iter, dt, Tsim, Tdump, dtdump, dumpiter);
+	
 	}
 
 	//show data
