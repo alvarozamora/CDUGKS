@@ -3,10 +3,11 @@
 #include <assert.h>
 #include "Mesh.hh"
 
+
 //Dimension and Resolution
 int D = 3;
-int N[3] = {16, 1, 1};       // For Lower D problem, set size to 1.
-int NV[3] = {64, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
+int N[3] = {512, 1, 1};       // For Lower D problem, set size to 1.
+int NV[3] = {128, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
 int Nc = N[0]*N[1]*N[2];    // Cells
 int Nv = NV[0]*NV[1]*NV[2]; // Velocities
 int effD = 1.0; //TODO: POTENTIAL BUG
@@ -17,12 +18,12 @@ double K = 2.0;          //Internal DOF
 double Cv = (3+K)*R/2;   //Specific Heat
 double gma = (K+5)/(K+3); //gamma -- variable name taken
 double w = 0.5;  //Viscosity exponent
-double ur = 1.0; //Reference Visc
+double ur = 1e-3; //Reference Visc
 double Tr = 1.0; //Reference Temp
+double Pr = 0.73;
 
 double Vmin[3] = {-10,0,0};
 double Vmax[3] = {10,0,0};
-
 
 void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ)
 {
@@ -69,7 +70,7 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
 
 
   //Check Weights
-  
+  /*
   for(int kx = 0; kx < NV[0]; kx++){
     printf("Main.hh Co_X[%d] = %f\n", kx, Co_X[kx]);
 
@@ -77,7 +78,7 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   for(int kx = 0; kx < NV[0]; kx ++){
     printf("Main.hh Co_WX[%d] = %f\n", kx, Co_WX[kx]);
   }
-  
+  */
    
   for(int kx = 0; kx < NV[0]; kx++){Co_WX[kx]*=dh/4.;} //TODO Trying Lower Order Integration old factor was /90.;}
   
@@ -132,5 +133,6 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   else{printf("Not Supported: NV[2]!= 1 && NV[2] < 4\n");}
 }
 
+void datadeal(Cell* mesh, double* rho, int iter);
 
 #endif

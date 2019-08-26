@@ -3,12 +3,14 @@
 #include <stdlib.h>
 #include <math.h>
 
+
 #include "Main.hh"
 #include "testProblem.hh"
 #include "Functions.hh"
 #include "Evolution.hh"
 
 int main(){
+
 
 	//Declare Physical Quantities
 	printf("Declaring Variables\n");
@@ -76,29 +78,70 @@ int main(){
 	//Evolve
 	double Tsim = 0.;
 	double dt = 128.;
-	double Tf = 0.15;
-	double dtdump = Tf/1;
+	//double Tf = 0.013;
+	double Tf = 0.04;
+	double dtdump = Tf/1.0;
 
 	printf("Entering Evolution Loop\n");
 	int iter = 0;
-	while(Tsim < Tf || iter < 1){
+	datadeal(mesh, rho, iter);
+	while(Tsim < Tf){ // && iter < itermax
 		iter++;
 		Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh);
 
-		//printf("iteration = %d, timestep = %f\n", iter, dt);
 		Tsim += dt;
+		printf("iteration = %d, timestep = %f, Tsim = %f\n", iter, dt, Tsim);
+		datadeal(mesh, rho, iter);
 	}
 
 	//show data
-	/*
+	
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
 				int sidx = i + N[0]*j + N[0]*N[1]*k;
-				printf("rho[%d] = %1.20f\n", sidx, rho[sidx]);
+				printf("rho[%d] = %1.10f\n", sidx, rho[sidx]);
 			}
 		}
 	}
-	*/
 
+	
+	
+
+}
+
+
+
+void datadeal(Cell* mesh, double* rho, int iter){
+
+	int i;
+	double rho_ave, xmid;
+	FILE *fp;
+
+
+	if (iter == 0){
+		fp=fopen("Data/x.txt","w");
+		for (i=0; i<N[0]; i++) fprintf(fp,"%e\n", mesh[i].x);
+		fclose(fp);
+	}
+
+	// Allocates storage
+	char *rhofile = (char*)malloc(17 * sizeof(char));
+	sprintf(rhofile, "Data/rho%04d.txt", iter);
+
+	printf(rhofile); printf("\n");
+	fp=fopen(rhofile ,"w");
+	for (i=0; i<N[0]; i++) fprintf(fp,"%e\n",rho[i]);
+	fclose(fp);
+
+	/*
+
+	fp=fopen("u.dat","w");
+	for (i=imin; i<=imax; i++) fprintf(fp,"%e ",ux[i]);
+	fclose(fp);
+
+	fp=fopen("T.dat","w");
+	for (i=imin; i<=imax; i++) fprintf(fp,"%e ",T[i]);
+	fclose(fp);
+	*/
 }
