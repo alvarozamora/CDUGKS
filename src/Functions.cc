@@ -46,8 +46,11 @@ double VanLeer(double L, double C, double R, double xL, double xC, double xR)
 	double s2 = (R - C)/(xR - xC);
 
 
-	if(C - L == 0. && R - C == 0.)
-		{return 0;}
+	if(C - L == 0. && R - C == 0.){
+		return 0;}
+
+	else if(xL == xC || xR == xC){
+		return 0;}
 	else{
 		//printf("L = %f, C = %f, R = %f, xL = %f, xL = %f, xR = %f, s1 = %f, s2 = %f, VL = %f\n", L, C, R, xL, xC, xR, s1, s2, (sgn(s1) + sgn(s2))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2)));
 		return (sgn(s1) + sgn(s2))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2));}

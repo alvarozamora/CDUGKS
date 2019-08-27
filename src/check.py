@@ -25,6 +25,7 @@ for i in range(len(glob.glob("Data/rho*"))):
 	
 	plt.plot(x, rho)
 	plt.ylim(0,1.2)
+	plt.xlim(0,1)
 	plt.grid()
 	plt.title("Sod Shock Tube")
 	plt.xlabel("Distance")

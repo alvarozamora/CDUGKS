@@ -45,6 +45,8 @@ int main(){
 	//double Fb[Nc*Nv];
 
 
+	// Boundary Conditions
+	int BCs[3] = {1,0,0}; // 0 periodic, 1 dirichlet, 2 neumann (zero derivative)
 
 	//Newton-Cotes Quadrature
 	printf("Setting up NC-Quadrature\n");
@@ -89,7 +91,7 @@ int main(){
 	printf("Entering Evolution Loop\n");
 	while(Tsim < Tf){ // && iter < itermax
 		iter++;
-		int dump = Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh, &Tdump);
+		int dump = Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh, &Tdump, BCs);
 
 		Tsim += dt;
 		Tdump += dt;
