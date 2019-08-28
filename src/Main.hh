@@ -5,22 +5,25 @@
 
 
 //Dimension and Resolution
-int D = 3;
-int N[3] =  {128, 1, 1};       // For Lower D problem, set size to 1.
-int NV[3] = {128, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
+int N[3] =  {1, 1, 1};       // For Lower D problem, set size to 1.
+int NV[3] = {1, 1, 1};     //Both N and NV must be multiple of 4 (or 1 for lower D) -- (Newton-Cotes)
 int Nc = N[0]*N[1]*N[2];    // Cells
 int Nv = NV[0]*NV[1]*NV[2]; // Velocities
-int effD = 1.0; //TODO: POTENTIAL BUG
+int effD = 1; //TODO: POTENTIAL BUG
+
+// Boundary Conditions
+int BCs[3] = {1,0,0}; // 0 periodic, 1 dirichlet, 2 neumann (zero derivative)
 
 //Physical Constants
-double R = 0.5;         // Gas Constant
-double K = 2.0;          //Internal DOF
-double Cv = (3+K)*R/2;   //Specific Heat
-double gma = (K+5)/(K+3); //gamma -- variable name taken
-double w = 0.5;  //Viscosity exponent
-double ur = 1e-4; //Reference Visc
-double Tr = 1.0; //Reference Temp
-double Pr = 2/3.;
+//Simple Ideal Hard-Sphere Model
+double R     = 0.5;           // Gas Constant
+double K     = 2.0;           //Internal DOF
+double Cv    = (3+K)*R/2;     //Specific Heat
+double gma   = (K+5)/(K+3);   //gamma -- variable name taken
+double w     = 0.5;           //Viscosity exponent
+double ur    = 1e-4;          //Reference Visc
+double Tr    = 1.0;           //Reference Temp
+double Pr    = 2/3.;          //Prandtl Number
 
 double Vmin[3] = {-10,0,0};
 double Vmax[3] = {10,0,0};

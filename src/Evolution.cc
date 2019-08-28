@@ -7,8 +7,7 @@
 #include "Mesh.hh"
 #include "Evolution.hh"
 
-extern int testProblem;
-extern int D;
+/*
 extern int Nc;
 extern int Nv;
 extern int N[3];
@@ -20,14 +19,15 @@ extern double R;
 extern double gma;
 extern double K;
 extern double Pr;
-extern double Vmax[3];
 
 
 int Nx = N[0];
 int Ny = N[1];
 int Nz = N[2];
+*/
 
 int debug = 1.0;
+
 
 double TimeStep(double calcdt, double dumptime, double tend){
 
@@ -37,7 +37,7 @@ double TimeStep(double calcdt, double dumptime, double tend){
 }
 
 
-int Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, double* dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh, double* Tdump, int* BCs){	
+int Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, double* dt, double Tf, double Tsim, double dtdump, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* rhoh, double* rhovh, double* rhoEh, double* Tdump, int* BCs, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD, double* Vmax){	
 
 	//Find timestep
 	double CFL = 0.9; //safety factor
@@ -51,17 +51,17 @@ int Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, doub
 
 
 	//Evolution Cycle
-	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, *dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
-	Step1b(gbarp, bbarp, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, Co_X, Co_Y, Co_Z, BCs);
-	Step1c(gbar, bbar, gbarpbound, bbarpbound, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, bsigma2, *dt, BCs);
+	Step1a(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, *dt, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);
+	Step1b(gbarp, bbarp, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, Co_X, Co_Y, Co_Z, BCs, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);
+	Step1c(gbar, bbar, gbarpbound, bbarpbound, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma2, bsigma2, *dt, BCs, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);
 	
-	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, *dt, rhoh, rhovh, rhoEh);
-	Step2b(gbar, bbar, *dt, rhoh, rhovh, rhoEh, Co_X, Co_Y, Co_Z); //gbar, bbar are actually g/b at interface, recycling memory
-	Step2c(gbar, bbar, Co_X, Co_Y, Co_Z, mesh, gbarp, bbarp, BCs); //gbar, bbar are actually g/b at interface, gbarp/bbarp are actually Fg/Fb -- Recycling memory
+	Step2a(gbar, bbar, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, *dt, rhoh, rhovh, rhoEh, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);
+	Step2b(gbar, bbar, *dt, rhoh, rhovh, rhoEh, Co_X, Co_Y, Co_Z, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD); //gbar, bbar are actually g/b at interface, recycling memory
+	Step2c(gbar, bbar, Co_X, Co_Y, Co_Z, mesh, gbarp, bbarp, BCs, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD); //gbar, bbar are actually g/b at interface, gbarp/bbarp are actually Fg/Fb -- Recycling memory
 	
 	Step3();
 	
-	Step4and5(rho, rhov, rhoE, *dt, mesh, gbarp, bbarp, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, g, b, BCs);
+	Step4and5(rho, rhov, rhoE, *dt, mesh, gbarp, bbarp, Co_X, Co_Y, Co_Z, Co_WX, Co_WY, Co_WZ, g, b, BCs, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);
 	
 
 	return dump;
@@ -70,9 +70,13 @@ int Evolve(double* g, double* b, double* gbar, double* bbar, double* gbarp, doub
 
 //Step 1: Phibar at interface
 //Step 1a: Phibar at Cell Center.
-void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, double dt, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ){
+void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, double* bbarp, double* Sg, double* Sb, double* rho, double* rhov, double* rhoE, double dt, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD){
 
 	if(debug == 1){printf("Entering Step 1a\n");}
+
+	int Nx = N[0];
+	int Ny = N[1];
+	int Nz = N[2];
 
 	double tg;
 	double tb;
@@ -94,7 +98,12 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 
 							double u = 0;
 							for(int dim = 0; dim < effD; dim++){u += rhov[effD*sidx + dim]/rho[sidx]*rhov[effD*sidx + dim]/rho[sidx];} u = sqrt(u);
+
+							assert(u >= 0);
+
 							double T = Temperature(rhoE[sidx]/rho[sidx], u);
+
+							assert(T >= 0);
 
 
 							tg = visc(T)/rho[sidx]/R/T; // tau = mu/P, P = rho*R*T.
@@ -128,9 +137,13 @@ void Step1a(double* g, double* b, double* gbar, double* bbar, double* gbarp, dou
 }
 
 //Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
-void Step1b(double* gbarp, double* bbarp, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* Co_X, double* Co_Y, double* Co_Z, int* BCs){
+void Step1b(double* gbarp, double* bbarp, double* gsigma, double* bsigma, double* gsigma2, double* bsigma2, Cell* mesh, double* gbarpbound, double* bbarpbound, double* Co_X, double* Co_Y, double* Co_Z, int* BCs, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD){
 	
 	if(debug == 1){printf("Entering Step 1b\n");}
+
+	int Nx = N[0];
+	int Ny = N[1];
+	int Nz = N[2];
 
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
@@ -283,7 +296,7 @@ void Step1b(double* gbarp, double* bbarp, double* gsigma, double* bsigma, double
 
 
 // Step 1c: Compute phibar at interface by interpolating w/ phisigma2, x-Xi*dt/2
-void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma2, double* bsigma2, double dt, int* BCs){
+void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double* gsigma2, double* bsigma2, double dt, int* BCs, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD){
 
 	if(debug == 1){printf("Entering Step 1c\n");}
 
@@ -356,10 +369,14 @@ void Step1c(double* gbar, double* bbar, double* gbarpbound, double*bbarpbound, d
 
 //Step 2: Microflux
 //Step 2a: Interpolate W to interface.
-void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z, double* Co_WX, double* Co_WY, double* Co_WZ, double dt, double* rhoh, double* rhovh, double* rhoEh){
+void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z, double* Co_WX, double* Co_WY, double* Co_WZ, double dt, double* rhoh, double* rhovh, double* rhoEh, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD){
 	
 	if(debug == 1){printf("Entering Step 2a\n");}
 	
+	int Nx = N[0];
+	int Ny = N[1];
+	int Nz = N[2];
+
 
 	//Compute conserved variables W at t+1/2
 	//First do density at boundary, density is needed for others.
@@ -436,9 +453,13 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 
 //Step 2b: compute original phi at interface using gbar, W at interface
 //Memory Recycling: phibar @ interface is used to store phi @ interface.
-void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, double* rhoEh, double* Co_X, double* Co_Y, double* Co_Z){
+void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, double* rhoEh, double* Co_X, double* Co_Y, double* Co_Z, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD){
 
 	if(debug == 1){printf("Entering Step 2b\n");}
+
+	int Nx = N[0];
+	int Ny = N[1];
+	int Nz = N[2];
 
 	double tg;
 	double tb;
@@ -461,6 +482,12 @@ void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, 
 					for(int dim = 0; dim < effD; dim++){u += rhovh[effD*effD*sidx + dim*effD + dim2]/rhoh[effD*sidx + dim2]*rhovh[effD*effD*sidx + dim*effD + dim2]/rhoh[effD*sidx + dim2];} u = sqrt(u);
 					T = Temperature(rhoEh[effD*sidx+ dim2]/rhoh[effD*sidx + dim2], u);
 
+
+					if(T < 0){printf("rhoEh[effD*sidx+ dim2] = %f, rhoh[effD*sidx + dim2] = %f, u = %f\n", rhoEh[effD*sidx+ dim2], rhoh[effD*sidx + dim2], u);}
+					assert(u > 0);
+					assert(T > 0);
+
+
 					tg = visc(T)/rhoh[effD*sidx + dim2]/R/T;
 					tb = tg/Pr;
 
@@ -475,6 +502,8 @@ void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, 
 								double Xi[3] = {Co_X[vx], Co_Y[vy], Co_Z[vz]};
 
 								for(int dim = 0 ; dim < effD; dim++){ c2 += (Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2])*(Xi[dim]-rhovh[effD*effD*sidx + effD*dim + dim2]/rhoh[effD*sidx + dim2]);} //TODO: Potential BUG, did not double check algebra or access dim order
+								assert(c2 > 0);
+
 
 								g_eq = geq(c2, rhoh[effD*sidx + dim2], T);
 								b_eq = g_eq*(Co_X[vx]*Co_X[vx] + Co_Y[vy]*Co_Y[vy] + Co_Z[vz]*Co_Z[vz] + (3-effD+K)*R*T)/2;
@@ -492,13 +521,17 @@ void Step2b(double* gbar, double* bbar, double dt, double* rhoh, double* rhovh, 
 }
 
 //Step 2c: Compute Microflux F at interface at half timestep using W/phi at interface.
-void Step2c(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z, Cell* mesh, double* Fg, double* Fb, int* BCs){
+void Step2c(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z, Cell* mesh, double* Fg, double* Fb, int* BCs, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD){
 	
 	if(debug == 1){printf("Entering Step 2c\n");}
 
+	int Nx = N[0];
+	int Ny = N[1];
+	int Nz = N[2];
 
 	int sidx;
 	int idx;
+	
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
@@ -567,8 +600,13 @@ void Step3(){
 
 //Step 4: Update Conservative Variables W at cell center at next timestep
 //Step 5: Update Phi at cell center at next time step
-void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, double* Fg, double* Fb, double* Co_X, double* Co_Y, double* Co_Z, double* Co_WX, double* Co_WY, double* Co_WZ, double* g, double* b, int* BCs){
+void Step4and5(double* rho, double* rhov, double* rhoE, double dt, Cell* mesh, double* Fg, double* Fb, double* Co_X, double* Co_Y, double* Co_Z, double* Co_WX, double* Co_WY, double* Co_WZ, double* g, double* b, int* BCs, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD){
+
 	if(debug == 1){printf("Entering Step 4 & 5\n");}
+
+	int Nx = N[0];
+	int Ny = N[1];
+	int Nz = N[2];
 
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){

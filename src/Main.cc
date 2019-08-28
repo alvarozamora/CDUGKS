@@ -11,6 +11,20 @@
 
 int main(){
 
+	int testProblem = 1; //0 is None, 1 is Sod Shock, 2 is KHI, 3 is RTI.
+	if (testProblem > 0){TestProblem(N, NV, &Nc, &Nv, BCs, Vmin, Vmax, testProblem, &R, &K, &Cv, &gma, &w , &ur, &Tr, &Pr, &effD);}
+	else{
+		//TODO Non Test Problems
+	}
+
+	
+	printf("N = {%d, %d, %d}, effD = %d\n", N[0], N[1], N[2], effD);
+	printf("NV = {%d, %d, %d}\n", NV[0], NV[1], NV[2]);
+	printf("R = %f,  K = %f, Cv = %f,  g = %f\n", R, K, Cv, gma);
+	printf("w = %f, ur = %f, Tr = %f, Pr = %f\n", w, ur, Tr, Pr);
+	printf("Confirm Parameters, Enter/Return to Continue:\n");
+	getchar();
+
 
 	//Declare Physical Quantities
 	printf("Declaring Variables\n");
@@ -44,10 +58,6 @@ int main(){
 	//double Fg[Nc*Nv];
 	//double Fb[Nc*Nv];
 
-
-	// Boundary Conditions
-	int BCs[3] = {1,0,0}; // 0 periodic, 1 dirichlet, 2 neumann (zero derivative)
-
 	//Newton-Cotes Quadrature
 	printf("Setting up NC-Quadrature\n");
 	double Co_X[NV[0]];   // Cotes points and weights
@@ -71,11 +81,12 @@ int main(){
 
 	//Initialize Grid
 	printf("Initializing Grid on Mesh\n");
-	int testProblem = 1; //0 is None, 1 is Sod Shock, 2 is KHI, 3 is RTI.
-	if (testProblem > 0){TestProblem(mesh, g, b, rho, rhov, rhoE, testProblem, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);}
+	if (testProblem > 0){InitializeTestProblem(mesh, g, b, rho, rhov, rhoE, testProblem, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);}
 	else{
 		//TODO
 	}
+	printf("Confirm Initial Conditions, Enter/Return to Continue:\n");
+	getchar();
 
 	//Evolve
 	double Tsim = 0.;
@@ -91,7 +102,8 @@ int main(){
 	printf("Entering Evolution Loop\n");
 	while(Tsim < Tf){ // && iter < itermax
 		iter++;
-		int dump = Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh, &Tdump, BCs);
+
+		int dump = Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh, &Tdump, BCs, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD, Vmax);
 
 		Tsim += dt;
 		Tdump += dt;
