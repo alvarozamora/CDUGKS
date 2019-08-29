@@ -46,9 +46,9 @@ void TestProblem(int* N, int* NV, int* Nc, int* Nv, int* BCs, double* Vmin, doub
 		*effD = 2; 
 
 		//Resolution
-		int num = 8;
-		N[0]  = num; N[1]  = num; N[2]  = 1;  
-		NV[0] = num; NV[1] = num; NV[2] = 1;
+		int num = 64;
+		N[0]  = 16; N[1]  = 16; N[2]  = 1;  
+		NV[0] = 8; NV[1] = 8; NV[2] = 1;
 		*Nc = N[0]*N[1]*N[2];
 		*Nv  = NV[0]*NV[1]*NV[2];
 		Vmin[0] = -10; Vmin[1] = -10; Vmin[2] = 0;

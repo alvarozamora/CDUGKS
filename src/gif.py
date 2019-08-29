@@ -33,6 +33,7 @@ if problem == 1:
 	dur = 1/60.
 elif problem == 2:
 	dur = 1/3.
+	file_names2 = glob.glob("Check2/*.png")
 else:
 	dur = 1/60.
 
@@ -41,3 +42,12 @@ with io.get_writer('cdugks.gif', duration=dur) as writer:
         image = io.imread(filename)
         writer.append_data(image)
 writer.close()
+
+
+if problem == 2:
+	with io.get_writer('cdugks2.gif', duration=dur) as writer:
+		for filename in file_names2:
+			image = io.imread(filename)
+			writer.append_data(image)
+		writer.close()
+

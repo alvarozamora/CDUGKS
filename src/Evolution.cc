@@ -7,26 +7,8 @@
 #include "Mesh.hh"
 #include "Evolution.hh"
 
-/*
-extern int Nc;
-extern int Nv;
-extern int N[3];
-extern int NV[3];
-extern int effD;
 
-extern double Cv;
-extern double R;
-extern double gma;
-extern double K;
-extern double Pr;
-
-
-int Nx = N[0];
-int Ny = N[1];
-int Nz = N[2];
-*/
-
-int debug = 1.0;
+int debug = 0;
 
 
 double TimeStep(double calcdt, double dumptime, double tend){
@@ -437,7 +419,7 @@ void Step2a(double* gbar, double* bbar, double* Co_X, double* Co_Y, double* Co_Z
 							for(int Dim2 = 0; Dim2 < effD; Dim2++){
 								for(int Dim = 0; Dim < effD; Dim++){
 
-									rhovh[effD*effD*sidx + effD*Dim + Dim2] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*U[Dim2]*gbar[effD*idx + Dim]; 
+									rhovh[effD*effD*sidx + effD*Dim + Dim2] += Co_WX[vx]*Co_WY[vy]*Co_WZ[vz]*U[Dim]*gbar[effD*idx + Dim2]; 
 									
 								}
 
