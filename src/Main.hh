@@ -136,6 +136,6 @@ void Cotes(double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_
   else{printf("Not Supported: NV[2]!= 1 && NV[2] < 4\n");}
 }
 
-void datadeal(Cell* mesh, double* rho, int iter);
+void datadeal(Cell* mesh, double* rho, int iter, int testProblem);
 
 #endif

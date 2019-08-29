@@ -2,6 +2,7 @@ import imageio as io
 import os
 import glob
 import re
+import numpy as np
 
 def tryint(s):
     try:
@@ -25,7 +26,17 @@ file_names = glob.glob("Check/check*.png")
 sort_nicely(file_names)
 #print(file_names)
 #making animation
-with io.get_writer('cdugks.gif', duration=1/60.) as writer:
+
+problem = int(np.genfromtxt('Data/index.txt'))
+
+if problem == 1:
+	dur = 1/60.
+elif problem == 2:
+	dur = 1/3.
+else:
+	dur = 1/60.
+
+with io.get_writer('cdugks.gif', duration=dur) as writer:
     for filename in file_names:
         image = io.imread(filename)
         writer.append_data(image)

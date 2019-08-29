@@ -11,7 +11,7 @@
 
 int main(){
 
-	int testProblem = 1; //0 is None, 1 is Sod Shock, 2 is KHI, 3 is RTI.
+	int testProblem = 2; //0 is None, 1 is Sod Shock, 2 is KHI, 3 is RTI.
 	if (testProblem > 0){TestProblem(N, NV, &Nc, &Nv, BCs, Vmin, Vmax, testProblem, &R, &K, &Cv, &gma, &w , &ur, &Tr, &Pr, &effD);}
 	else{
 		//TODO Non Test Problems
@@ -81,12 +81,18 @@ int main(){
 
 	//Initialize Grid
 	printf("Initializing Grid on Mesh\n");
-	if (testProblem > 0){InitializeTestProblem(mesh, g, b, rho, rhov, rhoE, testProblem, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);}
+	if (testProblem > 0){
+
+		InitializeTestProblem(mesh, g, b, rho, rhov, rhoE, testProblem, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD);
+
+		printf("Confirm Initial Conditions, Enter/Return to Continue:\n");
+		getchar();
+	}
 	else{
 		//TODO
 	}
-	printf("Confirm Initial Conditions, Enter/Return to Continue:\n");
-	getchar();
+	
+	
 
 	//Evolve
 	double Tsim = 0.;
@@ -95,10 +101,19 @@ int main(){
 	double Tdump = 0.0;
 	double dtdump = Tf/200.;
 
+	if(testProblem == 1){
+		Tf = 0.15;
+		dtdump = Tf/200.;
+	}
+	if(testProblem == 2){
+		Tf = 1.2;
+		dtdump = Tf/400.;
+	}
+
 	
 	int iter = 0;
 	int dumpiter = 0;
-	datadeal(mesh, rho, iter);
+	datadeal(mesh, rho, iter, testProblem);
 	printf("Entering Evolution Loop\n");
 	while(Tsim < Tf){ // && iter < itermax
 		iter++;
@@ -111,7 +126,7 @@ int main(){
 		if(dump == 1){
 			Tdump = 0.0;
 			dumpiter++;
-			datadeal(mesh, rho, dumpiter);
+			datadeal(mesh, rho, dumpiter, testProblem);
 		}
 		printf("iteration = %d, timestep = %f, Tsim = %f, Tdump = %f, dtdump = %f, dumpiter = %d\n", iter, dt, Tsim, Tdump, dtdump, dumpiter);
 	
@@ -135,7 +150,7 @@ int main(){
 
 
 
-void datadeal(Cell* mesh, double* rho, int iter){
+void datadeal(Cell* mesh, double* rho, int iter, int testProblem){
 
 	int i;
 	double rho_ave, xmid;
@@ -144,8 +159,14 @@ void datadeal(Cell* mesh, double* rho, int iter){
 
 	if (iter == 0){
 		fp=fopen("Data/x.txt","w");
-		for (i=0; i<N[0]; i++) fprintf(fp,"%e\n", mesh[i].x);
+		for (i=0; i<N[0]*N[1]*N[2]; i++) fprintf(fp,"%e\n", mesh[i].x);
 		fclose(fp);
+
+		if(testProblem > 0){
+			fp=fopen("Data/index.txt","w");
+			fprintf(fp, "%d", testProblem);
+			fclose(fp);
+		}
 	}
 
 	// Allocates storage
@@ -154,8 +175,10 @@ void datadeal(Cell* mesh, double* rho, int iter){
 
 	printf(rhofile); printf("\n");
 	fp=fopen(rhofile ,"w");
-	for (i=0; i<N[0]; i++) fprintf(fp,"%e\n",rho[i]);
+	for (i=0; i<N[0]*N[1]*N[2]; i++) fprintf(fp,"%f\n",rho[i]);
 	fclose(fp);
+
+	
 
 	/*
 

@@ -46,8 +46,9 @@ void TestProblem(int* N, int* NV, int* Nc, int* Nv, int* BCs, double* Vmin, doub
 		*effD = 2; 
 
 		//Resolution
-		N[0]  = 64; N[1]  = 64; N[2]  = 1;  
-		NV[0] = 64; NV[1] = 64; NV[2] = 1;
+		int num = 8;
+		N[0]  = num; N[1]  = num; N[2]  = 1;  
+		NV[0] = num; NV[1] = num; NV[2] = 1;
 		*Nc = N[0]*N[1]*N[2];
 		*Nv  = NV[0]*NV[1]*NV[2];
 		Vmin[0] = -10; Vmin[1] = -10; Vmin[2] = 0;
@@ -56,7 +57,6 @@ void TestProblem(int* N, int* NV, int* Nc, int* Nv, int* BCs, double* Vmin, doub
 		// Boundary Conditions
 		BCs[0] = 0; BCs[1] = 0; BCs[2] = 0;
 
-		
 		//Physical Parameters
 		*R   = 0.5;           // Gas Constant
 		*K   = 2.0;           //Internal DOF
@@ -198,7 +198,7 @@ void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, doubl
 
 }
 
- void KHI(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD, double rhoT, double rhoB, double PT, double PB){
+ void KHI(Cell* mesh, double* g, double* b, double* rho, double* rhov, double* rhoE, double* Co_X, double* Co_WX, double* Co_Y, double* Co_WY, double* Co_Z, double* Co_WZ, double R, double K, double Cv, double gma, double w, double ur, double Tr, double Pr, int* N, int* NV, int effD, double rhoT, double rhoB, double PT, double PB, double vrel, double amp){
 
 	int idx;
 	int Nx = N[0];
@@ -222,8 +222,10 @@ void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, doubl
 					rho[idx] = rhoT; 
 					rhoE[idx] = 0.0; //Initialize for Reduction
 					for(int dim = 0; dim < effD; dim++){
-						rhov[effD*idx + dim] = 0.0;
-						rhoE[idx] += 0.5*rhov[effD*idx+dim]*rhov[effD*idx+dim]/rho[idx]; // 0.5* rhov**2/rho
+						if(dim == 0){
+							rhov[effD*idx + dim] = vrel/2.*rho[idx];
+						}
+						rhoE[idx] += 0.5*rhov[effD*idx + dim]*rhov[effD*idx+dim]/rho[idx]; // 0.5* rhov**2/rho
 					}
 					rhoE[idx] += Cv*PT/R; // T = P/(rho*R), Ideal Gas 
 					
@@ -237,14 +239,16 @@ void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, doubl
 					rho[idx] = rhoB; 
 					rhoE[idx] = 0.0; //Initialize for Reduction
 					for(int dim = 0; dim < effD; dim++){
-						rhov[effD*idx + dim] = 0.0;
+						if(dim == 0){
+							rhov[effD*idx + dim] = -vrel/2.*rho[idx];
+						}
 						rhoE[idx] += 0.5*rhov[effD*idx+dim]*rhov[effD*idx+dim]/rho[idx]; // 0.5* rhov**2/rho
 					}
 					rhoE[idx] += Cv*PB/R; // T = P/(rho*R), Ideal Gas 
 
 				}
 
-				if(i == 32) printf("Initialized central column, W[%d]: rho = %f, rhov = %f, rhoE = %f\n", idx, rho[idx], rhov[idx], rhoE[idx]);
+				if(i == Nx/2) printf("Initialized central column, W[%d]: rho = %f, rhovx = %f, rhovy %f, rhoE = %f\n", idx, rho[idx], rhov[effD*idx + 0], rhov[effD*idx + 1], rhoE[idx]);
 
 			}
 		}
