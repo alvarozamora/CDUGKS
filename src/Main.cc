@@ -17,7 +17,7 @@ int main(){
 		//TODO Non Test Problems
 	}
 
-	
+
 	printf("N = {%d, %d, %d}, effD = %d\n", N[0], N[1], N[2], effD);
 	printf("NV = {%d, %d, %d}\n", NV[0], NV[1], NV[2]);
 	printf("R = %f,  K = %f, Cv = %f,  g = %f\n", R, K, Cv, gma);
@@ -26,33 +26,70 @@ int main(){
 	getchar();
 
 
+	int numdoub = 0;
+	numdoub += Nc*Nv;   //g and b are reduced distrubution functions (Vel and E distribution)
+        numdoub += Nc*Nv;
+        numdoub += Nc*Nv;   //gbarp and bbarp are reduced distrubution functions (Vel and E distribution)
+        numdoub += Nc*Nv;
+
+	numdoub += Nc*Nv*effD; // gbar/p and bbar/p are reduced distrubution functions (Vel and E distribution)
+        numdoub += Nc*Nv*effD;
+        numdoub += Nc*Nv*effD;
+        numdoub += Nc*Nv*effD;
+
+
+        numdoub += Nc; //Source Terms
+        numdoub += Nc*Nv;
+
+        numdoub += Nc;    //Conserved Variables at t
+        numdoub += Nc*effD;
+        numdoub += Nc;
+        numdoub += Nc*effD;  //Conserved Variables at t + h, at interfaces
+        numdoub += Nc*effD*effD;
+        numdoub += Nc*effD;
+
+        numdoub += Nc*Nv*effD;//Gradients
+        numdoub += Nc*Nv*effD;
+        numdoub += Nc*Nv*effD*effD;
+        numdoub += Nc*Nv*effD*effD;
+
+	printf("Total Number of Doubles = %d\n", numdoub);
+	getchar();
+
 	//Declare Physical Quantities
 	printf("Declaring Variables\n");
 	double g[Nc*Nv];   //g and b are reduced distrubution functions (Vel and E distribution)
 	double b[Nc*Nv];
 	double gbarp[Nc*Nv];   //gbarp and bbarp are reduced distrubution functions (Vel and E distribution)
 	double bbarp[Nc*Nv];
+	printf("Declared Reduced Distribution Functions\n");
+
 	//At interface
 	double gbarpbound[Nc*Nv*effD]; // gbar/p and bbar/p are reduced distrubution functions (Vel and E distribution)
 	double bbarpbound[Nc*Nv*effD];
-	double gbar[Nc*Nv*effD];  
+	double gbar[Nc*Nv*effD];
 	double bbar[Nc*Nv*effD];
-	
+	printf("Declared Interface Reduced Distribution Functions\n");
 
 	double Sg[Nc]; //Source Terms
 	double Sb[Nc];
+	printf("Declared Soure Terms\n");
 
-	double rho[Nc];    //Conserved Variables at t
+	double rho[Nc];   //Conserved Variables at t
 	double rhov[Nc*effD];
 	double rhoE[Nc];
-	double rhoh[Nc*effD];   //Conserved Variables at t + h, at interfaces
+	double rhoh[Nc*effD]; //Conserved Variables at t + h, at interfaces
 	double rhovh[Nc*effD*effD];
 	double rhoEh[Nc*effD];
+	printf("Declared Conserved Variable Arrays\n");
 
-	double gsigma[Nc*Nv*effD]; //Gradients
+	double gsigma[Nc*Nv*effD]; // Gradients
 	double bsigma[Nc*Nv*effD];
+	printf("Declared Gradient Arrays\n");
 	double gsigma2[Nc*Nv*effD*effD];
 	double bsigma2[Nc*Nv*effD*effD];
+	printf("Declared Second Gradient Arrays\n");
+
 
 	//Flux
 	//double Fg[Nc*Nv];
