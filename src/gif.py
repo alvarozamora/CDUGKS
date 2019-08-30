@@ -32,8 +32,9 @@ problem = int(np.genfromtxt('Data/index.txt'))
 if problem == 1:
 	dur = 1/60.
 elif problem == 2:
-	dur = 1/3.
+	dur = 1/30.
 	file_names2 = glob.glob("Check2/*.png")
+	sort_nicely(file_names2)
 else:
 	dur = 1/60.
 

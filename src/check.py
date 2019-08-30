@@ -64,7 +64,9 @@ if problem == 2:
 		plt.cla()
 		
 		plt.figure(2)
-		plt.plot(rho[:,4])
+		x = np.linspace(0.5/len(rho[:,4]), 1-(0.5)/len(rho[:,4]), len(rho[:,4]))
+		plt.plot(x,rho[:,4])
+		plt.plot([0.5,0.5],[1,2],'k')
 		plt.ylim(0.5, 2.5)
 		plt.grid()
 		plt.title("KHI Line")

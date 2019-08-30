@@ -58,36 +58,36 @@ int main(){
 
 	//Declare Physical Quantities
 	printf("Declaring Variables\n");
-	double g[Nc*Nv];   //g and b are reduced distrubution functions (Vel and E distribution)
-	double b[Nc*Nv];
-	double gbarp[Nc*Nv];   //gbarp and bbarp are reduced distrubution functions (Vel and E distribution)
-	double bbarp[Nc*Nv];
+	double* g = new double[Nc*Nv];   //g and b are reduced distrubution functions (Vel and E distribution)
+	double* b = new double[Nc*Nv];
+	double* gbarp = new double[Nc*Nv];   //gbarp and bbarp are reduced distrubution functions (Vel and E distribution)
+	double* bbarp = new double[Nc*Nv];
 	printf("Declared Reduced Distribution Functions\n");
 
 	//At interface
-	double gbarpbound[Nc*Nv*effD]; // gbar/p and bbar/p are reduced distrubution functions (Vel and E distribution)
-	double bbarpbound[Nc*Nv*effD];
-	double gbar[Nc*Nv*effD];
-	double bbar[Nc*Nv*effD];
+	double* gbarpbound = new double[Nc*Nv*effD]; // gbar/p and bbar/p are reduced distrubution functions (Vel and E distribution)
+	double* bbarpbound = new double[Nc*Nv*effD];
+	double* gbar = new double[Nc*Nv*effD];
+	double* bbar = new double[Nc*Nv*effD];
 	printf("Declared Interface Reduced Distribution Functions\n");
 
-	double Sg[Nc]; //Source Terms
-	double Sb[Nc];
+	double* Sg = new double[Nc]; //Source Terms
+	double* Sb = new double[Nc];
 	printf("Declared Soure Terms\n");
 
-	double rho[Nc];   //Conserved Variables at t
-	double rhov[Nc*effD];
-	double rhoE[Nc];
-	double rhoh[Nc*effD]; //Conserved Variables at t + h, at interfaces
-	double rhovh[Nc*effD*effD];
-	double rhoEh[Nc*effD];
+	double* rho = new double[Nc];   //Conserved Variables at t
+	double* rhov = new double[Nc*effD];
+	double* rhoE = new double[Nc];
+	double* rhoh = new double[Nc*effD]; //Conserved Variables at t + h, at interfaces
+	double* rhovh = new double[Nc*effD*effD];
+	double* rhoEh = new double[Nc*effD];
 	printf("Declared Conserved Variable Arrays\n");
 
-	double gsigma[Nc*Nv*effD]; // Gradients
-	double bsigma[Nc*Nv*effD];
+	double* gsigma = new double[Nc*Nv*effD]; // Gradients
+	double* bsigma = new double[Nc*Nv*effD];
 	printf("Declared Gradient Arrays\n");
-	double gsigma2[Nc*Nv*effD*effD];
-	double bsigma2[Nc*Nv*effD*effD];
+	double* gsigma2 = new double[Nc*Nv*effD*effD];
+	double* bsigma2 = new double[Nc*Nv*effD*effD];
 	printf("Declared Second Gradient Arrays\n");
 
 
@@ -97,12 +97,12 @@ int main(){
 
 	//Newton-Cotes Quadrature
 	printf("Setting up NC-Quadrature\n");
-	double Co_X[NV[0]];   // Cotes points and weights
-	double Co_WX[NV[0]]; 
-	double Co_Y[NV[1]]; 
-	double Co_WY[NV[1]]; 
-	double Co_Z[NV[2]]; 
-	double Co_WZ[NV[2]]; 
+	double* Co_X = new double[NV[0]];   // Cotes points and weights
+	double* Co_WX = new double[NV[0]];
+	double* Co_Y = new double[NV[1]];
+	double* Co_WY = new double[NV[1]];
+	double* Co_Z = new double[NV[2]];
+	double* Co_WZ = new double[NV[2]];
 	Cotes(Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ);
 
 	//Checking NC Weights on 128-cell Sod Problem
@@ -132,45 +132,46 @@ int main(){
 	
 
 	//Evolve
-	double Tsim = 0.;
-	double dt;
-	double Tf = 0.15;
-	double Tdump = 0.0;
-	double dtdump = Tf/200.;
+	printf("Declaring Time Variables\n");
+	double* Tsim = new double(0.);
+	double* dt = new double;
+	double* Tf = new double(0.15);
+	double* Tdump = new double(0.0);
+	double* dtdump = new double(*Tf/200.);
+	printf("Declared Time Variables\n");
 
 	if(testProblem == 1){
-		Tf = 0.15;
-		dtdump = Tf/200.;
+		*Tf = 0.15;
+		*dtdump = *Tf/200.;
 	}
 	if(testProblem == 2){
-		Tf = 1.2;
-		dtdump = Tf/400.;
+		*Tf = 1.2;
+		*dtdump = *Tf/400.;
 	}
 
-	
+
+
 	int iter = 0;
 	int dumpiter = 0;
-	datadeal(mesh, rho, iter, testProblem);
+	datadeal(mesh, rho, dumpiter, testProblem);
 	printf("Entering Evolution Loop\n");
-	while(Tsim < Tf){ // && iter < itermax
+	while(*Tsim < *Tf){ // && iter < itermax
 		iter++;
 
-		int dump = Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, &dt, Tf, Tsim, dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh, &Tdump, BCs, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD, Vmax);
+		int dump = Evolve(g, b, gbar, bbar, gbarp, bbarp, Sg, Sb, rho, rhov, rhoE, dt, *Tf, *Tsim, *dtdump, Co_X, Co_WX, Co_Y, Co_WY, Co_Z, Co_WZ, gsigma, bsigma, gsigma2, bsigma2, mesh, gbarpbound, bbarpbound, rhoh, rhovh, rhoEh, Tdump, BCs, R, K, Cv, gma, w, ur, Tr, Pr, N, NV, effD, Vmax);
 
-		Tsim += dt;
-		Tdump += dt;
- 
+		*Tsim += *dt;
+		*Tdump += *dt;
+
 		if(dump == 1){
-			Tdump = 0.0;
+			*Tdump = 0.0;
 			dumpiter++;
 			datadeal(mesh, rho, dumpiter, testProblem);
 		}
-		printf("iteration = %d, timestep = %f, Tsim = %f, Tdump = %f, dtdump = %f, dumpiter = %d\n", iter, dt, Tsim, Tdump, dtdump, dumpiter);
-	
+		printf("iteration = %d, timestep = %f, Tsim = %f, Tdump = %f, dtdump = %f, dumpiter = %d\n", iter, *dt, *Tsim, *Tdump, *dtdump, dumpiter);
 	}
 
 	//show data
-	
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
 			for(int k = 0; k < N[2]; k++){
@@ -180,8 +181,6 @@ int main(){
 		}
 	}
 
-	
-	
 
 }
 
@@ -189,14 +188,11 @@ int main(){
 
 void datadeal(Cell* mesh, double* rho, int iter, int testProblem){
 
-	int i;
-	double rho_ave, xmid;
 	FILE *fp;
-
 
 	if (iter == 0){
 		fp=fopen("Data/x.txt","w");
-		for (i=0; i<N[0]*N[1]*N[2]; i++) fprintf(fp,"%e\n", mesh[i].x);
+		for (int i=0; i<N[0]*N[1]*N[2]; i++) fprintf(fp,"%e\n", mesh[i].x);
 		fclose(fp);
 
 		if(testProblem > 0){
@@ -212,7 +208,7 @@ void datadeal(Cell* mesh, double* rho, int iter, int testProblem){
 
 	printf(rhofile); printf("\n");
 	fp=fopen(rhofile ,"w");
-	for (i=0; i<N[0]*N[1]*N[2]; i++) fprintf(fp,"%f\n",rho[i]);
+	for (int i=0; i<N[0]*N[1]*N[2]; i++) fprintf(fp,"%f\n",rho[i]);
 	fclose(fp);
 
 	

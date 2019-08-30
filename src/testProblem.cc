@@ -47,8 +47,8 @@ void TestProblem(int* N, int* NV, int* Nc, int* Nv, int* BCs, double* Vmin, doub
 
 		//Resolution
 		int num = 64;
-		N[0]  = 16; N[1]  = 16; N[2]  = 1;  
-		NV[0] = 16; NV[1] = 16; NV[2] = 1;
+		N[0]  = num; N[1]  = num; N[2]  = 1;  
+		NV[0] = num; NV[1] = num; NV[2] = 1;
 		*Nc = N[0]*N[1]*N[2];
 		*Nv  = NV[0]*NV[1]*NV[2];
 		Vmin[0] = -10; Vmin[1] = -10; Vmin[2] = 0;
@@ -208,6 +208,7 @@ void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, doubl
 	int Nvy = NV[1];
 	int Nvz = NV[2];
 
+	double PI = 4*atan(1.0);
 
 	for(int i = 0; i < N[0]; i++){
 		for(int j = 0; j < N[1]; j++){
@@ -215,7 +216,7 @@ void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, doubl
 
 				idx = i + Nx*j + Nx*Ny*k; //spatial index
 
-				//Left State
+				//Bottom State
 				if(mesh[idx].y <= 0.5){
 
 					//Conserved Variables
@@ -224,6 +225,9 @@ void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, doubl
 					for(int dim = 0; dim < effD; dim++){
 						if(dim == 0){
 							rhov[effD*idx + dim] = vrel/2.*rho[idx];
+						}
+						else if(dim == 1){
+							rhov[effD*idx + dim] = amp*sin(2*PI*mesh[idx].x)*rho[idx];
 						}
 						rhoE[idx] += 0.5*rhov[effD*idx + dim]*rhov[effD*idx+dim]/rho[idx]; // 0.5* rhov**2/rho
 					}
@@ -242,6 +246,10 @@ void SodShock(Cell* mesh, double* g, double* b, double* rho, double* rhov, doubl
 						if(dim == 0){
 							rhov[effD*idx + dim] = -vrel/2.*rho[idx];
 						}
+                                                else if(dim == 1){
+                                                        rhov[effD*idx + dim] = amp*sin(2*PI*mesh[idx].x)*rho[idx];
+                                                }
+				
 						rhoE[idx] += 0.5*rhov[effD*idx+dim]*rhov[effD*idx+dim]/rho[idx]; // 0.5* rhov**2/rho
 					}
 					rhoE[idx] += Cv*PB/R; // T = P/(rho*R), Ideal Gas 
