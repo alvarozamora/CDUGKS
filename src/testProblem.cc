@@ -33,7 +33,7 @@ void TestProblem(int* N, int* NV, int* Nc, int* Nv, int* BCs, double* Vmin, doub
 		*Cv  = (3+(*K))*(*R)/2;     //Specific Heat
 		*gma = ((*K)+5)/((*K)+3);   //gamma -- variable name taken
 		*w   = 0.5;           //Viscosity exponent
-		*ur  = 1e-4;          //Reference Visc
+		*ur  = 1e-5;          //Reference Visc
 		*Tr  = 1.0;           //Reference Temp
 		*Pr  = 2/3.;          //Prandtl Number
 	
@@ -46,7 +46,7 @@ void TestProblem(int* N, int* NV, int* Nc, int* Nv, int* BCs, double* Vmin, doub
 		*effD = 2; 
 
 		//Resolution
-		int num = 64;
+		int num = 32;
 		N[0]  = num; N[1]  = num; N[2]  = 1;  
 		NV[0] = num; NV[1] = num; NV[2] = 1;
 		*Nc = N[0]*N[1]*N[2];
@@ -65,7 +65,7 @@ void TestProblem(int* N, int* NV, int* Nc, int* Nv, int* BCs, double* Vmin, doub
 		*w   = 0.5;           //Viscosity exponent
 		*ur  = 1e-4;          //Reference Visc
 		*Tr  = 1.0;           //Reference Temp
-		*Pr  = 2/3.;          //Prandtl Number
+		*Pr  = 1/2.;          //Prandtl Number
 	}
 }
 

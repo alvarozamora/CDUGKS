@@ -1,13 +1,13 @@
-//clang 3.8.0
-
 #include <iostream>
+#include <omp.h>
 
 int main()
 {
-#ifdef MACRO
-    std::cout << "Hello world!" << std::endl;
-#else
-    std::cerr << "Something wrong happened" << std::endl;
-    return 1;
-#endif
+printf("wat\n");
+#pragma omp parallel                   
+{
+    printf("Hello World... from thread = %d\n", 
+           omp_get_thread_num());
 }
+}
+

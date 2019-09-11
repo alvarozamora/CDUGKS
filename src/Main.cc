@@ -146,6 +146,7 @@ int main(){
 	}
 	if(testProblem == 2){
 		*Tf = 1.2;
+		*Tf = 2.0;
 		*dtdump = *Tf/400.;
 	}
 
