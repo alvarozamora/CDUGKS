@@ -31,6 +31,8 @@ fspace params{
   BCs : int32[3],
   Vmin : double[3],
   Vmax : double[3],
+  Tf : double,
+  dtdump: double
 
 }
 
@@ -129,6 +131,9 @@ do
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
+		-- Simulation Parameters
+		r_params[e].Tf = 0.15					-- Stop Time
+		r_params[e].dtdump = r_params[e].Tf/200			-- Time Between Dumps
  
         -- Kelvin-Helmholtz
         elseif testProblem == 2 then 
@@ -175,6 +180,10 @@ do
                 r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
+
+		-- Simulation Parameters
+		r_params[e].Tf = 1.2					-- Stop Time
+		r_params[e].dtdump = r_params[e].Tf/200			-- Time Between Dumps
 	end
   end
 end
@@ -243,7 +252,7 @@ do
   end
 
   -- Second Dimension
-  if (not NV[1] == 1 and NV[1] >= 4) then
+  if NV[1] >= 4 then
     a = Vmin[1]
     b = Vmax[1]
     n = (NV[1])/4  -- no longer subtracting 1
@@ -274,9 +283,11 @@ do
     for ky = 0, NV[1] do
       vymesh[ky].w = vymesh[ky].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
     end
-  else 
+  elseif NV[1] == 1 then
     vymesh[0].v = 0
     vymesh[0].w = 1
+  else
+    c.printf("Error with Newton Cotes (number of vy points)\n")
   end 
 
   -- Check Weights
@@ -288,7 +299,7 @@ do
   --end
 
   -- Third Dimension
-  if (not NV[2] == 1 and NV[2] >= 4) then
+  if NV[2] >= 4 then
     a = Vmin[2]
     b = Vmax[2]
     n = (NV[2])/4  -- no longer subtracting 1
@@ -300,28 +311,30 @@ do
     end 
 
     for kz = 0, n do
-      --vymesh[4*kz].w   = 14.0
-      --vymesh[4*kz+1].w = 32.0
-      --vymesh[4*kz+2].w = 12.0
-      --vymesh[4*kz+3].w = 32.0
+      --vzmesh[4*kz].w   = 14.0
+      --vzmesh[4*kz+1].w = 32.0
+      --vzmesh[4*kz+2].w = 12.0
+      --vzmesh[4*kz+3].w = 32.0
 
       -- TODO Trying Lower Order Integration
-      vymesh[4*kz].w   = 1.0
-      vymesh[4*kz+1].w = 1.0
-      vymesh[4*kz+2].w = 1.0
-      vymesh[4*kz+3].w = 1.0
+      vzmesh[4*kz].w   = 1.0
+      vzmesh[4*kz+1].w = 1.0
+      vzmesh[4*kz+2].w = 1.0
+      vzmesh[4*kz+3].w = 1.0
     end
 
-    --vymesh[0].w = 7.0
-    --vymesh[NV[2]-1].w = 7.0
+    --vzmesh[0].w = 7.0
+    --vzmesh[NV[2]-1].w = 7.0
 
 
     for kz = 0, NV[2] do
       vzmesh[kz].w = vzmesh[kz].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
     end
-  else 
+  elseif NV[2] == 1 then
     vzmesh[0].v = 0
     vzmesh[0].w = 1
+  else
+    c.printf("Error with Newton Cotes (number of vz points)\n")
   end 
 
   -- Check Weights
@@ -1600,7 +1613,7 @@ do
     r_grid[e].g = geq(c2, r_W[s].rho, T, R, effD)
     r_grid[e].b = r_grid[e].g*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
   
-    if s.x == 0 then
+    if s.x == 0 and s.y == 0 and s.z == 0 then
       rhotest += r_grid[e].g*vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w
       Etest += r_grid[e].b*vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w
     end
@@ -1708,10 +1721,10 @@ end
 
 task toplevel()
   var config : Config
-  config:initialize_from_command()
+  config:initialize_from_command() -- TODO : CPUs, output bool
 
   -- Simulation Parameters
-  var testProblem : int32 = 1
+  var testProblem : int32 = config.testproblem
   var r_params = region(ispace(int1d, 1), params)
   TestProblem(r_params, testProblem)
   var N  : int32[3] = r_params[0].N
@@ -1730,6 +1743,8 @@ task toplevel()
   var BCs : int32[3] = r_params[0].BCs
   var Vmin : double[3] = r_params[0].Vmin
   var Vmax : double[3] = r_params[0].Vmax
+  var Tf : double = r_params[0].Tf
+  var dtdump : double = r_params[0].dtdump
 
   __fence(__execution, __block) 
   c.printf("Simulation Parameters\n")
@@ -1780,15 +1795,18 @@ task toplevel()
 
   var Tsim : double = 0.0  -- Sim time
   var Tdump : double = 0.0 -- Time since last dump 
-  var Tf : double = 0.15   -- Stop time 
-  var dtdump : double = Tf/300 
   
   var iter : int32 = 0
+  var dumpiter : int32 = 0
+  if testProblem > 0 then 
+    Dump(r_W, dumpiter) -- Initial Conditions
+    c.printf("Dump %d\n", dumpiter)
+  end
   while Tsim < Tf do -- and iter < 1 do
     iter += 1
 
     var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
-    
+
     Step1a(r_grid, r_gridbarp, r_S, r_W, vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     Step1b(r_gridbarp, r_gridbarpb, r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
     Step1c(r_gridbar, r_gridbarpb, vxmesh, vymesh, vzmesh, r_sig2, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
@@ -1797,17 +1815,22 @@ task toplevel()
     Step2c(r_gridbar, r_F, r_mesh, vxmesh, vymesh, vzmesh, BCs, R, K, Cv, g, w, Tr, Pr, effD, N)
     Step3() -- TODO
     Step4and5(r_grid, r_W, r_mesh, r_F, vxmesh, vymesh, vzmesh, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
-  
     __fence(__execution, __block)
+
+    if dt < calcdt then
+      dumpiter += 1
+      Tdump = 0
+      Dump(r_W, dumpiter)
+      c.printf("Dump %d\n", dumpiter)
+    else
+      Tdump += dt
+    end
+
     Tsim += dt
+
     c.printf("Iteration = %d, Tsim = %f\n", iter, Tsim)
 
-    Dump(r_W, iter)
   end
-  
-
-  -- Data Dump
-  Dump(r_W, iter)
 end
 
 regentlib.start(toplevel)

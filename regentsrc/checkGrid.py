@@ -7,24 +7,46 @@ import glob
 
 files = glob.glob('Data/rho*')
 size = 16
-num  = 256
+num  = 128
 type = 'd' #d is double, f is float, i is integer
+
+testproblem = 2
 
 files.sort()
 plt.figure()
-for file in files:
-	n = file[9:13]
-	f = open(file, 'rb')
+if testproblem == 1:
 
-	X = f.read(num*size)
-	X = np.array(struct.unpack(type*num, X))
+	for file in files:
+		n = file[9:13]
+		f = open(file, 'rb')
 
-	plt.xlim(0,1)
-	plt.ylim(0,1.2)
-	plt.plot(np.linspace(0.5/len(X),1-0.5/len(X), len(X)), X, 'o-')
-	plt.grid()
-	plt.savefig('Check/Rho'+n+'.png')
-	print('Check/Rho'+n+'.png')
+		X = f.read(num*size)
+		X = np.array(struct.unpack(type*num, X))
 
-	plt.cla()
-	plt.clf()
+		plt.xlim(0,1)
+		plt.ylim(0,1.2)
+		plt.plot(np.linspace(0.5/len(X),1-0.5/len(X), len(X)), X, 'o-')
+		plt.grid()
+		plt.savefig('Check/Rho'+n+'.png')
+		print('Check/Rho'+n+'.png')
+
+		plt.cla()
+		plt.clf()
+
+if testproblem == 2:
+
+	for file in files:
+		n = file[9:13]
+		f = open(file, 'rb')
+
+		X = f.read(num*num*size)
+		X = np.array(struct.unpack(type*num*num, X))
+		N = int(np.round(np.sqrt(len(X))))
+		X = X.reshape((N,N))
+
+		plt.imshow(X)
+		plt.savefig('Check/Rho'+n+'.png')
+		print('Check/Rho'+n+'.png')
+
+		plt.cla()
+		plt.clf()

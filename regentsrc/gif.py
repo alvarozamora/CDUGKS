@@ -33,7 +33,7 @@ pdb.set_trace()
 problem = 1
 
 if problem == 1:
-	dur = 1/20.
+	dur = 1/30.
 elif problem == 2:
 	dur = 1/30.
 	file_names2 = glob.glob("Check2/*.png")
