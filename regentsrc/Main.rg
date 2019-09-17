@@ -1664,36 +1664,51 @@ terra dumpbool(f : &c.FILE, val : bool)
   c.fwrite(&a, 4, 1, f)
 end
 
-task factorize2d(parallelism : int) : int2d
+task factorize1d(parallelism : int) : int3d
+  var sizex = parallelism
+  return int3d {sizex, 1, 1} 
+end
+
+task factorize2d(parallelism : int) : int3d
   var limit = [int](cmath.sqrt([double](parallelism)))
   var size_x = 1
   var size_y = parallelism
   for i = 1, limit + 1 do
     if parallelism % i == 0 then
-      size_x, size_y = i, parallelism / i
+      size_x, size_y size_z =  i, 1, parallelism / i
       if size_x > size_y then
         size_x, size_y = size_y, size_x
       end
     end
   end
-  return int2d { size_x, size_y }
+  return int2d { size_x, size_y, 1 }
 end
 
-task factorize3d(parallelism : int) : int2d
-  var limit = [int](cmath.sqrt([double](parallelism)))
+task factorize3d(parallelism : int) : int3d
+  var limit = [int](cmath.pow([double](parallelism), 1/3))
   var size_x = 1
-  var size_y = parallelism
+  var size_y = 1
+  var size_z = parallelism
   for i = 1, limit + 1 do
     if parallelism % i == 0 then
-      size_x, size_y = i, parallelism / i
-      if size_x > size_y then
-        size_x, size_y = size_y, size_x
+      size_x, size_z = i, parallelism / i
+      if size_x > size_z then
+        size_x, size_z = size_z, size_x
       end
     end
+
+    if parallelism % i*i == 0 then
+      size_x, size_y, size_z = i, i, parallelism/i*i
+    end
   end
-  return int2d { size_x, size_y }
+  return int3d { size_x, size_y, size_z }
 end
 
+task factorize(parallelism: int, effD : int32) : wild
+  if effD == 2 then
+    
+
+end
 
 terra wait_for(x : int) return 1 end
 task block_task(r_image : region(ispace(int1d), particle))
@@ -1762,6 +1777,19 @@ task toplevel()
   var r_sig       = region(ispace(int7d, {NV[0], NV[1], NV[2], effD, N[0], N[1], N[2]}), grid)
   var r_sig2      = region(ispace(int8d, {NV[0], NV[1], NV[2], effD, effD, N[0], N[1], N[2]}), grid)
  
+  -- Create partitions for regions
+  -- Create an equal partition of the grid
+  var p_grid_colors = ispace(int2d, factorize2d(config.parallelism))
+  var p_grid = partition(equal, r_grid, p_grid_colors)
+  
+  -- Create partitions for left/right ghost regions
+  var plx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
+  var prx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
+  var ply = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
+  var pry = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
+  var plz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
+  var prz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
+
   -- Create regions for mesh and conserved variables (cell center and interface)
   var r_mesh = region(ispace(int3d, {N[0], N[1], N[2]}), mesh)
   var r_W    = region(ispace(int3d, {N[0], N[1], N[2]}), W)
