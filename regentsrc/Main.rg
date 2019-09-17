@@ -1704,10 +1704,29 @@ task factorize3d(parallelism : int) : int3d
   return int3d { size_x, size_y, size_z }
 end
 
-task factorize(parallelism: int, effD : int32) : wild
-  if effD == 2 then
-    
+task factorize(parallelism: int, effD : int32) : int6d
 
+  var f6 : int6d = {1, 1, 1, 1, 1, 1}
+  var f7 : int7d = {1, 1, 1, 1, 1, 1, 1}
+  var f8 : int8d = {1, 1, 1, 1, 1, 1, 1, 1}
+  if effD == 1 then
+    var f3 = factorize1d(parallelism)
+    f6.w, f6.v, f6.u = f3.x, f3.y, f3.x    
+    f7.v, f7.u, f7.t = f3.x, f3.y, f3.x    
+    f8.u, f7.t, f7.s = f3.x, f3.y, f3.x    
+  elseif effD == 2 then
+    var f3 = factorize2d(parallelism)
+    f6.w, f6.v, f6.u = f3.x, f3.y, f3.x    
+    f7.v, f7.u, f7.t = f3.x, f3.y, f3.x    
+    f8.u, f7.t, f7.s = f3.x, f3.y, f3.x    
+  elseif effD == 3 then
+    var f3 = factorize3d(parallelism)
+    f6.w, f6.v, f6.u = f3.x, f3.y, f3.x    
+    f7.v, f7.u, f7.t = f3.x, f3.y, f3.x    
+    f8.u, f7.t, f7.s = f3.x, f3.y, f3.x    
+  end
+
+  return f6, f7, f8
 end
 
 terra wait_for(x : int) return 1 end
@@ -1778,9 +1797,19 @@ task toplevel()
   var r_sig2      = region(ispace(int8d, {NV[0], NV[1], NV[2], effD, effD, N[0], N[1], N[2]}), grid)
  
   -- Create partitions for regions
-  -- Create an equal partition of the grid
-  var p_grid_colors = ispace(int2d, factorize2d(config.parallelism))
-  var p_grid = partition(equal, r_grid, p_grid_colors)
+  var f6 : int6d
+  var f7 : int7d
+  var f8 : int8d
+  f6, f7, f8 = factorize(config.parallelism, effD) 
+  var p6 = ispace(int6d, f6)
+  var p7 = ispace(int7d, f7)
+  var p8 = ispace(int7d, f8)
+  var p_grid = partition(equal, r_grid, p6)
+  var p_gridbarp = partition(equal, r_gridbarp, p6)
+  var p_gridbarpb = partition(equal, r_gridbarpb, p7)
+  var p_gridbar = partition(equal, r_gridbar, p7)
+  var p_sig = partition(equal, r_sig, p7)
+  var p_sig2 = partition(equal, r_sig2, p8)
   
   -- Create partitions for left/right ghost regions
   var plx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
