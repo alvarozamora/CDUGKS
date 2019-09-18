@@ -1745,6 +1745,102 @@ do
   return 1
 end
 
+terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3])
+
+  -- Periodic Boundary Conditions
+  if (Dim == 0 and BCs[0] == 0) then
+  IL = (i - 1 + N[0])%N[0]
+    IR = (i + 1)%N[0]
+    JL = j
+	JR = j
+	KL = k
+	KR = k
+  end
+  if (Dim == 1 and BCs[1] == 0) then
+    IL = i
+	IR = i
+	JL = (j - 1 + N[1])%N[1]
+    JR = (j + 1)%N[1]
+    KL = k
+	KR = k
+  end
+  if (Dim == 2 and BCs[2] == 0) then
+    IL = i
+	IR = i
+	JL = j
+	JR = j
+	KL = (k - 1 + N[2])%N[2]
+    KR = (k + 1)%N[2]
+  end
+
+
+  -- Dirichlet Boundary Conditions
+  if (Dim == 0 and BCs[0] == 1) then
+    IL = i - 1
+    IR = i + 1
+    if IL <  0 then IL = 0 end
+    if IR == N[0] then IR = N[0] - 1 end
+    JL = j
+	JR = j
+	KL = k
+	KR = k
+  end
+  if (Dim == 1 and BCs[1] == 1) then
+    IL = i
+	IR = i
+	JL = j - 1
+    JR = j + 1
+    if JL <  0 then JL = 0 end
+    if JR == N[1] then JR = N[1] - 1 end
+    KL = k
+	KR = k
+  end
+  if (Dim == 2 and BCs[2] == 1) then
+    IL = i
+	IR = i
+	JL = j
+	JR = j
+	KL = k - 1
+    KR = k + 1
+    if KL <  0 then KL = 0 end
+    if KR == N[2] then KR = N[2] - 1 end
+  end
+
+
+  -- Neumann Boundary Conditions
+  if (Dim == 0 and BCs[0] == 2) then
+    IL = i - 1
+    IR = i + 1
+    if IL <  0 then IL = 0 end
+    if IR == N[0] then IR = N[0] - 1 end
+    JL = j
+	JR = j
+	KL = k
+	KR = k
+  end
+  if (Dim == 1 and BCs[1] == 2) then
+    IL = i
+	IR = i
+	JL = j - 1
+    JR = j + 1
+    if JL <  0 then JL = 0 end
+    if JR == N[1] then JR = N[1] - 1 end
+    KL = k
+	KR = k
+  end
+  if (Dim == 2 and BCs[2] == 2) then
+    IL = i
+	IR = i
+	JL = j
+    JR = j
+   	KL = k - 1
+   	KR = k + 1
+    if KL <  0 then KL = 0 end
+    if KR == N[2] then KR = N[2] - 1 end
+  end
+end
+
+
 task toplevel()
   var config : Config
   config:initialize_from_command() -- TODO : CPUs, output bool
@@ -1803,12 +1899,40 @@ task toplevel()
   var p_sig2 = partition(equal, r_sig2, p8)
   
   -- Create partitions for left/right ghost regions
-  --var plx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
-  --var prx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
-  --var ply = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
-  --var pry = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
-  --var plz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
-  --var prz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
+  var cgridbarp = coloring.create()
+
+  for color in p_gridbarp.colors do
+    var bounds = p_gridbarp[color].bounds
+    
+    var left_lo_x : int32 = bounds.lo.v - 1
+    var left_hi_x : int32 = bounds.lo.v 
+
+
+    var rleftx : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v - 1, bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, bounds.hi.t}}
+    var rlefty : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v - 1, bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, bounds.hi.t}}
+    var rleftz : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v - 1, bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, bounds.hi.t}}
+
+    if bounds.hi.x < L-1 then
+      var bound1 : rect2d  = { {bounds.hi.x, bounds.lo.y}, {bounds.hi.x+1, bounds.hi.y} }
+      coloring.color_domain(c_bound1, color, bound1)
+    end
+    if bounds.hi.y < L-1 then
+      var bound2 : rect2d =  { {bounds.lo.x, bounds.hi.y}, {bounds.hi.x, bounds.hi.y+1} }
+      coloring.color_domain(c_bound2, color, bound2)
+    end
+  end
+
+  var p_bound1 = partition(disjoint, r_grid, c_bound1, p_grid_colors)
+  var p_bound2 = partition(disjoint, r_grid, c_bound2, p_grid_colors)
+  var p_gridbarp_lx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
+  var p_gridbarp_rx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
+  var p_gridbarp_ly = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
+  var p_gridbarp_ry = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
+  var p_gridbarp_lz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
+  var p_gridbarp_rz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
 
   -- Create regions for mesh and conserved variables (cell center and interface)
   var r_mesh = region(ispace(int3d, {N[0], N[1], N[2]}), mesh)
