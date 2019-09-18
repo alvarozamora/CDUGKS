@@ -1671,17 +1671,17 @@ end
 
 task factorize2d(parallelism : int) : int3d
   var limit = [int](cmath.sqrt([double](parallelism)))
-  var size_x = 1
-  var size_y = parallelism
+  var size_x : int32 = 1
+  var size_y : int32 = parallelism
   for i = 1, limit + 1 do
     if parallelism % i == 0 then
-      size_x, size_y size_z =  i, 1, parallelism / i
+      size_x, size_y =  i, parallelism / i, 1
       if size_x > size_y then
         size_x, size_y = size_y, size_x
       end
     end
   end
-  return int2d { size_x, size_y, 1 }
+  return int3d { size_x, size_y, 1 }
 end
 
 task factorize3d(parallelism : int) : int3d
@@ -1704,29 +1704,21 @@ task factorize3d(parallelism : int) : int3d
   return int3d { size_x, size_y, size_z }
 end
 
-task factorize(parallelism: int, effD : int32) : int6d
+task factorize(parallelism: int, effD : int32)
 
   var f6 : int6d = {1, 1, 1, 1, 1, 1}
-  var f7 : int7d = {1, 1, 1, 1, 1, 1, 1}
-  var f8 : int8d = {1, 1, 1, 1, 1, 1, 1, 1}
   if effD == 1 then
     var f3 = factorize1d(parallelism)
     f6.w, f6.v, f6.u = f3.x, f3.y, f3.x    
-    f7.v, f7.u, f7.t = f3.x, f3.y, f3.x    
-    f8.u, f7.t, f7.s = f3.x, f3.y, f3.x    
   elseif effD == 2 then
     var f3 = factorize2d(parallelism)
     f6.w, f6.v, f6.u = f3.x, f3.y, f3.x    
-    f7.v, f7.u, f7.t = f3.x, f3.y, f3.x    
-    f8.u, f7.t, f7.s = f3.x, f3.y, f3.x    
   elseif effD == 3 then
     var f3 = factorize3d(parallelism)
     f6.w, f6.v, f6.u = f3.x, f3.y, f3.x    
-    f7.v, f7.u, f7.t = f3.x, f3.y, f3.x    
-    f8.u, f7.t, f7.s = f3.x, f3.y, f3.x    
   end
 
-  return f6, f7, f8
+  return f6
 end
 
 terra wait_for(x : int) return 1 end
@@ -1797,13 +1789,12 @@ task toplevel()
   var r_sig2      = region(ispace(int8d, {NV[0], NV[1], NV[2], effD, effD, N[0], N[1], N[2]}), grid)
  
   -- Create partitions for regions
-  var f6 : int6d
-  var f7 : int7d
-  var f8 : int8d
-  f6, f7, f8 = factorize(config.parallelism, effD) 
+  var f6 : int6d = factorize(config.cpus, effD)
+  var f7 : int7d = {f6.x, f6.y, f6.z, 1, f6.w, f6.v, f6.u}
+  var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   var p6 = ispace(int6d, f6)
   var p7 = ispace(int7d, f7)
-  var p8 = ispace(int7d, f8)
+  var p8 = ispace(int8d, f8)
   var p_grid = partition(equal, r_grid, p6)
   var p_gridbarp = partition(equal, r_gridbarp, p6)
   var p_gridbarpb = partition(equal, r_gridbarpb, p7)
@@ -1812,12 +1803,12 @@ task toplevel()
   var p_sig2 = partition(equal, r_sig2, p8)
   
   -- Create partitions for left/right ghost regions
-  var plx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
-  var prx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
-  var ply = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
-  var pry = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
-  var plz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
-  var prz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
+  --var plx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
+  --var prx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
+  --var ply = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
+  --var pry = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
+  --var plz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
+  --var prz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
 
   -- Create regions for mesh and conserved variables (cell center and interface)
   var r_mesh = region(ispace(int3d, {N[0], N[1], N[2]}), mesh)
