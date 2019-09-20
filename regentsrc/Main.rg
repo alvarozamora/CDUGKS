@@ -3,6 +3,7 @@ import "regent"
 -- Helper modules to handle PNG files and command line arguments
 local Config = require("config")
 --local Dump = require("dump") -- TODO
+local coloring   = require("coloring_util")
 
 -- Some C APIs
 local c     = regentlib.c
@@ -1747,6 +1748,13 @@ end
 
 terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32[3])
 
+  var IL : int32
+  var JL : int32
+  var KL : int32
+  var IR : int32
+  var JR : int32
+  var KR : int32
+
   -- Periodic Boundary Conditions
   if (Dim == 0 and BCs[0] == 0) then
   IL = (i - 1 + N[0])%N[0]
@@ -1838,7 +1846,13 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32
     if KL <  0 then KL = 0 end
     if KR == N[2] then KR = N[2] - 1 end
 
-    var LR : int32[6] = {IL, JL, KL, IR, JR, KR}
+    var LR : int32[6] 
+    LR[0] = IL
+    LR[1] = JL
+    LR[2] = KL
+    LR[3] = IR
+    LR[4] = JR
+    LR[5] = KR
 
     return LR
   end
@@ -1888,21 +1902,46 @@ task toplevel()
   var r_sig       = region(ispace(int7d, {NV[0], NV[1], NV[2], effD, N[0], N[1], N[2]}), grid)
   var r_sig2      = region(ispace(int8d, {NV[0], NV[1], NV[2], effD, effD, N[0], N[1], N[2]}), grid)
  
+  -- Create regions for mesh and conserved variables (cell center and interface)
+  var r_mesh = region(ispace(int3d, {N[0], N[1], N[2]}), mesh)
+  var r_W    = region(ispace(int3d, {N[0], N[1], N[2]}), W)
+  var r_Wb   = region(ispace(int4d, {effD, N[0], N[1], N[2]}), W)
+ 
+  -- Create regions for velocity space and initialize
+  var vxmesh = region(ispace(int1d, NV[0]), vmesh) 
+  var vymesh = region(ispace(int1d, NV[1]), vmesh) 
+  var vzmesh = region(ispace(int1d, NV[2]), vmesh) 
+  NewtonCotes(vxmesh, vymesh, vzmesh, NV, Vmin, Vmax)
+
+  -- Create regions for source terms and flux
+  var r_S = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
+  var r_F = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
+
+
   -- Create partitions for regions
   var f6 : int6d = factorize(config.cpus, effD)
+  var f3 : int3d = {f6.w, f6.v, f6.u}
+  var f4 : int4d = {1, f6.w, f6.v, f6.u}
   var f7 : int7d = {f6.x, f6.y, f6.z, 1, f6.w, f6.v, f6.u}
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   var p6 = ispace(int6d, f6)
   var p7 = ispace(int7d, f7)
   var p8 = ispace(int8d, f8)
+  var p3 = ispace(int3d, f3)
+  var p4 = ispace(int4d, f4)
   var p_grid = partition(equal, r_grid, p6)
   var p_gridbarp = partition(equal, r_gridbarp, p6)
   var p_gridbarpb = partition(equal, r_gridbarpb, p7)
   var p_gridbar = partition(equal, r_gridbar, p7)
   var p_sig = partition(equal, r_sig, p7)
   var p_sig2 = partition(equal, r_sig2, p8)
-  
-  -- Create partitions for left/right ghost regions
+  var p_mesh = partition(equal, r_mesh, p3)
+  var p_W = partition(equal, r_W, p3)
+  var p_Wb = partition(equal, r_Wb, p4)
+  var p_S = partition(equal, r_S, p6)
+  var p_F = partition(equal, r_F, p6)
+
+  -- Create coloring for partitions for left/right ghost regions
   var c3Lx = coloring.create()
   var c6Lx = coloring.create()
   var c7Lx = coloring.create()
@@ -1929,8 +1968,7 @@ task toplevel()
   var c7Rz = coloring.create()
   var c8Rz = coloring.create()
  
-  -- LEFTOFF DOING 8 DIMENSIONAL COLORING
-  
+  -- Create Rects for colorings for partitions
   for color in p_gridbarp.colors do
     var bounds = p_gridbarp[color].bounds
     
@@ -1990,34 +2028,83 @@ task toplevel()
     var rrightz7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
 
+    var rleftx8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, BC(il, jl, kl, 0, BCs, N)[0], bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, BC(il, jl, kl, 0, BCs, N)[0] + 1, bounds.hi.u, bounds.hi.t}}
+    var rlefty8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1], bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1] + 1, bounds.hi.t}}
+    var rleftz8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, bounds.lo.v, bounds.lo.u, BC(il, jl, kl, 2, BCs, N)[2]}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, bounds.lo.v, bounds.hi.u, BC(il, jl, kl, 2, BCs, N)[2] + 1}}
+
+    var rrightx8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, BC(ir, jr, kr, 0, BCs, N)[3], bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, BC(ir, jr, kr, 0, BCs, N)[3] + 1, bounds.hi.u, bounds.hi.t}}
+    var rrighty8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4], bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
+    var rrightz8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+
     coloring.color_domain(c3Lx, color, rleftx3)
     coloring.color_domain(c6Lx, color, rleftx6)
     coloring.color_domain(c7Lx, color, rleftx7)
+    coloring.color_domain(c8Lx, color, rleftx8)
+    coloring.color_domain(c3Ly, color, rlefty3)
+    coloring.color_domain(c6Ly, color, rlefty6)
+    coloring.color_domain(c7Ly, color, rlefty7)
+    coloring.color_domain(c8Ly, color, rlefty8)
+    coloring.color_domain(c3Lz, color, rleftz3)
+    coloring.color_domain(c6Lz, color, rleftz6)
+    coloring.color_domain(c7Lz, color, rleftz7)
+    coloring.color_domain(c8Lz, color, rleftz8)
+
+    coloring.color_domain(c3Rx, color, rrightx3)
+    coloring.color_domain(c6Rx, color, rrightx6)
+    coloring.color_domain(c7Rx, color, rrightx7)
+    coloring.color_domain(c8Rx, color, rrightx8)
+    coloring.color_domain(c3Ry, color, rrighty3)
+    coloring.color_domain(c6Ry, color, rrighty6)
+    coloring.color_domain(c7Ry, color, rrighty7)
+    coloring.color_domain(c8Ry, color, rrighty8)
+    coloring.color_domain(c3Rz, color, rrightz3)
+    coloring.color_domain(c6Rz, color, rrightz6)
+    coloring.color_domain(c7Rz, color, rrightz7)
+    coloring.color_domain(c8Rz, color, rrightz8)
   end
 
-  var p_bound1 = partition(disjoint, r_grid, c_bound1, p_grid_colors)
-  var p_bound2 = partition(disjoint, r_grid, c_bound2, p_grid_colors)
-  var p_gridbarp_lx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
-  var p_gridbarp_rx = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, 1, N[1], N[2]}), ghost)
-  var p_gridbarp_ly = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
-  var p_gridbarp_ry = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], 1, N[2]}), ghost)
-  var p_gridbarp_lz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
-  var p_gridbarp_rz = region(ispace(int7d, {NV[0], NV[1], NV[2], 1, N[0], N[1], 1}), ghost)
+  -- Create Partitions
+  var plx_mesh = partition(disjoint, r_mesh, c3Lx, p3)
+  var ply_mesh = partition(disjoint, r_mesh, c3Ly, p3)
+  var plz_mesh = partition(disjoint, r_mesh, c3Lz, p3)
+  var prx_mesh = partition(disjoint, r_mesh, c3Rx, p3)
+  var pry_mesh = partition(disjoint, r_mesh, c3Ry, p3)
+  var prz_mesh = partition(disjoint, r_mesh, c3Rz, p3)
 
-  -- Create regions for mesh and conserved variables (cell center and interface)
-  var r_mesh = region(ispace(int3d, {N[0], N[1], N[2]}), mesh)
-  var r_W    = region(ispace(int3d, {N[0], N[1], N[2]}), W)
-  var r_Wb   = region(ispace(int4d, {effD, N[0], N[1], N[2]}), W)
- 
-  -- Create regions for velocity space and initialize
-  var vxmesh = region(ispace(int1d, NV[0]), vmesh) 
-  var vymesh = region(ispace(int1d, NV[1]), vmesh) 
-  var vzmesh = region(ispace(int1d, NV[2]), vmesh) 
-  NewtonCotes(vxmesh, vymesh, vzmesh, NV, Vmin, Vmax)
+  var plx_gridbarp = partition(disjoint, r_gridbarp, c7Lx, p7)
+  var ply_gridbarp = partition(disjoint, r_gridbarp, c7Ly, p7)
+  var plz_gridbarp = partition(disjoint, r_gridbarp, c7Lz, p7)
+  var prx_gridbarp = partition(disjoint, r_gridbarp, c7Rx, p7)
+  var pry_gridbarp = partition(disjoint, r_gridbarp, c7Ry, p7)
+  var prz_gridbarp = partition(disjoint, r_gridbarp, c7Rz, p7)
 
-  -- Create regions for source terms and flux
-  var r_S = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
-  var r_F = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
+  var plx_sig = partition(disjoint, r_sig, c7Lx, p7)
+  var ply_sig = partition(disjoint, r_sig, c7Ly, p7)
+  var plz_sig = partition(disjoint, r_sig, c7Lz, p7)
+  var prx_sig = partition(disjoint, r_sig, c7Rx, p7)
+  var pry_sig = partition(disjoint, r_sig, c7Ry, p7)
+  var prz_sig = partition(disjoint, r_sig, c7Rz, p7)
+
+  var plx_gridbar = partition(disjoint, r_gridbar, c7Lx, p7)
+  var ply_gridbar = partition(disjoint, r_gridbar, c7Ly, p7)
+  var plz_gridbar = partition(disjoint, r_gridbar, c7Lz, p7)
+  var prx_gridbar = partition(disjoint, r_gridbar, c7Rx, p7)
+  var pry_gridbar = partition(disjoint, r_gridbar, c7Ry, p7)
+  var prz_gridbar = partition(disjoint, r_gridbar, c7Rz, p7)
+
+  var plx_sig2 = partition(disjoint, r_sig2, c8Lx, p8)
+  var ply_sig2 = partition(disjoint, r_sig2, c8Ly, p8)
+  var plz_sig2 = partition(disjoint, r_sig2, c8Lz, p8)
+  var prx_sig2 = partition(disjoint, r_sig2, c8Rx, p8)
+  var pry_sig2 = partition(disjoint, r_sig2, c8Ry, p8)
+  var prz_sig2 = partition(disjoint, r_sig2, c8Rz, p8)
+
 
   --Initialize r_mesh
   var MeshType : int32 = 1
