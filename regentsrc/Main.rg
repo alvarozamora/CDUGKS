@@ -1745,7 +1745,7 @@ do
   return 1
 end
 
-terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3])
+terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32[3])
 
   -- Periodic Boundary Conditions
   if (Dim == 0 and BCs[0] == 0) then
@@ -1837,6 +1837,10 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3])
    	KR = k + 1
     if KL <  0 then KL = 0 end
     if KR == N[2] then KR = N[2] - 1 end
+
+    var LR : int32[6] = {IL, JL, KL, IR, JR, KR}
+
+    return LR
   end
 end
 
@@ -1899,30 +1903,96 @@ task toplevel()
   var p_sig2 = partition(equal, r_sig2, p8)
   
   -- Create partitions for left/right ghost regions
-  var cgridbarp = coloring.create()
+  var c3Lx = coloring.create()
+  var c6Lx = coloring.create()
+  var c7Lx = coloring.create()
+  var c8Lx = coloring.create()
+  var c3Ly = coloring.create()
+  var c6Ly = coloring.create()
+  var c7Ly = coloring.create()
+  var c8Ly = coloring.create()
+  var c3Lz = coloring.create()
+  var c6Lz = coloring.create()
+  var c7Lz = coloring.create()
+  var c8Lz = coloring.create()
 
+  var c3Rx = coloring.create()
+  var c6Rx = coloring.create()
+  var c7Rx = coloring.create()
+  var c8Rx = coloring.create()
+  var c3Ry = coloring.create()
+  var c6Ry = coloring.create()
+  var c7Ry = coloring.create()
+  var c8Ry = coloring.create()
+  var c3Rz = coloring.create()
+  var c6Rz = coloring.create()
+  var c7Rz = coloring.create()
+  var c8Rz = coloring.create()
+ 
+  -- LEFTOFF DOING 8 DIMENSIONAL COLORING
+  
   for color in p_gridbarp.colors do
     var bounds = p_gridbarp[color].bounds
     
     var left_lo_x : int32 = bounds.lo.v - 1
     var left_hi_x : int32 = bounds.lo.v 
+    
+    -- Leftmost and Rightmost indices
+    var il : int32 = bounds.lo.v
+    var jl : int32 = bounds.lo.u
+    var kl : int32 = bounds.lo.t
+    var ir : int32 = bounds.lo.v
+    var jr : int32 = bounds.lo.u
+    var kr : int32 = bounds.lo.t
 
 
-    var rleftx : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v - 1, bounds.lo.u, bounds.lo.t}, 
-                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, bounds.hi.t}}
-    var rlefty : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v - 1, bounds.lo.u, bounds.lo.t}, 
-                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, bounds.hi.t}}
-    var rleftz : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v - 1, bounds.lo.u, bounds.lo.t}, 
-                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, bounds.hi.t}}
+    -- for reference -- terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32[3])
 
-    if bounds.hi.x < L-1 then
-      var bound1 : rect2d  = { {bounds.hi.x, bounds.lo.y}, {bounds.hi.x+1, bounds.hi.y} }
-      coloring.color_domain(c_bound1, color, bound1)
-    end
-    if bounds.hi.y < L-1 then
-      var bound2 : rect2d =  { {bounds.lo.x, bounds.hi.y}, {bounds.hi.x, bounds.hi.y+1} }
-      coloring.color_domain(c_bound2, color, bound2)
-    end
+    var rleftx3 : rect3d = { {BC(il, jl, kl, 0, BCs, N)[0], bounds.lo.u, bounds.lo.t}, 
+                          {BC(il, jl, kl, 0, BCs, N)[0] + 1, bounds.hi.u, bounds.hi.t}}
+    var rlefty3 : rect3d = { {bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1], bounds.lo.t}, 
+                          {bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1] + 1, bounds.hi.t}}
+    var rleftz3 : rect3d = { {bounds.lo.v, bounds.lo.u, BC(il, jl, kl, 2, BCs, N)[2]}, 
+                          {bounds.lo.v, bounds.hi.u, BC(il, jl, kl, 2, BCs, N)[2] + 1}}
+
+    var rrightx3 : rect3d = { {BC(ir, jr, kr, 0, BCs, N)[3], bounds.lo.u, bounds.lo.t}, 
+                          {BC(ir, jr, kr, 0, BCs, N)[3] + 1, bounds.hi.u, bounds.hi.t}}
+    var rrighty3 : rect3d = { {bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4], bounds.lo.t}, 
+                          {bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
+    var rrightz3 : rect3d = { {bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
+                          {bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+
+    var rleftx6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, BC(il, jl, kl, 0, BCs, N)[0], bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, BC(il, jl, kl, 0, BCs, N)[0] + 1, bounds.hi.u, bounds.hi.t}}
+    var rlefty6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1], bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1] + 1, bounds.hi.t}}
+    var rleftz6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.v, bounds.lo.u, BC(il, jl, kl, 2, BCs, N)[2]}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.lo.v, bounds.hi.u, BC(il, jl, kl, 2, BCs, N)[2] + 1}}
+
+    var rrightx6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, BC(ir, jr, kr, 0, BCs, N)[3], bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, BC(ir, jr, kr, 0, BCs, N)[3] + 1, bounds.hi.u, bounds.hi.t}}
+    var rrighty6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4], bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
+    var rrightz6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+
+    var rleftx7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, BC(il, jl, kl, 0, BCs, N)[0], bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, BC(il, jl, kl, 0, BCs, N)[0] + 1, bounds.hi.u, bounds.hi.t}}
+    var rlefty7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1], bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, BC(il, jl, kl, 1, BCs, N)[1] + 1, bounds.hi.t}}
+    var rleftz7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v, bounds.lo.u, BC(il, jl, kl, 2, BCs, N)[2]}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, BC(il, jl, kl, 2, BCs, N)[2] + 1}}
+
+    var rrightx7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, BC(ir, jr, kr, 0, BCs, N)[3], bounds.lo.u, bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, BC(ir, jr, kr, 0, BCs, N)[3] + 1, bounds.hi.u, bounds.hi.t}}
+    var rrighty7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4], bounds.lo.t}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
+    var rrightz7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
+                          {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+
+    coloring.color_domain(c3Lx, color, rleftx3)
+    coloring.color_domain(c6Lx, color, rleftx6)
+    coloring.color_domain(c7Lx, color, rleftx7)
   end
 
   var p_bound1 = partition(disjoint, r_grid, c_bound1, p_grid_colors)
