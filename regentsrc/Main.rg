@@ -941,22 +941,59 @@ do
       var swap : double = 1.0
 
       --LEFTOFF HERE
+      if (Dim == 0 and r_gridbarp.bounds.hi.w == e.w) then
+        gbpR = prx_gridbarp[eR].g
+        bbpR = prx_gridbarp[eR].b
+        xR = prx_mesh[eR3].x
+      elseif Dim == 0 then
+        gbpR = r_gridbarp[eR].g
+        bbpR = r_gridbarp[eR].b
+        xR = r_mesh[eR3].x
+      end
+
+      if (Dim == 1 and r_gridbarp.bounds.hi.v == e.v) then
+        gbpR = pry_gridbarp[eR].g
+        bbpR = pry_gridbarp[eR].b
+        xR = pry_mesh[eR3].y
+      elseif Dim == 1
+        gbpR = r_gridbarp[eR].g
+        bbpR = r_gridbarp[eR].b
+        xR = pry_mesh[eR3].y
+      end
+
+      if (Dim == 2 and r_gridbarp.bounds.hi.u == e.u) then
+        gbpR = prz_gridbarp[eR].g
+        bbpR = prz_gridbarp[eR].b
+        xR = prz_mesh[eR3].z
+      elseif Dim == 2
+        gbpR = r_gridbarp[eR].g
+        bbpR = r_gridbarp[eR].b
+        xR = r_mesh[eR3].z
+      end
+
+      var gsig : double = r_sig[e7].g
+      var bsig : double = r_sig[e7].b
+      
       if (vxmesh[e.x].v < 0 and Dim == 0) then
-        interpidx = eR7
+        gsig = prx_sig[eR7].g
+        bsig = prx_sig[eR7].b
         swap = -1
       elseif (vymesh[e.y].v < 0 and Dim == 1) then
-        interpidx = eR7 
+        gsig = pry_sig[eR7].g
+        bsig = pry_sig[eR7].b
         swap = -1
       elseif (vzmesh[e.z].v < 0 and Dim == 2) then
-        interpidx = eR7 
+        gsig = prz_sig[eR7].g
+        bsig = prz_sig[eR7].b
         swap = -1
       end
+      --LEFTTOFF : realized I need to make these two separate tasks for parallel...
 
       var interpid  : int6d = {interpidx.x, interpidx.y, interpidx.z, interpidx.v, interpidx.u, interpidx.t}
       
       -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-      r_gridbarpb[e7].g = r_gridbarp[interpid].g + swap*sC[Dim]/2.0*r_sig[interpidx].g
-      r_gridbarpb[e7].b = r_gridbarp[interpid].b + swap*sC[Dim]/2.0*r_sig[interpidx].b
+      r_gridbarpb[e7].g = r_gridbarp[interpid].g + swap*sC[Dim]/2.0*gsig
+      r_gridbarpb[e7].b = r_gridbarp[interpid].b + swap*sC[Dim]/2.0*bsig
 
 
     if (isnan(r_gridbarpb[e7].g) == 1 or isnan(r_gridbarpb[e7].b) == 1) then
