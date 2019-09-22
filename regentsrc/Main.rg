@@ -492,6 +492,119 @@ terra VanLeer(L : double, C : double, R : double, xL : double, xC : double, xR :
   end  
 end
 
+
+terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32[3])
+
+  var IL : int32
+  var JL : int32
+  var KL : int32
+  var IR : int32
+  var JR : int32
+  var KR : int32
+
+  -- Periodic Boundary Conditions
+  if (Dim == 0 and BCs[0] == 0) then
+  IL = (i - 1 + N[0])%N[0]
+    IR = (i + 1)%N[0]
+    JL = j
+	JR = j
+	KL = k
+	KR = k
+  end
+  if (Dim == 1 and BCs[1] == 0) then
+    IL = i
+	IR = i
+	JL = (j - 1 + N[1])%N[1]
+    JR = (j + 1)%N[1]
+    KL = k
+	KR = k
+  end
+  if (Dim == 2 and BCs[2] == 0) then
+    IL = i
+	IR = i
+	JL = j
+	JR = j
+	KL = (k - 1 + N[2])%N[2]
+    KR = (k + 1)%N[2]
+  end
+
+
+  -- Dirichlet Boundary Conditions
+  if (Dim == 0 and BCs[0] == 1) then
+    IL = i - 1
+    IR = i + 1
+    if IL <  0 then IL = 0 end
+    if IR == N[0] then IR = N[0] - 1 end
+    JL = j
+	JR = j
+	KL = k
+	KR = k
+  end
+  if (Dim == 1 and BCs[1] == 1) then
+    IL = i
+	IR = i
+	JL = j - 1
+    JR = j + 1
+    if JL <  0 then JL = 0 end
+    if JR == N[1] then JR = N[1] - 1 end
+    KL = k
+	KR = k
+  end
+  if (Dim == 2 and BCs[2] == 1) then
+    IL = i
+	IR = i
+	JL = j
+	JR = j
+	KL = k - 1
+    KR = k + 1
+    if KL <  0 then KL = 0 end
+    if KR == N[2] then KR = N[2] - 1 end
+  end
+
+
+  -- Neumann Boundary Conditions
+  if (Dim == 0 and BCs[0] == 2) then
+    IL = i - 1
+    IR = i + 1
+    if IL <  0 then IL = 0 end
+    if IR == N[0] then IR = N[0] - 1 end
+    JL = j
+	JR = j
+	KL = k
+	KR = k
+  end
+  if (Dim == 1 and BCs[1] == 2) then
+    IL = i
+	IR = i
+	JL = j - 1
+    JR = j + 1
+    if JL <  0 then JL = 0 end
+    if JR == N[1] then JR = N[1] - 1 end
+    KL = k
+	KR = k
+  end
+  if (Dim == 2 and BCs[2] == 2) then
+    IL = i
+	IR = i
+	JL = j
+    JR = j
+   	KL = k - 1
+   	KR = k + 1
+    if KL <  0 then KL = 0 end
+    if KR == N[2] then KR = N[2] - 1 end
+
+    var LR : int32[6] 
+    LR[0] = IL
+    LR[1] = JL
+    LR[2] = KL
+    LR[3] = IR
+    LR[4] = JR
+    LR[5] = KR
+
+    return LR
+  end
+end
+
 terra TimeStep(calcdt : double, dumptime : double, tend : double)
   var timestep : double = cmath.fmin(cmath.fmin(calcdt, dumptime), tend)
   return timestep
@@ -574,6 +687,24 @@ task Step1b(r_gridbarp : region(ispace(int6d), grid),
             r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
+            plx_mesh : region(ispace(int3d), mesh),
+            ply_mesh : region(ispace(int3d), mesh),
+            plz_mesh : region(ispace(int3d), mesh),
+            prx_mesh : region(ispace(int3d), mesh),
+            pry_mesh : region(ispace(int3d), mesh),
+            prz_mesh : region(ispace(int3d), mesh),
+            plx_gridbarp : region(ispace(int6d), grid),
+            ply_gridbarp : region(ispace(int6d), grid),
+            plz_gridbarp : region(ispace(int6d), grid),
+            prx_gridbarp : region(ispace(int6d), grid),
+            pry_gridbarp : region(ispace(int6d), grid),
+            prz_gridbarp : region(ispace(int6d), grid),
+            plx_sig : region(ispace(int7d), grid),
+            ply_sig : region(ispace(int7d), grid),
+            plz_sig : region(ispace(int7d), grid),
+            prx_sig : region(ispace(int7d), grid),
+            pry_sig : region(ispace(int7d), grid),
+            prz_sig : region(ispace(int7d), grid),     
             vxmesh : region(ispace(int1d), vmesh),            
             vymesh : region(ispace(int1d), vmesh),            
             vzmesh : region(ispace(int1d), vmesh),            
@@ -610,111 +741,20 @@ do
     end
 
     for Dim = 0, effD do
-      var IL : int32 
-      var IR : int32
-      var JL : int32
-      var JR : int32
-      var KL : int32
-      var KR : int32
-
       var e7 : int7d = {e.x, e.y, e.z, Dim, e.w, e.v, e.u}
 
       var i : int32 = e.w
       var j : int32 = e.v
       var k : int32 = e.u
 
-      -- Periodic Boundary Conditions
-      if (Dim == 0 and BCs[0] == 0) then 
-        IL = (i - 1 + N[0])%N[0] 
-        IR = (i + 1)%N[0] 
-        JL = j
-        JR = j
-        KL = k
-        KR = k
-      end 
-      if (Dim == 1 and BCs[1] == 0) then
-        IL = i
-        IR = i
-        JL = (j - 1 + N[1])%N[1]
-        JR = (j + 1)%N[1] 
-        KL = k
-        KR = k
-      end
-      if (Dim == 2 and BCs[2] == 0) then
-        IL = i
-        IR = i
-        JL = j
-        JR = j
-        KL = (k - 1 + N[2])%N[2] 
-        KR = (k + 1)%N[2] 
-      end
+      var bc = int6d = BC(i, j, k, Dim, BCs, N)
+      var IL : int32 = bc[0]
+      var IR : int32 = bc[1]
+      var JL : int32 = bc[2]
+      var JR : int32 = bc[3] 
+      var KL : int32 = bc[4]
+      var KR : int32 = bc[5]
 
-
-      -- Dirichlet Boundary Conditions
-      if (Dim == 0 and BCs[0] == 1) then
-        IL = i - 1 
-        IR = i + 1 
-        if IL <  0 then IL = 0 end 
-        if IR == N[0] then IR = N[0] - 1 end
-        JL = j
-        JR = j
-        KL = k
-        KR = k
-      end 
-      if (Dim == 1 and BCs[1] == 1) then
-        IL = i
-        IR = i
-        JL = j - 1 
-        JR = j + 1
-        if JL <  0 then JL = 0 end 
-        if JR == N[1] then JR = N[1] - 1 end
-        KL = k
-        KR = k
-      end
-      if (Dim == 2 and BCs[2] == 1) then
-        IL = i
-        IR = i
-        JL = j
-        JR = j
-        KL = k - 1 
-        KR = k + 1 
-        if KL <  0 then KL = 0 end 
-        if KR == N[2] then KR = N[2] - 1 end
-      end
-      
-      
-      -- Neumann Boundary Conditions
-      if (Dim == 0 and BCs[0] == 2) then
-        IL = i - 1 
-        IR = i + 1 
-        if IL <  0 then IL = 0 end 
-        if IR == N[0] then IR = N[0] - 1 end
-        JL = j
-        JR = j
-        KL = k
-        KR = k
-      end 
-      if (Dim == 1 and BCs[1] == 2) then
-        IL = i
-        IR = i
-        JL = j - 1 
-        JR = j + 1
-        if JL <  0 then JL = 0 end 
-        if JR == N[1] then JR = N[1] - 1 end
-        KL = k
-        KR = k
-      end
-      if (Dim == 2 and BCs[2] == 2) then
-        IL = i
-        IR = i
-        JL = j
-        JR = j
-        KL = k - 1 
-        KR = k + 1 
-        if KL <  0 then KL = 0 end 
-        if KR == N[2] then KR = N[2] - 1 end
-      end
-      
       -- Gather Left and Right Indices
       var eL : int6d = {e.x, e.y, e.z, IL, JL, KL}
       var eR : int6d = {e.x, e.y, e.z, IR, JR, KR}
@@ -725,26 +765,75 @@ do
 
       
 
-      -- Gather position of left/right cell centers
-      xL[0] = r_mesh[eL3].x
-      xL[1] = r_mesh[eL3].y
-      xL[2] = r_mesh[eL3].z
-      xR[0] = r_mesh[eR3].x
-      xR[1] = r_mesh[eR3].y
-      xR[2] = r_mesh[eR3].z
-      
-      -- Gather cell size of left/right cells
-      sL[0] = r_mesh[eL3].dx
-      sL[1] = r_mesh[eL3].dy
-      sL[2] = r_mesh[eL3].dz
-      sR[0] = r_mesh[eR3].dx
-      sR[1] = r_mesh[eR3].dy
-      sR[2] = r_mesh[eR3].dz
-      
-
       -- Computing phisigma, at cell 
-      r_sig[e7].g = VanLeer(r_gridbarp[eL].g, r_gridbarp[e].g, r_gridbarp[eR].g, xL[Dim], xC[Dim], xR[Dim])
-      r_sig[e7].b = VanLeer(r_gridbarp[eR].g, r_gridbarp[e].b, r_gridbarp[eR].b, xL[Dim], xC[Dim], xR[Dim])
+      var gbpL : double
+      var gbpR : double
+      var bbpL : double
+      var bbpR : double
+      var xL : double
+      var xR : double
+      var sL : double
+      var sR : double
+
+      if (Dim == 0 and r_gridbarp.bounds.lo.w == e.w) then
+        gbpL = plx_gridbarp[eL].g 
+        bbpL = plx_gridbarp[eL].b 
+        xL = plx_mesh[eL3].x
+      elseif Dim == 0 then 
+        gbpL = r_gridbarp[eL].g
+        bbpL = r_gridbarp[eL].b
+        xL = plx_mesh[eL3].x
+      end
+      if (Dim == 0 and r_gridbarp.bounds.hi.w == e.w) then
+        gbpR = prx_gridbarp[eR].g
+        bbpR = prx_gridbarp[eR].b
+        xR = prx_mesh[eR3].x
+      elseif Dim == 0 then
+        gbpR = r_gridbarp[eR].g
+        bbpR = r_gridbarp[eR].b
+        xR = r_mesh[eR3].x
+      end
+
+      if (Dim == 1 and r_gridbarp.bounds.lo.v == e.v) then
+        gbpL = ply_gridbarp[eL].g 
+        bbpL = ply_gridbarp[eL].b
+        xL = ply_mesh[eL3].x
+      elseif Dim == 1
+        gbpL = r_gridbarp[eL].g
+        bbpL = r_gridbarp[eL].b
+        xL = r_mesh[eL3].y 
+      end
+      if (Dim == 1 and r_gridbarp.bounds.hi.v == e.v) then
+        gbpR = pry_gridbarp[eR].g
+        bbpR = pry_gridbarp[eR].b
+        xR = pry_mesh[eR3].y
+      elseif Dim == 1
+        gbpR = r_gridbarp[eR].g
+        bbpR = r_gridbarp[eR].b
+        xR = pry_mesh[eR3].y
+      end
+
+      if (Dim == 2 and r_gridbarp.bounds.lo.u == e.u) then
+        gbpL = plz_gridbarp[eL].g 
+        bbpL = plz_gridbarp[eL].b
+        xL = plz_mesh[el3].z
+      elseif Dim == 2
+        gbpL = r_gridbarp[eL].g
+        bbpL = r_gridbarp[eL].b
+        xL = r_mesh[el3].z
+      end 
+      if (Dim == 2 and r_gridbarp.bounds.hi.u == e.u) then
+        gbpR = prz_gridbarp[eR].g
+        bbpR = prz_gridbarp[eR].b
+        xR = prz_mesh[eR3].z
+      elseif Dim == 2
+        gbpR = r_gridbarp[eR].g
+        bbpR = r_gridbarp[eR].b
+        xR = r_mesh[eR3].z
+      end
+      
+      r_sig[e7].g = VanLeer(gbpL, r_gridbarp[e].g, gbpR, xL, xC[Dim], xR)
+      r_sig[e7].b = VanLeer(bbpL, r_gridbarp[e].b, gbpR, xL, xC[Dim], xR)
 
       --printf("Checking bsigma input[%d][%d]: bbarp[idxL] = %f, bbarp[idx] = %f, bbarp[idxR] = %f, xL[Dim] = %f, xC[Dim] = %f, xR[Dim] = %f\n", sidx, vx, bbarp[idxL], bbarp[idx], bbarp[idxR], xL[Dim], xC[Dim], xR[Dim])
 
@@ -752,106 +841,17 @@ do
 
       -- Computing phisigma, at interface
       for Dim2 = 0, effD do
-        var IL2 : int32 
-        var IR2 : int32
-        var JL2 : int32
-        var JR2 : int32
-        var KL2 : int32
-        var KR2 : int32
+  
+        var bc2 : int6d = BC(i, j, k, Dim2, BCs, N)
+
+        var IL2 : int32 = bc2[0]
+        var IR2 : int32 = bc2[0]
+        var JL2 : int32 = bc2[0]
+        var JR2 : int32 = bc2[0]
+        var KL2 : int32 = bc2[0]
+        var KR2 : int32 = bc2[0]
 
         var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
-
-        -- Periodic Boundary Conditions
-        if (Dim2 == 0 and BCs[0] == 0) then 
-          IL2 = (i - 1 + N[0])%N[0] 
-          IR2 = (i + 1)%N[0] 
-          JL2 = j
-          JR2 = j
-          KL2 = k
-          KR2 = k
-        end 
-        if (Dim2 == 1 and BCs[1] == 0) then
-          IL2 = i
-          IR2 = i
-          JL2 = (j - 1 + N[1])%N[1]
-          JR2 = (j + 1)%N[1] 
-          KL2 = k
-          KR2 = k
-        end
-        if (Dim2 == 2 and BCs[2] == 0) then
-          IL2 = i
-          IR2 = i
-          JL2 = j
-          JR2 = j
-          KL2 = (k - 1 + N[2])%N[2] 
-          KR2 = (k + 1)%N[2] 
-        end
-
-
-        -- Dirichlet Boundary Conditions
-        if (Dim2 == 0 and BCs[0] == 1) then
-          IL2 = i - 1 
-          IR2 = i + 1 
-          if IL2 <  0 then IL2 = 0 end 
-          if IR2 == N[0] then IR2 = N[0] - 1 end
-          JL2 = j
-          JR2 = j
-          KL2 = k
-          KR2 = k
-        end 
-        if (Dim2 == 1 and BCs[1] == 1) then
-          IL2 = i
-          IR2 = i
-          JL2 = j - 1 
-          JR2 = j + 1
-          if JL2 <  0 then JL2 = 0 end 
-          if JR2 == N[1] then JR2 = N[1] - 1 end
-          KL2 = k
-          KR2 = k
-        end
-        if (Dim2 == 2 and BCs[2] == 1) then
-          IL2 = i
-          IR2 = i
-          JL2 = j
-          JR2 = j
-          KL2 = k - 1 
-          KR2 = k + 1 
-          if KL2 <  0 then KL2 = 0 end 
-          if KR2 == N[2] then KR2 = N[2] - 1 end
-        end
-      
-      
-        -- Neumann Boundary Conditions
-        if (Dim2 == 0 and BCs[0] == 2) then
-          IL2 = i - 1 
-          IR2 = i + 1 
-          if IL2 <  0 then IL2 = 0 end 
-          if IR2 == N[0] then IR2 = N[0] - 1 end
-          JL2 = j
-          JR2 = j
-          KL2 = k
-          KR2 = k
-        end 
-        if (Dim2 == 1 and BCs[1] == 2) then
-          IL2 = i
-          IR2 = i
-          JL2 = j - 1 
-          JR2 = j + 1
-          if JL2 <  0 then JL2 = 0 end 
-          if JR2 == N[1] then JR2 = N[1] - 1 end
-          KL2 = k
-          KR2 = k
-        end
-        if (Dim2 == 2 and BCs[2] == 2) then
-          IL2 = i
-          IR2 = i
-          JL2 = j
-          JR2 = j
-          KL2 = k - 1 
-          KR2 = k + 1 
-          if KL2 <  0 then KL2 = 0 end 
-          if KR2 == N[2] then KR2 = N[2] - 1 end
-        end
 
         -- Gather Left and Right Indices
         var eL2 : int6d = {e.x, e.y, e.z, IL2, JL2, KL2}
@@ -861,29 +861,77 @@ do
         var eL2_7 : int7d = {e.x, e.y, e.z, Dim2, IL2, JL2, KL2}
         var eR2_7 : int7d = {e.x, e.y, e.z, Dim2, IR2, JR2, KR2}
 
-
-        -- Gather position of left/right cell centers -- TODO Maybe Optimize by only updating Dim2
-        xL2[0] = r_mesh[eL2_3].x
-        xL2[1] = r_mesh[eL2_3].y
-        xL2[2] = r_mesh[eL2_3].z
-        xR2[0] = r_mesh[eR2_3].x
-        xR2[1] = r_mesh[eR2_3].y
-        xR2[2] = r_mesh[eR2_3].z
-      
-        -- Gather cell size of left/right cells
-        sL2[0] = r_mesh[eL2_3].dx
-        sL2[1] = r_mesh[eL2_3].dy
-        sL2[2] = r_mesh[eL2_3].dz
-        sR2[0] = r_mesh[eR2_3].dx
-        sR2[1] = r_mesh[eR2_3].dy
-        sR2[2] = r_mesh[eR2_3].dz
-
-
+     
         -- Dim  is vector component that is being interpolated.
         -- Dim2 is direction of interpolation.
+        var gsigL : double
+        var gsigR : double
+        var bsigL : double
+        var bsigR : double
+        var xL2 : double
+        var xR2 : double
+        var sL2 : double
+        var sR2 : double
 
-        r_sig2[e8].g = r_sig[e7].g + (sC[Dim2]/2.0)*VanLeer(r_sig[eL2_7].g, r_sig[e7].g, r_sig[eR2_7].g, xL2[Dim2], xC[Dim2], xR2[Dim2])
-        r_sig2[e8].b = r_sig[e7].b + (sC[Dim2]/2.0)*VanLeer(r_sig[eL2_7].b, r_sig[e7].b, r_sig[eR2_7].b, xL2[Dim2], xC[Dim2], xR2[Dim2])
+        if (Dim2 == 0 and r_sig.bounds.lo.v == e.v) then
+          gsigL = plx_sig[eL].g 
+          bsigL = plx_sig[eL].b 
+          xL2 = plx_mesh[eL3].x
+        elseif Dim2 == 0 then 
+          gsigL = r_sig[eL].g
+          bsigL = r_sig[eL].b
+          xL2 = plx_mesh[eL3].x
+        end
+        if (Dim2 == 0 and r_sig.bounds.hi.v == e.v) then
+          gsigR = prx_sig[eR].g
+          bsigR = prx_sig[eR].b
+          xR2 = prx_mesh[eR3].x
+        elseif Dim2 == 0 then
+          gsigR = r_sig[eR].g
+          bsigR = r_sig[eR].b
+          xR2 = r_mesh[eR3].x
+        end
+
+        if (Dim2 == 1 and r_sig.bounds.lo.u == e.u) then
+          gsigL = ply_sig[eL].g 
+          bsigL = ply_sig[eL].b
+          xL2 = ply_mesh[eL3].y 
+        elseif Dim2 == 1
+          gsigL = r_sig[eL].g
+          bsigL = r_sig[eL].b
+          xL2 = r_mesh[eL3].y 
+        end
+        if (Dim2 == 1 and r_sig.bounds.hi.u == e.u) then
+          gsigR = pry_sig[eR].g
+          bsigR = pry_sig[eR].b
+          xR2 = pry_mesh[eR3].y
+        elseif Dim2 == 1
+          gsigR = r_sig[eR].g
+          bsigR = r_sig[eR].b
+          xR2 = pry_mesh[eR3].y
+        end
+
+        if (Dim2 == 2 and r_sig.bounds.lo.t == e.t) then
+          gsigL = plz_sig[eL].g 
+          bsigL = plz_sig[eL].b
+          xL2 = plz_mesh[el3].z
+        elseif Dim2 == 2
+          gsigL = r_sig[eL].g
+          bsigL = r_sig[eL].b
+          xL2 = r_mesh[el3].z
+        end 
+        if (Dim2 == 2 and r_sig.bounds.hi.t == e.t) then
+          gsigR = prz_sig[eR].g
+          bsigR = prz_sig[eR].b
+          xR2 = prz_mesh[eR3].z
+        elseif Dim2 == 2
+          gsigR = r_sig[eR].g
+          bsigR = r_sig[eR].b
+          xR2 = r_mesh[eR3].z
+        end
+        
+        r_sig2[e8].g = r_sig[e7].g + (sC[Dim2]/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL2, xC[Dim2], xR2)
+        r_sig2[e8].b = r_sig[e7].b + (sC[Dim2]/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL2, xC[Dim2], xR2)
       end
   
 
@@ -892,6 +940,7 @@ do
       var interpidx : int7d = e7
       var swap : double = 1.0
 
+      --LEFTOFF HERE
       if (vxmesh[e.x].v < 0 and Dim == 0) then
         interpidx = eR7
         swap = -1
@@ -1746,117 +1795,6 @@ do
   return 1
 end
 
-terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32[3])
-
-  var IL : int32
-  var JL : int32
-  var KL : int32
-  var IR : int32
-  var JR : int32
-  var KR : int32
-
-  -- Periodic Boundary Conditions
-  if (Dim == 0 and BCs[0] == 0) then
-  IL = (i - 1 + N[0])%N[0]
-    IR = (i + 1)%N[0]
-    JL = j
-	JR = j
-	KL = k
-	KR = k
-  end
-  if (Dim == 1 and BCs[1] == 0) then
-    IL = i
-	IR = i
-	JL = (j - 1 + N[1])%N[1]
-    JR = (j + 1)%N[1]
-    KL = k
-	KR = k
-  end
-  if (Dim == 2 and BCs[2] == 0) then
-    IL = i
-	IR = i
-	JL = j
-	JR = j
-	KL = (k - 1 + N[2])%N[2]
-    KR = (k + 1)%N[2]
-  end
-
-
-  -- Dirichlet Boundary Conditions
-  if (Dim == 0 and BCs[0] == 1) then
-    IL = i - 1
-    IR = i + 1
-    if IL <  0 then IL = 0 end
-    if IR == N[0] then IR = N[0] - 1 end
-    JL = j
-	JR = j
-	KL = k
-	KR = k
-  end
-  if (Dim == 1 and BCs[1] == 1) then
-    IL = i
-	IR = i
-	JL = j - 1
-    JR = j + 1
-    if JL <  0 then JL = 0 end
-    if JR == N[1] then JR = N[1] - 1 end
-    KL = k
-	KR = k
-  end
-  if (Dim == 2 and BCs[2] == 1) then
-    IL = i
-	IR = i
-	JL = j
-	JR = j
-	KL = k - 1
-    KR = k + 1
-    if KL <  0 then KL = 0 end
-    if KR == N[2] then KR = N[2] - 1 end
-  end
-
-
-  -- Neumann Boundary Conditions
-  if (Dim == 0 and BCs[0] == 2) then
-    IL = i - 1
-    IR = i + 1
-    if IL <  0 then IL = 0 end
-    if IR == N[0] then IR = N[0] - 1 end
-    JL = j
-	JR = j
-	KL = k
-	KR = k
-  end
-  if (Dim == 1 and BCs[1] == 2) then
-    IL = i
-	IR = i
-	JL = j - 1
-    JR = j + 1
-    if JL <  0 then JL = 0 end
-    if JR == N[1] then JR = N[1] - 1 end
-    KL = k
-	KR = k
-  end
-  if (Dim == 2 and BCs[2] == 2) then
-    IL = i
-	IR = i
-	JL = j
-    JR = j
-   	KL = k - 1
-   	KR = k + 1
-    if KL <  0 then KL = 0 end
-    if KR == N[2] then KR = N[2] - 1 end
-
-    var LR : int32[6] 
-    LR[0] = IL
-    LR[1] = JL
-    LR[2] = KL
-    LR[3] = IR
-    LR[4] = JR
-    LR[5] = KR
-
-    return LR
-  end
-end
 
 
 task toplevel()
@@ -2172,7 +2110,14 @@ task toplevel()
       var col3 : int3d = {col6.w, col6.v, col6.u}
       Step1a(p_grid[col6], p_gridbarp[col6], p_S[col6], p_W[col3], vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     end
-    Step1b(r_gridbarp, r_gridbarpb, r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+  
+    for col6 in p_grid.colors do 
+      var col3 : int3d = {col6.w, col6.v, col6.u}
+      var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+      var col8 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+      Step1b(p_gridbarp[col6], p_gridbarpb[col7], p_sig[col7], p_sig2[col8], p_mesh[col3], plx_gridbarp[col6], ply_gridbarp[col6], plz_gridbarp[col6], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], plx_sig[col6], ply_sig[col6], plz_sig[col6], prx_sig[col6], pry_sig[col6], prz_sig[col6], vxmesh, vymesh, vzmesh, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+    end
+
     Step1c(r_gridbar, r_gridbarpb, vxmesh, vymesh, vzmesh, r_sig2, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
     Step2a(r_gridbar, vxmesh, vymesh, vzmesh, r_Wb, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     Step2b(r_gridbar, r_Wb, vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
