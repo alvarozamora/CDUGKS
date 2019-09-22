@@ -1940,6 +1940,8 @@ task toplevel()
   var p_Wb = partition(equal, r_Wb, p4)
   var p_S = partition(equal, r_S, p6)
   var p_F = partition(equal, r_F, p6)
+  __fence(__execution, __block)
+  c.printf("Equal Partitions Done\n")
 
   -- Create coloring for partitions for left/right ghost regions
   var c3Lx = coloring.create()
@@ -1969,11 +1971,8 @@ task toplevel()
   var c8Rz = coloring.create()
  
   -- Create Rects for colorings for partitions
-  for color in p_gridbarp.colors do
-    var bounds = p_gridbarp[color].bounds
-    
-    var left_lo_x : int32 = bounds.lo.v - 1
-    var left_hi_x : int32 = bounds.lo.v 
+  for col7 in p_gridbarpb.colors do
+    var bounds = p_gridbarpb[col7].bounds
     
     -- Leftmost and Rightmost indices
     var il : int32 = bounds.lo.v
@@ -1983,6 +1982,9 @@ task toplevel()
     var jr : int32 = bounds.lo.u
     var kr : int32 = bounds.lo.t
 
+    var col3 : int3d = {col7.v, col7.u, col7.t}
+    var col6 : int6d = {col7.x, col7.y, col7.z, col7.v, col7.u, col7.t}
+    var col8 : int8d = {col7.x, col7.y, col7.z, 1, col7.w, col7.v, col7.u, col7.t}
 
     -- for reference -- terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32[3])
 
@@ -1999,6 +2001,8 @@ task toplevel()
                           {bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
     var rrightz3 : rect3d = { {bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
                           {bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+    __fence(__execution, __block)
+    c.printf("rect3d Done\n")
 
     var rleftx6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, BC(il, jl, kl, 0, BCs, N)[0], bounds.lo.u, bounds.lo.t}, 
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, BC(il, jl, kl, 0, BCs, N)[0] + 1, bounds.hi.u, bounds.hi.t}}
@@ -2013,6 +2017,8 @@ task toplevel()
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
     var rrightz6 : rect6d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+    __fence(__execution, __block)
+    c.printf("rect6d Done\n")
 
     var rleftx7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, BC(il, jl, kl, 0, BCs, N)[0], bounds.lo.u, bounds.lo.t}, 
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, BC(il, jl, kl, 0, BCs, N)[0] + 1, bounds.hi.u, bounds.hi.t}}
@@ -2027,6 +2033,8 @@ task toplevel()
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
     var rrightz7 : rect7d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+    __fence(__execution, __block)
+    c.printf("rect7d Done\n")
 
     var rleftx8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, BC(il, jl, kl, 0, BCs, N)[0], bounds.lo.u, bounds.lo.t}, 
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, BC(il, jl, kl, 0, BCs, N)[0] + 1, bounds.hi.u, bounds.hi.t}}
@@ -2041,32 +2049,44 @@ task toplevel()
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, bounds.lo.v, BC(ir, jr, kr, 1, BCs, N)[4] + 1, bounds.hi.t}}
     var rrightz8 : rect8d = { {bounds.lo.x, bounds.lo.y, bounds.lo.z, bounds.lo.w, 0, bounds.lo.v, bounds.lo.u, BC(ir, jr, kr, 2, BCs, N)[5]}, 
                           {bounds.hi.x, bounds.hi.y, bounds.hi.z, bounds.hi.w, 1, bounds.lo.v, bounds.hi.u, BC(ir, jr, kr, 2, BCs, N)[5] + 1}}
+    __fence(__execution, __block)
+    c.printf("rect8d Done\n")
 
-    coloring.color_domain(c3Lx, color, rleftx3)
-    coloring.color_domain(c6Lx, color, rleftx6)
-    coloring.color_domain(c7Lx, color, rleftx7)
-    coloring.color_domain(c8Lx, color, rleftx8)
-    coloring.color_domain(c3Ly, color, rlefty3)
-    coloring.color_domain(c6Ly, color, rlefty6)
-    coloring.color_domain(c7Ly, color, rlefty7)
-    coloring.color_domain(c8Ly, color, rlefty8)
-    coloring.color_domain(c3Lz, color, rleftz3)
-    coloring.color_domain(c6Lz, color, rleftz6)
-    coloring.color_domain(c7Lz, color, rleftz7)
-    coloring.color_domain(c8Lz, color, rleftz8)
+    -- Color in left strips
+    coloring.color_domain(c3Lx, col3, rleftx3)
+    coloring.color_domain(c3Ly, col3, rlefty3)
+    coloring.color_domain(c3Lz, col3, rleftz3)
 
-    coloring.color_domain(c3Rx, color, rrightx3)
-    coloring.color_domain(c6Rx, color, rrightx6)
-    coloring.color_domain(c7Rx, color, rrightx7)
-    coloring.color_domain(c8Rx, color, rrightx8)
-    coloring.color_domain(c3Ry, color, rrighty3)
-    coloring.color_domain(c6Ry, color, rrighty6)
-    coloring.color_domain(c7Ry, color, rrighty7)
-    coloring.color_domain(c8Ry, color, rrighty8)
-    coloring.color_domain(c3Rz, color, rrightz3)
-    coloring.color_domain(c6Rz, color, rrightz6)
-    coloring.color_domain(c7Rz, color, rrightz7)
-    coloring.color_domain(c8Rz, color, rrightz8)
+    coloring.color_domain(c6Lx, col6, rleftx6)
+    coloring.color_domain(c6Ly, col6, rlefty6)
+    coloring.color_domain(c6Lz, col6, rleftz6)
+
+    coloring.color_domain(c7Lx, col7, rleftx7)
+    coloring.color_domain(c7Ly, col7, rlefty7)
+    coloring.color_domain(c7Lz, col7, rleftz7)
+
+    coloring.color_domain(c8Lx, col8, rleftx8)
+    coloring.color_domain(c8Ly, col8, rlefty8)
+    coloring.color_domain(c8Lz, col8, rleftz8)
+
+    -- Color in right strips
+    coloring.color_domain(c3Rx, col3, rrightx3)
+    coloring.color_domain(c3Ry, col3, rrighty3)
+    coloring.color_domain(c3Rz, col3, rrightz3)
+
+    coloring.color_domain(c6Rx, col6, rrightx6)
+    coloring.color_domain(c6Ry, col6, rrighty6)
+    coloring.color_domain(c6Rz, col6, rrightz6)
+
+    coloring.color_domain(c7Rx, col7, rrightx7)
+    coloring.color_domain(c7Ry, col7, rrighty7)
+    coloring.color_domain(c7Rz, col7, rrightz7)
+
+    coloring.color_domain(c8Rx, col8, rrightx8)
+    coloring.color_domain(c8Ry, col8, rrighty8)
+    coloring.color_domain(c8Rz, col8, rrightz8)
+    __fence(__execution, __block)
+    c.printf("Coloring Done\n")
   end
 
   -- Create Partitions
@@ -2076,13 +2096,19 @@ task toplevel()
   var prx_mesh = partition(disjoint, r_mesh, c3Rx, p3)
   var pry_mesh = partition(disjoint, r_mesh, c3Ry, p3)
   var prz_mesh = partition(disjoint, r_mesh, c3Rz, p3)
-
-  var plx_gridbarp = partition(disjoint, r_gridbarp, c7Lx, p7)
-  var ply_gridbarp = partition(disjoint, r_gridbarp, c7Ly, p7)
-  var plz_gridbarp = partition(disjoint, r_gridbarp, c7Lz, p7)
-  var prx_gridbarp = partition(disjoint, r_gridbarp, c7Rx, p7)
-  var pry_gridbarp = partition(disjoint, r_gridbarp, c7Ry, p7)
-  var prz_gridbarp = partition(disjoint, r_gridbarp, c7Rz, p7)
+  __fence(__execution, __block)
+  c.printf("Mesh Strips Done\n")
+  
+  var plx_gridbarp = partition(disjoint, r_gridbarp, c6Lx, p6)
+  __fence(__execution, __block)
+  c.printf("one gridbarp Strips Done\n")
+  var ply_gridbarp = partition(disjoint, r_gridbarp, c6Ly, p6)
+  var plz_gridbarp = partition(disjoint, r_gridbarp, c6Lz, p6)
+  var prx_gridbarp = partition(disjoint, r_gridbarp, c6Rx, p6)
+  var pry_gridbarp = partition(disjoint, r_gridbarp, c6Ry, p6)
+  var prz_gridbarp = partition(disjoint, r_gridbarp, c6Rz, p6)
+  __fence(__execution, __block)
+  c.printf("gridbarp Strips Done\n")
 
   var plx_sig = partition(disjoint, r_sig, c7Lx, p7)
   var ply_sig = partition(disjoint, r_sig, c7Ly, p7)
@@ -2090,6 +2116,8 @@ task toplevel()
   var prx_sig = partition(disjoint, r_sig, c7Rx, p7)
   var pry_sig = partition(disjoint, r_sig, c7Ry, p7)
   var prz_sig = partition(disjoint, r_sig, c7Rz, p7)
+  __fence(__execution, __block)
+  c.printf("sig Strips Done\n")
 
   var plx_gridbar = partition(disjoint, r_gridbar, c7Lx, p7)
   var ply_gridbar = partition(disjoint, r_gridbar, c7Ly, p7)
@@ -2097,6 +2125,8 @@ task toplevel()
   var prx_gridbar = partition(disjoint, r_gridbar, c7Rx, p7)
   var pry_gridbar = partition(disjoint, r_gridbar, c7Ry, p7)
   var prz_gridbar = partition(disjoint, r_gridbar, c7Rz, p7)
+  __fence(__execution, __block)
+  c.printf("gridbar Strips Done\n")
 
   var plx_sig2 = partition(disjoint, r_sig2, c8Lx, p8)
   var ply_sig2 = partition(disjoint, r_sig2, c8Ly, p8)
@@ -2104,7 +2134,9 @@ task toplevel()
   var prx_sig2 = partition(disjoint, r_sig2, c8Rx, p8)
   var pry_sig2 = partition(disjoint, r_sig2, c8Ry, p8)
   var prz_sig2 = partition(disjoint, r_sig2, c8Rz, p8)
-
+  __fence(__execution, __block)
+  c.printf("sig2 Strips Done\n")
+  c.printf("Left/Right Strip Partitioning Done\n")
 
   --Initialize r_mesh
   var MeshType : int32 = 1
@@ -2136,7 +2168,10 @@ task toplevel()
 
     var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
 
-    Step1a(r_grid, r_gridbarp, r_S, r_W, vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
+    for col6 in p_grid.colors do 
+      var col3 : int3d = {col6.w, col6.v, col6.u}
+      Step1a(p_grid[col6], p_gridbarp[col6], p_S[col6], p_W[col3], vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
+    end
     Step1b(r_gridbarp, r_gridbarpb, r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
     Step1c(r_gridbar, r_gridbarpb, vxmesh, vymesh, vzmesh, r_sig2, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
     Step2a(r_gridbar, vxmesh, vymesh, vzmesh, r_Wb, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
