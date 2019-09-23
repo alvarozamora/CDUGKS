@@ -682,7 +682,7 @@ do
 end
 
 --Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
-task Step1b(r_gridbarp : region(ispace(int6d), grid),
+task Step1b_a(r_gridbarp : region(ispace(int6d), grid),
             r_gridbarpb : region(ispace(int7d), grid),
             r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
@@ -711,7 +711,7 @@ task Step1b(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3], 
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where 
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh),
+  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, ply_mesh, plz_mesh, prx_mesh, pry_mesh, prz_mesh, plx_gridbarp, ply_gridbarp, plz_gridbarp, prx_gridbarp, pry_gridbarp, prz_gridbarp, plx_sig, ply_sig, plz_sig, prx_sig, pry_sig, prz_sig),
   reads writes(r_sig),
   writes(r_sig2),
   reads writes(r_gridbarpb)
@@ -747,12 +747,12 @@ do
       var j : int32 = e.v
       var k : int32 = e.u
 
-      var bc = int6d = BC(i, j, k, Dim, BCs, N)
+      var bc : int32[6] = BC(i, j, k, Dim, BCs, N)
       var IL : int32 = bc[0]
-      var IR : int32 = bc[1]
-      var JL : int32 = bc[2]
-      var JR : int32 = bc[3] 
-      var KL : int32 = bc[4]
+      var JL : int32 = bc[1]
+      var KL : int32 = bc[2]
+      var IR : int32 = bc[3] 
+      var JR : int32 = bc[4]
       var KR : int32 = bc[5]
 
       -- Gather Left and Right Indices
@@ -798,7 +798,7 @@ do
         gbpL = ply_gridbarp[eL].g 
         bbpL = ply_gridbarp[eL].b
         xL = ply_mesh[eL3].x
-      elseif Dim == 1
+      elseif Dim == 1 then
         gbpL = r_gridbarp[eL].g
         bbpL = r_gridbarp[eL].b
         xL = r_mesh[eL3].y 
@@ -807,7 +807,7 @@ do
         gbpR = pry_gridbarp[eR].g
         bbpR = pry_gridbarp[eR].b
         xR = pry_mesh[eR3].y
-      elseif Dim == 1
+      elseif Dim == 1 then
         gbpR = r_gridbarp[eR].g
         bbpR = r_gridbarp[eR].b
         xR = pry_mesh[eR3].y
@@ -816,17 +816,17 @@ do
       if (Dim == 2 and r_gridbarp.bounds.lo.u == e.u) then
         gbpL = plz_gridbarp[eL].g 
         bbpL = plz_gridbarp[eL].b
-        xL = plz_mesh[el3].z
-      elseif Dim == 2
+        xL = plz_mesh[eL3].z
+      elseif Dim == 2 then
         gbpL = r_gridbarp[eL].g
         bbpL = r_gridbarp[eL].b
-        xL = r_mesh[el3].z
+        xL = r_mesh[eL3].z
       end 
       if (Dim == 2 and r_gridbarp.bounds.hi.u == e.u) then
         gbpR = prz_gridbarp[eR].g
         bbpR = prz_gridbarp[eR].b
         xR = prz_mesh[eR3].z
-      elseif Dim == 2
+      elseif Dim == 2 then
         gbpR = r_gridbarp[eR].g
         bbpR = r_gridbarp[eR].b
         xR = r_mesh[eR3].z
@@ -842,13 +842,13 @@ do
       -- Computing phisigma, at interface
       for Dim2 = 0, effD do
   
-        var bc2 : int6d = BC(i, j, k, Dim2, BCs, N)
+        var bc2 : int32[6] = BC(i, j, k, Dim2, BCs, N)
 
         var IL2 : int32 = bc2[0]
-        var IR2 : int32 = bc2[0]
         var JL2 : int32 = bc2[0]
-        var JR2 : int32 = bc2[0]
         var KL2 : int32 = bc2[0]
+        var IR2 : int32 = bc2[0]
+        var JR2 : int32 = bc2[0]
         var KR2 : int32 = bc2[0]
 
         var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
@@ -873,140 +873,156 @@ do
         var sL2 : double
         var sR2 : double
 
-        if (Dim2 == 0 and r_sig.bounds.lo.v == e.v) then
-          gsigL = plx_sig[eL].g 
-          bsigL = plx_sig[eL].b 
-          xL2 = plx_mesh[eL3].x
+        if (Dim2 == 0 and r_sig.bounds.lo.v == e.w) then
+          gsigL = plx_sig[eL2_7].g 
+          bsigL = plx_sig[eL2_7].b 
+          xL2 = plx_mesh[eL2_3].x
         elseif Dim2 == 0 then 
-          gsigL = r_sig[eL].g
-          bsigL = r_sig[eL].b
-          xL2 = plx_mesh[eL3].x
+          gsigL = r_sig[eL2_7].g
+          bsigL = r_sig[eL2_7].b
+          xL2 = plx_mesh[eL2_3].x
         end
-        if (Dim2 == 0 and r_sig.bounds.hi.v == e.v) then
-          gsigR = prx_sig[eR].g
-          bsigR = prx_sig[eR].b
-          xR2 = prx_mesh[eR3].x
+        if (Dim2 == 0 and r_sig.bounds.hi.v == e.w) then
+          gsigR = prx_sig[eR2_7].g
+          bsigR = prx_sig[eR2_7].b
+          xR2 = prx_mesh[eR2_3].x
         elseif Dim2 == 0 then
-          gsigR = r_sig[eR].g
-          bsigR = r_sig[eR].b
-          xR2 = r_mesh[eR3].x
+          gsigR = r_sig[eR2_7].g
+          bsigR = r_sig[eR2_7].b
+          xR2 = r_mesh[eR2_3].x
         end
 
-        if (Dim2 == 1 and r_sig.bounds.lo.u == e.u) then
-          gsigL = ply_sig[eL].g 
-          bsigL = ply_sig[eL].b
-          xL2 = ply_mesh[eL3].y 
-        elseif Dim2 == 1
-          gsigL = r_sig[eL].g
-          bsigL = r_sig[eL].b
-          xL2 = r_mesh[eL3].y 
+        if (Dim2 == 1 and r_sig.bounds.lo.u == e.v) then
+          gsigL = ply_sig[eL2_7].g 
+          bsigL = ply_sig[eL2_7].b
+          xL2 = ply_mesh[eL2_3].y 
+        elseif Dim2 == 1 then
+          gsigL = r_sig[eL2_7].g
+          bsigL = r_sig[eL2_7].b
+          xL2 = r_mesh[eL2_3].y 
         end
-        if (Dim2 == 1 and r_sig.bounds.hi.u == e.u) then
-          gsigR = pry_sig[eR].g
-          bsigR = pry_sig[eR].b
-          xR2 = pry_mesh[eR3].y
-        elseif Dim2 == 1
-          gsigR = r_sig[eR].g
-          bsigR = r_sig[eR].b
-          xR2 = pry_mesh[eR3].y
+        if (Dim2 == 1 and r_sig.bounds.hi.u == e.v) then
+          gsigR = pry_sig[eR2_7].g
+          bsigR = pry_sig[eR2_7].b
+          xR2 = pry_mesh[eR2_3].y
+        elseif Dim2 == 1 then
+          gsigR = r_sig[eR2_7].g
+          bsigR = r_sig[eR2_7].b
+          xR2 = pry_mesh[eR2_3].y
         end
 
-        if (Dim2 == 2 and r_sig.bounds.lo.t == e.t) then
-          gsigL = plz_sig[eL].g 
-          bsigL = plz_sig[eL].b
-          xL2 = plz_mesh[el3].z
-        elseif Dim2 == 2
-          gsigL = r_sig[eL].g
-          bsigL = r_sig[eL].b
-          xL2 = r_mesh[el3].z
+        if (Dim2 == 2 and r_sig.bounds.lo.t == e.u) then
+          gsigL = plz_sig[eL2_7].g 
+          bsigL = plz_sig[eL2_7].b
+          xL2 = plz_mesh[eL2_3].z
+        elseif Dim2 == 2 then
+          gsigL = r_sig[eL2_7].g
+          bsigL = r_sig[eL2_7].b
+          xL2 = r_mesh[eL2_3].z
         end 
-        if (Dim2 == 2 and r_sig.bounds.hi.t == e.t) then
-          gsigR = prz_sig[eR].g
-          bsigR = prz_sig[eR].b
-          xR2 = prz_mesh[eR3].z
-        elseif Dim2 == 2
-          gsigR = r_sig[eR].g
-          bsigR = r_sig[eR].b
-          xR2 = r_mesh[eR3].z
+        if (Dim2 == 2 and r_sig.bounds.hi.t == e.u) then
+          gsigR = prz_sig[eR2_7].g
+          bsigR = prz_sig[eR2_7].b
+          xR2 = prz_mesh[eR2_3].z
+        elseif Dim2 == 2 then 
+          gsigR = r_sig[eR2_7].g
+          bsigR = r_sig[eR2_7].b
+          xR2 = r_mesh[eR2_3].z
         end
         
         r_sig2[e8].g = r_sig[e7].g + (sC[Dim2]/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL2, xC[Dim2], xR2)
         r_sig2[e8].b = r_sig[e7].b + (sC[Dim2]/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL2, xC[Dim2], xR2)
       end
-  
+    end
+  end
+end
 
+task Step1b_b(r_sig : region(ispace(int7d), grid),
+              r_mesh : region(ispace(int3d), mesh),
+              r_gridbarp : region(ispace(int6d), grid),
+              r_gridbarpb : region(ispace(int7d), grid),
+              prx_gridbarp : region(ispace(int6d), grid),
+              pry_gridbarp : region(ispace(int6d), grid),
+              prz_gridbarp : region(ispace(int6d), grid),
+              prx_sig : region(ispace(int7d), grid),
+              pry_sig : region(ispace(int7d), grid),
+              prz_sig : region(ispace(int7d), grid),
+	      prx_mesh : region(ispace(int3d), mesh),
+	      pry_mesh : region(ispace(int3d), mesh),
+	      prz_mesh : region(ispace(int3d), mesh),
+              vxmesh : region(ispace(int1d), vmesh),
+              vymesh : region(ispace(int1d), vmesh),
+              vzmesh : region(ispace(int1d), vmesh),
+              BCs : int32[3], N : int32[3])
+where
+  reads writes(r_gridbarpb),
+  reads(r_sig, r_gridbarp, r_mesh.{dx,dy,dz}, vxmesh.v, vymesh.v, vzmesh.v),
+  reads(prx_gridbarp, pry_gridbarp, prz_gridbarp, prx_sig, pry_sig, prz_sig, prx_mesh.dx, pry_mesh.dy, prz_mesh.dz)
+do
+  for e in r_gridbarpb do
+    var e3 : int3d = {e.v, e.u, e.t}
+    var e6 : int6d = {e.x, e.y, e.z, e.v, e.u, e.t}
 
-      -- Dot Product is just a single product when using rectangular mesh
-      var interpidx : int7d = e7
-      var swap : double = 1.0
+    -- Gathering Right Indices -- (Note: e.w = Dim)
+    var bc : int32[6] = BC(e.v, e.u, e.t, e.w, BCs, N)
+    var IR : int32 = bc[3]
+    var JR : int32 = bc[4]
+    var KR : int32 = bc[5]
+    var eR : int6d = {e.x, e.y, e.z, IR, JR, KR}
+    var eR3 : int3d = {IR, JR, KR}
+    var eR6 : int6d = {e.x, e.y, e.z, IR, JR, KR}
+    var eR7 : int7d = {e.x, e.y, e.z, e.w, IR, JR, KR}
 
-      --LEFTOFF HERE
-      if (Dim == 0 and r_gridbarp.bounds.hi.w == e.w) then
-        gbpR = prx_gridbarp[eR].g
-        bbpR = prx_gridbarp[eR].b
-        xR = prx_mesh[eR3].x
-      elseif Dim == 0 then
-        gbpR = r_gridbarp[eR].g
-        bbpR = r_gridbarp[eR].b
-        xR = r_mesh[eR3].x
-      end
-
-      if (Dim == 1 and r_gridbarp.bounds.hi.v == e.v) then
-        gbpR = pry_gridbarp[eR].g
-        bbpR = pry_gridbarp[eR].b
-        xR = pry_mesh[eR3].y
-      elseif Dim == 1
-        gbpR = r_gridbarp[eR].g
-        bbpR = r_gridbarp[eR].b
-        xR = pry_mesh[eR3].y
-      end
-
-      if (Dim == 2 and r_gridbarp.bounds.hi.u == e.u) then
-        gbpR = prz_gridbarp[eR].g
-        bbpR = prz_gridbarp[eR].b
-        xR = prz_mesh[eR3].z
-      elseif Dim == 2
-        gbpR = r_gridbarp[eR].g
-        bbpR = r_gridbarp[eR].b
-        xR = r_mesh[eR3].z
-      end
-
-      var gsig : double = r_sig[e7].g
-      var bsig : double = r_sig[e7].b
+    -- Dot Product is just a single product when using rectangular mesh
+    var swap : double = 1.0
+    var gb : double = r_gridbarp[e6].g
+    var bb : double = r_gridbarp[e6].b
+    var gsig : double = r_sig[e].g
+    var bsig : double = r_sig[e].b
       
-      if (vxmesh[e.x].v < 0 and Dim == 0) then
-        gsig = prx_sig[eR7].g
-        bsig = prx_sig[eR7].b
-        swap = -1
-      elseif (vymesh[e.y].v < 0 and Dim == 1) then
-        gsig = pry_sig[eR7].g
-        bsig = pry_sig[eR7].b
-        swap = -1
-      elseif (vzmesh[e.z].v < 0 and Dim == 2) then
-        gsig = prz_sig[eR7].g
-        bsig = prz_sig[eR7].b
-        swap = -1
-      end
-      --LEFTTOFF : realized I need to make these two separate tasks for parallel...
+    var sC : double[3] 
+    sC[0] = r_mesh[e3].dx
+    sC[1] = r_mesh[e3].dy
+    sC[2] = r_mesh[e3].dz
+    -- Note : e.w = Dim
+    if (vxmesh[e.x].v < 0 and e.w == 0) then
+      gsig = prx_sig[eR7].g
+      bsig = prx_sig[eR7].b
+      gb = prx_gridbarp[eR6].g
+      bb = prx_gridbarp[eR6].b
+      swap = -1
+      sC[e.w] = prx_mesh[eR3].dx
+    elseif (vymesh[e.y].v < 0 and e.w == 1) then
+      gsig = pry_sig[eR7].g
+      bsig = pry_sig[eR7].b
+      gb = pry_gridbarp[eR6].g
+      bb = pry_gridbarp[eR6].b
+      swap = -1
+      sC[e.w] = pry_mesh[eR3].dy
+    elseif (vzmesh[e.z].v < 0 and e.w == 2) then
+      gsig = prz_sig[eR7].g
+      bsig = prz_sig[eR7].b
+      gb = prz_gridbarp[eR6].g
+      bb = prz_gridbarp[eR6].b
+      swap = -1
+      sC[e.w] = prz_mesh[eR3].dz
+    end
 
-      var interpid  : int6d = {interpidx.x, interpidx.y, interpidx.z, interpidx.v, interpidx.u, interpidx.t}
-      
-      -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-      r_gridbarpb[e7].g = r_gridbarp[interpid].g + swap*sC[Dim]/2.0*gsig
-      r_gridbarpb[e7].b = r_gridbarp[interpid].b + swap*sC[Dim]/2.0*bsig
+     
+    -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
+    r_gridbarpb[e].g = gb + swap*sC[e.w]/2.0*gsig
+    r_gridbarpb[e].b = bb + swap*sC[e.w]/2.0*bsig
 
+    -- NAN checker
+    if (isnan(r_gridbarpb[e].g) == 1 or isnan(r_gridbarpb[e].b) == 1) then
 
-    if (isnan(r_gridbarpb[e7].g) == 1 or isnan(r_gridbarpb[e7].b) == 1) then
+      c.printf("Step 1b: r_gridbarp.g = %f, r_gridbarp.b = %f, r_sig.g = %f, r_sig.b = %f\n", gb, bb, gsig, bsig)
 
-      c.printf("Step 1b: r_gridbarp.g = %f, r_gridbarp.b = %f, r_sig.g = %f, r_sig.b = %f\n", r_gridbarp[interpid].g, r_gridbarp[interpid].b, r_sig[interpidx].g, r_sig[interpidx].b)
-
-      regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 1b\n")
-      regentlib.assert(not [bool](isnan(r_gridbarpb[e7].b)), "Step 1b\n")
+      regentlib.assert(not [bool](isnan(r_gridbarpb[e].g)), "Step 1b\n")
+      regentlib.assert(not [bool](isnan(r_gridbarpb[e].b)), "Step 1b\n")
     
     end
 
-
-    end
   end
 end
 
@@ -2147,12 +2163,19 @@ task toplevel()
       var col3 : int3d = {col6.w, col6.v, col6.u}
       Step1a(p_grid[col6], p_gridbarp[col6], p_S[col6], p_W[col3], vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     end
-  
+
     for col6 in p_grid.colors do 
       var col3 : int3d = {col6.w, col6.v, col6.u}
       var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
-      var col8 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
-      Step1b(p_gridbarp[col6], p_gridbarpb[col7], p_sig[col7], p_sig2[col8], p_mesh[col3], plx_gridbarp[col6], ply_gridbarp[col6], plz_gridbarp[col6], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], plx_sig[col6], ply_sig[col6], plz_sig[col6], prx_sig[col6], pry_sig[col6], prz_sig[col6], vxmesh, vymesh, vzmesh, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+      var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+      Step1b_a(p_gridbarp[col6], p_gridbarpb[col7], p_sig[col7], p_sig2[col8], p_mesh[col3], plx_mesh[col3], ply_mesh[col3], plz_mesh[col3], prx_mesh[col3], pry_mesh[col3], prz_mesh[col3], plx_gridbarp[col6], ply_gridbarp[col6], plz_gridbarp[col6], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], plx_sig[col7], ply_sig[col7], plz_sig[col7], prx_sig[col7], pry_sig[col7], prz_sig[col7], vxmesh, vymesh, vzmesh, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+    end
+
+    for col6 in p_grid.colors do 
+      var col3 : int3d = {col6.w, col6.v, col6.u}
+      var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+      
+      Step1b_b(p_sig[col7], p_mesh[col3], p_gridbarp[col6], p_gridbarpb[col7], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], prx_sig[col7], pry_sig[col7], prz_sig[col7], prx_mesh[col3], pry_mesh[col3], prz_mesh[col3], vxmesh, vymesh, vzmesh, BCs, N)
     end
 
     Step1c(r_gridbar, r_gridbarpb, vxmesh, vymesh, vzmesh, r_sig2, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
