@@ -682,70 +682,46 @@ do
 end
 
 --Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
-task Step1b_a(r_gridbarp : region(ispace(int6d), grid),
+task Step1b_sigx(r_gridbarp : region(ispace(int6d), grid),
             r_gridbarpb : region(ispace(int7d), grid),
             r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             plx_mesh : region(ispace(int3d), mesh),
-            ply_mesh : region(ispace(int3d), mesh),
-            plz_mesh : region(ispace(int3d), mesh),
             prx_mesh : region(ispace(int3d), mesh),
-            pry_mesh : region(ispace(int3d), mesh),
-            prz_mesh : region(ispace(int3d), mesh),
             plx_gridbarp : region(ispace(int6d), grid),
-            ply_gridbarp : region(ispace(int6d), grid),
-            plz_gridbarp : region(ispace(int6d), grid),
             prx_gridbarp : region(ispace(int6d), grid),
-            pry_gridbarp : region(ispace(int6d), grid),
-            prz_gridbarp : region(ispace(int6d), grid),
-            plx_sig : region(ispace(int7d), grid),
-            ply_sig : region(ispace(int7d), grid),
-            plz_sig : region(ispace(int7d), grid),
-            prx_sig : region(ispace(int7d), grid),
-            pry_sig : region(ispace(int7d), grid),
-            prz_sig : region(ispace(int7d), grid),     
             vxmesh : region(ispace(int1d), vmesh),            
             vymesh : region(ispace(int1d), vmesh),            
             vzmesh : region(ispace(int1d), vmesh),            
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3], 
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where 
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, ply_mesh, plz_mesh, prx_mesh, pry_mesh, prz_mesh, plx_gridbarp, ply_gridbarp, plz_gridbarp, prx_gridbarp, pry_gridbarp, prz_gridbarp, plx_sig, ply_sig, plz_sig, prx_sig, pry_sig, prz_sig),
-  reads writes(r_sig),
-  writes(r_sig2),
-  reads writes(r_gridbarpb)
+  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
+  writes(r_sig)
 do
-  var xC : double[3]
-  var sC : double[3]
-  var xL : double[3]
-  var sL : double[3]
-  var xR : double[3]
-  var sR : double[3]
-  var xL2 : double[3]
-  var sL2 : double[3]
-  var xR2 : double[3]
-  var sR2 : double[3]
+  var Dim : int32 = 0 -- change when copy
+
+  -- Cell Centers 
+  var xC : double
+  var xL : double
+  var xR : double
 
   var olds : int3d = {-1, -1, -1}  
-  for e in r_gridbarp do
-    var sidx : int3d = {e.w, e.v, e.u}
-    if (not sidx.x == olds.x and not sidx.y == olds.y and not sidx.z == olds.z) then
-      xC[0] = r_mesh[sidx].x
-      xC[1] = r_mesh[sidx].y
-      xC[2] = r_mesh[sidx].z
   
-      sC[0] = r_mesh[sidx].dx
-      sC[1] = r_mesh[sidx].dy
-      sC[2] = r_mesh[sidx].dz
-    end
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  
+  for s in s3 do
+    xC = r_mesh[s].x -- change when copy
+  
+    for v in v3 do
+      
+      var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
 
-    for Dim = 0, effD do
-      var e7 : int7d = {e.x, e.y, e.z, Dim, e.w, e.v, e.u}
-
-      var i : int32 = e.w
-      var j : int32 = e.v
-      var k : int32 = e.u
+      var i : int32 = s.x
+      var j : int32 = s.y
+      var k : int32 = s.z
 
       var bc : int32[6] = BC(i, j, k, Dim, BCs, N)
       var IL : int32 = bc[0]
@@ -756,12 +732,10 @@ do
       var KR : int32 = bc[5]
 
       -- Gather Left and Right Indices
-      var eL : int6d = {e.x, e.y, e.z, IL, JL, KL}
-      var eR : int6d = {e.x, e.y, e.z, IR, JR, KR}
+      var eL : int6d = {IL, JL, KL, v.x, v.y, v.z}
+      var eR : int6d = {IR, JR, KR, v.x, v.y, v.z}
       var eL3 : int3d = {IL, JL, KL}
       var eR3 : int3d = {IR, JR, KR}
-      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
 
       
 
@@ -770,72 +744,233 @@ do
       var gbpR : double
       var bbpL : double
       var bbpR : double
-      var xL : double
-      var xR : double
-      var sL : double
-      var sR : double
 
-      if (Dim == 0 and r_gridbarp.bounds.lo.w == e.w) then
+      if r_gridbarp.bounds.lo.x == s.x then -- change when copy
         gbpL = plx_gridbarp[eL].g 
         bbpL = plx_gridbarp[eL].b 
         xL = plx_mesh[eL3].x
-      elseif Dim == 0 then 
+      else
         gbpL = r_gridbarp[eL].g
         bbpL = r_gridbarp[eL].b
-        xL = plx_mesh[eL3].x
+        xL = r_mesh[eL3].x
       end
-      if (Dim == 0 and r_gridbarp.bounds.hi.w == e.w) then
-        gbpR = prx_gridbarp[eR].g
-        bbpR = prx_gridbarp[eR].b
+
+      if r_gridbarp.bounds.hi.x == s.x then -- change when copy
+        gbpR = prx_gridbarp[eR].g 
+        bbpR = prx_gridbarp[eR].b 
         xR = prx_mesh[eR3].x
-      elseif Dim == 0 then
+      else
         gbpR = r_gridbarp[eR].g
         bbpR = r_gridbarp[eR].b
         xR = r_mesh[eR3].x
       end
 
-      if (Dim == 1 and r_gridbarp.bounds.lo.v == e.v) then
-        gbpL = ply_gridbarp[eL].g 
-        bbpL = ply_gridbarp[eL].b
-        xL = ply_mesh[eL3].x
-      elseif Dim == 1 then
-        gbpL = r_gridbarp[eL].g
-        bbpL = r_gridbarp[eL].b
-        xL = r_mesh[eL3].y 
-      end
-      if (Dim == 1 and r_gridbarp.bounds.hi.v == e.v) then
-        gbpR = pry_gridbarp[eR].g
-        bbpR = pry_gridbarp[eR].b
-        xR = pry_mesh[eR3].y
-      elseif Dim == 1 then
-        gbpR = r_gridbarp[eR].g
-        bbpR = r_gridbarp[eR].b
-        xR = pry_mesh[eR3].y
-      end
 
-      if (Dim == 2 and r_gridbarp.bounds.lo.u == e.u) then
-        gbpL = plz_gridbarp[eL].g 
-        bbpL = plz_gridbarp[eL].b
-        xL = plz_mesh[eL3].z
-      elseif Dim == 2 then
-        gbpL = r_gridbarp[eL].g
-        bbpL = r_gridbarp[eL].b
-        xL = r_mesh[eL3].z
-      end 
-      if (Dim == 2 and r_gridbarp.bounds.hi.u == e.u) then
-        gbpR = prz_gridbarp[eR].g
-        bbpR = prz_gridbarp[eR].b
-        xR = prz_mesh[eR3].z
-      elseif Dim == 2 then
-        gbpR = r_gridbarp[eR].g
-        bbpR = r_gridbarp[eR].b
-        xR = r_mesh[eR3].z
+      r_sig[e7].g = VanLeer(gbpL, r_gridbarp[e].g, gbpR, xL, xC, xR)
+      r_sig[e7].b = VanLeer(bbpL, r_gridbarp[e].b, gbpR, xL, xC, xR)
+
+      -- NAN checker
+      if (isnan(r_sig[e7].g) == 1 or isnan(r_sig[e7].b) == 1) then
+
+        c.printf("Step 1b_sigx: r_sig.g = %f, r_sig.b = %f\n", r_sig[e7].g, r_sig[e7].b)
+
+      regentlib.assert(not [bool](isnan(r_sig[e7].g)), "Step 1b_sigx\n")
+      regentlib.assert(not [bool](isnan(r_sig[e7].b)), "Step 1b_sigx\n")
+
       end
+  
+    end
+  end
+end
+
+--Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
+task Step1b_sigy(r_gridbarp : region(ispace(int6d), grid),
+            r_gridbarpb : region(ispace(int7d), grid),
+            r_sig : region(ispace(int7d), grid),
+            r_sig2 : region(ispace(int8d), grid),
+            r_mesh : region(ispace(int3d), mesh),
+            ply_mesh : region(ispace(int3d), mesh),
+            pry_mesh : region(ispace(int3d), mesh),
+            ply_gridbarp : region(ispace(int6d), grid),
+            pry_gridbarp : region(ispace(int6d), grid),
+            vxmesh : region(ispace(int1d), vmesh),            
+            vymesh : region(ispace(int1d), vmesh),            
+            vzmesh : region(ispace(int1d), vmesh),            
+            BCs : int32[3], R : double, K : double, Cv : double, N : int32[3], 
+            g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
+where 
+  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
+  writes(r_sig)
+do
+  var Dim : int32 = 1 -- change when copy
+
+  -- Cell Centers 
+  var yC : double
+  var yL : double
+  var yR : double
+
+  var olds : int3d = {-1, -1, -1}  
+  
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  
+  for s in s3 do
+  
+    yC = r_mesh[s].y -- change when copy
+  
+    for v in v3 do
       
-      r_sig[e7].g = VanLeer(gbpL, r_gridbarp[e].g, gbpR, xL, xC[Dim], xR)
-      r_sig[e7].b = VanLeer(bbpL, r_gridbarp[e].b, gbpR, xL, xC[Dim], xR)
+      var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
 
-      --printf("Checking bsigma input[%d][%d]: bbarp[idxL] = %f, bbarp[idx] = %f, bbarp[idxR] = %f, xL[Dim] = %f, xC[Dim] = %f, xR[Dim] = %f\n", sidx, vx, bbarp[idxL], bbarp[idx], bbarp[idxR], xL[Dim], xC[Dim], xR[Dim])
+      var i : int32 = s.x
+      var j : int32 = s.y
+      var k : int32 = s.z
+
+      var bc : int32[6] = BC(i, j, k, Dim, BCs, N)
+      var IL : int32 = bc[0]
+      var JL : int32 = bc[1]
+      var KL : int32 = bc[2]
+      var IR : int32 = bc[3] 
+      var JR : int32 = bc[4]
+      var KR : int32 = bc[5]
+
+      -- Gather Left and Right Indices
+      var eL : int6d = {IL, JL, KL, v.x, v.y, v.z}
+      var eR : int6d = {IR, JR, KR, v.x, v.y, v.z}
+      var eL3 : int3d = {IL, JL, KL}
+      var eR3 : int3d = {IR, JR, KR}
+
+      -- Computing phisigma, at cell 
+      var gbpL : double
+      var gbpR : double
+      var bbpL : double
+      var bbpR : double
+
+      if r_gridbarp.bounds.lo.y == s.y then -- change when copy
+        gbpL = ply_gridbarp[eL].g 
+        bbpL = ply_gridbarp[eL].b 
+        yL = ply_mesh[eL3].y
+      else
+        gbpL = r_gridbarp[eL].g
+        bbpL = r_gridbarp[eL].b
+        yL = r_mesh[eL3].y
+      end
+
+      if r_gridbarp.bounds.hi.y == s.y then -- change when copy
+        gbpR = pry_gridbarp[eR].g 
+        bbpR = pry_gridbarp[eR].b 
+        yR = pry_mesh[eR3].y
+      else
+        gbpR = r_gridbarp[eR].g
+        bbpR = r_gridbarp[eR].b
+        yR = r_mesh[eR3].y
+      end
+
+      r_sig[e7].g = VanLeer(gbpL, r_gridbarp[e].g, gbpR, yL, yC, yR)
+      r_sig[e7].b = VanLeer(bbpL, r_gridbarp[e].b, gbpR, yL, yC, yR)
+
+      -- NAN checker
+      if (isnan(r_sig[e7].g) == 1 or isnan(r_sig[e7].b) == 1) then
+
+        c.printf("Step 1b_sigy: r_sig.g = %f, r_sig.b = %f\n", r_sig[e7].g, r_sig[e7].b)
+
+      regentlib.assert(not [bool](isnan(r_sig[e7].g)), "Step 1b_sigy\n")
+      regentlib.assert(not [bool](isnan(r_sig[e7].b)), "Step 1b_sigy\n")
+
+      end
+  
+    end
+  end
+end
+
+--Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
+task Step1b_sigz(r_gridbarp : region(ispace(int6d), grid),
+            r_gridbarpb : region(ispace(int7d), grid),
+            r_sig : region(ispace(int7d), grid),
+            r_sig2 : region(ispace(int8d), grid),
+            r_mesh : region(ispace(int3d), mesh),
+            plz_mesh : region(ispace(int3d), mesh),
+            prz_mesh : region(ispace(int3d), mesh),
+            plz_gridbarp : region(ispace(int6d), grid),
+            prz_gridbarp : region(ispace(int6d), grid),
+            vxmesh : region(ispace(int1d), vmesh),            
+            vymesh : region(ispace(int1d), vmesh),            
+            vzmesh : region(ispace(int1d), vmesh),            
+            BCs : int32[3], R : double, K : double, Cv : double, N : int32[3], 
+            g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
+where 
+  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
+  writes(r_sig)
+do
+  var Dim : int32 = 2 -- change when copy
+
+  -- Cell Centers 
+  var zC : double
+  var zL : double
+  var zR : double
+
+  var olds : int3d = {-1, -1, -1}  
+  
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  
+  for s in s3 do
+    zC = r_mesh[s].z -- change when copy
+  
+    for v in v3 do
+      
+      var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
+
+      var i : int32 = s.x
+      var j : int32 = s.y
+      var k : int32 = s.z
+
+      var bc : int32[6] = BC(i, j, k, Dim, BCs, N)
+      var IL : int32 = bc[0]
+      var JL : int32 = bc[1]
+      var KL : int32 = bc[2]
+      var IR : int32 = bc[3] 
+      var JR : int32 = bc[4]
+      var KR : int32 = bc[5]
+
+      -- Gather Left and Right Indices
+      var eL : int6d = {IL, JL, KL, v.x, v.y, v.z}
+      var eR : int6d = {IR, JR, KR, v.x, v.y, v.z}
+      var eL3 : int3d = {IL, JL, KL}
+      var eR3 : int3d = {IR, JR, KR}
+
+      -- Computing phisigma, at cell 
+      var gbpL : double
+      var gbpR : double
+      var bbpL : double
+      var bbpR : double
+
+      if r_gridbarp.bounds.lo.z == s.z then -- change when copy
+        gbpL = plz_gridbarp[eL].g 
+        bbpL = plz_gridbarp[eL].b 
+        zL = plz_mesh[eL3].z
+      else
+        gbpL = r_gridbarp[eL].g
+        bbpL = r_gridbarp[eL].b
+        zL = r_mesh[eL3].z
+      end
+
+      r_sig[e7].g = VanLeer(gbpL, r_gridbarp[e].g, gbpR, zL, zC, zR)
+      r_sig[e7].b = VanLeer(bbpL, r_gridbarp[e].b, gbpR, zL, zC, zR)
+
+      -- NAN checker
+      if (isnan(r_sig[e7].g) == 1 or isnan(r_sig[e7].b) == 1) then
+
+        c.printf("Step 1b_sigz: r_sig.g = %f, r_sig.b = %f\n", r_sig[e7].g, r_sig[e7].b)
+
+      regentlib.assert(not [bool](isnan(r_sig[e7].g)), "Step 1b_sigz\n")
+      regentlib.assert(not [bool](isnan(r_sig[e7].b)), "Step 1b_sigz\n")
+
+      end
+  
+    end
+  end
+end
 
       
 
@@ -1969,9 +2104,9 @@ task toplevel()
     var il : int32 = bounds.lo.v
     var jl : int32 = bounds.lo.u
     var kl : int32 = bounds.lo.t
-    var ir : int32 = bounds.lo.v
-    var jr : int32 = bounds.lo.u
-    var kr : int32 = bounds.lo.t
+    var ir : int32 = bounds.hi.v
+    var jr : int32 = bounds.hi.u
+    var kr : int32 = bounds.hi.t
 
     var col3 : int3d = {col7.v, col7.u, col7.t}
     var col6 : int6d = {col7.x, col7.y, col7.z, col7.v, col7.u, col7.t}
