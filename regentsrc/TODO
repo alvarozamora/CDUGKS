@@ -4,6 +4,7 @@ Potential Optimizations: Combine steps that use interpidx. I think I can get rid
 
 rewrite everything as space-first again. 
 Done:
+  task1a
   sigx
   sigy
   sigz
@@ -16,6 +17,10 @@ Done:
   sigxz
   sigyz
   sigzz
+  task1c
+  task2a
+  task2b
+  task2c
 
 
 Break up tasks for max parallelism -- change privileges to be field specific (mesh dimension, specific phi)

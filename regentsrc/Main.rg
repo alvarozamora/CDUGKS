@@ -636,48 +636,53 @@ do
   var Xi : double[3]
   var T : double
 
-  for e in r_grid do
-    var sidx : int3d = {e.w, e.v, e.u}
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  
+  for s in s3 do
  
     u = 0
     for dim = 0, effD do
-      u += r_W[sidx].rhov[dim]/r_W[sidx].rho*r_W[sidx].rhov[dim]/r_W[sidx].rho
+      u += r_W[s].rhov[dim]/r_W[s].rho*r_W[s].rhov[dim]/r_W[s].rho
     end
     u = sqrt(u)
 
-    T = Temperature(r_W[sidx].rhoE/r_W[sidx].rho, u, g, R)
+    T = Temperature(r_W[s].rhoE/r_W[s].rho, u, g, R)
 
-    tg = visc(T, ur, Tr, w)/r_W[sidx].rho/R/T
+    tg = visc(T, ur, Tr, w)/r_W[s].rho/R/T
     tb = tg/Pr
 
-    -- For Now...
-    r_S[e].g = 0.
-    r_S[e].b = 0.
+    for v in v3 do
+      var e : int6d = {s.x, s.y, s.z, v.x, v.y, v.z}
 
-    c2 = 0
-    Xi[0] = vxmesh[e.x].v
-    Xi[1] = vymesh[e.y].v
-    Xi[2] = vzmesh[e.z].v
-    for dim = 0, effD do
-      c2 += (Xi[dim]-r_W[sidx].rhov[dim]/r_W[sidx].rho)*(Xi[dim]-r_W[sidx].rhov[dim]/r_W[sidx].rho)
-    end
+      -- For Now...
+      r_S[e].g = 0.
+      r_S[e].b = 0.
 
-    var g_eq : double = geq(c2, r_W[sidx].rho, T, R, effD)
-    var b_eq : double = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+      c2 = 0
+      Xi[0] = vxmesh[v.x].v
+      Xi[1] = vymesh[v.y].v
+      Xi[2] = vzmesh[v.z].v
+      for dim = 0, effD do
+        c2 += (Xi[dim]-r_W[s].rhov[dim]/r_W[s].rho)*(Xi[dim]-r_W[s].rhov[dim]/r_W[s].rho)
+      end
 
-    r_gridbarp[e].g = (2*tg - dt/2.)/(2.*tg)*r_grid[e].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e].g
-    r_gridbarp[e].b = (2*tb - dt/2.)/(2.*tb)*r_grid[e].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e].b
+      var g_eq : double = geq(c2, r_W[s].rho, T, R, effD)
+      var b_eq : double = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
 
-    if (isnan(r_gridbarp[e].g) == 1 or isnan(r_gridbarp[e].b) == 1) then
+      r_gridbarp[e].g = (2*tg - dt/2.)/(2.*tg)*r_grid[e].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e].g
+      r_gridbarp[e].b = (2*tb - dt/2.)/(2.*tb)*r_grid[e].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e].b
 
-      c.printf("Step 1a: gp = %.12f, bp = %.12f, g = %.12f, b = %.12f, g_eq = %.12f, Sg = %.12f, Sb = %.12f, taus = {%.12f, %.12f}\n", r_gridbarp[e].g, r_gridbarp[e].b, r_grid[e].g, r_grid[e].b, g_eq, r_S[e].g, r_S[e].b, tg, tb)
+      if (isnan(r_gridbarp[e].g) == 1 or isnan(r_gridbarp[e].b) == 1) then
+
+        c.printf("Step 1a: gp = %.12f, bp = %.12f, g = %.12f, b = %.12f, g_eq = %.12f, Sg = %.12f, Sb = %.12f, taus = {%.12f, %.12f}\n", r_gridbarp[e].g, r_gridbarp[e].b, r_grid[e].g, r_grid[e].b, g_eq, r_S[e].g, r_S[e].b, tg, tb)
+
+        regentlib.assert(not [bool](isnan(r_gridbarp[e].g)), "Step 1a\n")
+        regentlib.assert(not [bool](isnan(r_gridbarp[e].b)), "Step 1a\n")
     
+      end
+
     end
-    
-
-    regentlib.assert(not [bool](isnan(r_gridbarp[e].g)), "Step 1a\n")
-    regentlib.assert(not [bool](isnan(r_gridbarp[e].b)), "Step 1a\n")
-
   end
 end
 
@@ -1668,76 +1673,88 @@ where
   reads(r_sig, r_gridbarp, r_mesh.{dx,dy,dz}, vxmesh.v, vymesh.v, vzmesh.v),
   reads(prx_gridbarp, pry_gridbarp, prz_gridbarp, prx_sig, pry_sig, prz_sig, prx_mesh.dx, pry_mesh.dy, prz_mesh.dz)
 do
-  for e in r_gridbarpb do
-    var e3 : int3d = {e.v, e.u, e.t}
-    var e6 : int6d = {e.x, e.y, e.z, e.v, e.u, e.t}
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
 
-    -- Gathering Right Indices -- (Note: e.w = Dim)
-    var bc : int32[6] = BC(e.v, e.u, e.t, e.w, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR : int6d = {e.x, e.y, e.z, IR, JR, KR}
-    var eR3 : int3d = {IR, JR, KR}
-    var eR6 : int6d = {e.x, e.y, e.z, IR, JR, KR}
-    var eR7 : int7d = {e.x, e.y, e.z, e.w, IR, JR, KR}
+  for s in s3 do
 
-    -- Dot Product is just a single product when using rectangular mesh
-    var swap : double = 1.0
-    var gb : double = r_gridbarp[e6].g
-    var bb : double = r_gridbarp[e6].b
-    var gsig : double = r_sig[e].g
-    var bsig : double = r_sig[e].b
+    var e3 : int3d = {s.x, s.y, s.z}
+
+    for Dim = 0, effD do
+
+      -- Gathering Right Indices
+      var bc : int32[6] = bc(s.x, s.y, s.z, Dim, BCs, N)
+      var IR : int32 = bc[3]
+      var JR : int32 = bc[4]
+      var KR : int32 = bc[5]
+      var eR3 : int3d = {IR, JR, KR}
+
+
+      for v in v3 do      
+
+        var e6 : int6d = {e.x, e.y, e.z, e.v, e.u, e.t}
+
+        -- Gathering Right Indices -- (Note: e.w = Dim)
+        var eR6 : int6d = {IR, JR, KR, v.x, v.y, v.z}
+        var eR7 : int7d = {IR, JR, KR, Dim, v.x, v.y, v.z}
+
+        -- Dot Product is just a single product when using rectangular mesh
+        var swap : double = 1.0
+        var gb : double = r_gridbarp[e6].g
+        var bb : double = r_gridbarp[e6].b
+        var gsig : double = r_sig[e].g
+        var bsig : double = r_sig[e].b
       
-    var sC : double[3] 
-    sC[0] = r_mesh[e3].dx
-    sC[1] = r_mesh[e3].dy
-    sC[2] = r_mesh[e3].dz
-    -- Note : e.w = Dim
-    if (vxmesh[e.x].v < 0 and e.w == 0) then
-      gsig = prx_sig[eR7].g
-      bsig = prx_sig[eR7].b
-      gb = prx_gridbarp[eR6].g
-      bb = prx_gridbarp[eR6].b
-      swap = -1
-      sC[e.w] = prx_mesh[eR3].dx
-    elseif (vymesh[e.y].v < 0 and e.w == 1) then
-      gsig = pry_sig[eR7].g
-      bsig = pry_sig[eR7].b
-      gb = pry_gridbarp[eR6].g
-      bb = pry_gridbarp[eR6].b
-      swap = -1
-      sC[e.w] = pry_mesh[eR3].dy
-    elseif (vzmesh[e.z].v < 0 and e.w == 2) then
-      gsig = prz_sig[eR7].g
-      bsig = prz_sig[eR7].b
-      gb = prz_gridbarp[eR6].g
-      bb = prz_gridbarp[eR6].b
-      swap = -1
-      sC[e.w] = prz_mesh[eR3].dz
-    end
+        var sC : double[3] 
+        sC[0] = r_mesh[e3].dx
+        sC[1] = r_mesh[e3].dy
+        sC[2] = r_mesh[e3].dz
+
+        if (vxmesh[v.x].v < 0 and Dim == 0) then
+          gsig = prx_sig[eR7].g
+          bsig = prx_sig[eR7].b
+          gb = prx_gridbarp[eR6].g
+          bb = prx_gridbarp[eR6].b
+          swap = -1
+          sC[Dim] = prx_mesh[eR3].dx
+        elseif (vymesh[e.y].v < 0 and Dim == 1) then
+          gsig = pry_sig[eR7].g
+          bsig = pry_sig[eR7].b
+          gb = pry_gridbarp[eR6].g
+          bb = pry_gridbarp[eR6].b
+          swap = -1
+          sC[Dim] = pry_mesh[eR3].dy
+        elseif (vzmesh[e.z].v < 0 and Dim == 2) then
+          gsig = prz_sig[eR7].g
+          bsig = prz_sig[eR7].b
+          gb = prz_gridbarp[eR6].g
+          bb = prz_gridbarp[eR6].b
+          swap = -1
+          sC[Dim] = prz_mesh[eR3].dz
+        end
 
      
-    -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-    r_gridbarpb[e].g = gb + swap*sC[e.w]/2.0*gsig
-    r_gridbarpb[e].b = bb + swap*sC[e.w]/2.0*bsig
+        -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
+        r_gridbarpb[e].g = gb + swap*sC[Dim]/2.0*gsig
+        r_gridbarpb[e].b = bb + swap*sC[Dim]/2.0*bsig
 
-    -- NAN checker
-    if (isnan(r_gridbarpb[e].g) == 1 or isnan(r_gridbarpb[e].b) == 1) then
+        -- NAN checker
+        if (isnan(r_gridbarpb[e].g) == 1 or isnan(r_gridbarpb[e].b) == 1) then
+ 
+          c.printf("Step 1b: r_gridbarp.g = %f, r_gridbarp.b = %f, r_sig.g = %f, r_sig.b = %f\n", gb, bb, gsig, bsig)
 
-      c.printf("Step 1b: r_gridbarp.g = %f, r_gridbarp.b = %f, r_sig.g = %f, r_sig.b = %f\n", gb, bb, gsig, bsig)
-
-      regentlib.assert(not [bool](isnan(r_gridbarpb[e].g)), "Step 1b\n")
-      regentlib.assert(not [bool](isnan(r_gridbarpb[e].b)), "Step 1b\n")
+          regentlib.assert(not [bool](isnan(r_gridbarpb[e].g)), "Step 1b\n")
+          regentlib.assert(not [bool](isnan(r_gridbarpb[e].b)), "Step 1b\n")
     
-    end
+        end
 
+      end
+    end 
   end
 end
 
 -- Step 1c: Compute phibar at interface by interpolating w/ phisigma2, x-Xi*dt/2
-task Step1c(r_gridbar : region(ispace(int7d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
+task Step1c(r_gridbarpb : region(ispace(int7d), grid),
             vxmesh : region(ispace(int1d), vmesh),        
             vymesh : region(ispace(int1d), vmesh),        
             vzmesh : region(ispace(int1d), vmesh),        
@@ -1749,165 +1766,93 @@ where
   reads writes(r_gridbar)
 do     
   -- Compute gbar/bbar @ t=n+1/2  with interface sigma
-  var Xi : double[3] 
+  var Xi : double[3]
 
-  for e in r_gridbar do
-    Xi[0] = vxmesh[e.x].v
-    Xi[1] = vxmesh[e.y].v
-    Xi[2] = vxmesh[e.z].v
+  var lo3 : int3d = {r_gridbar.bounds.lo.x, r_gridbar.bounds.lo.y, r_gridbar.bounds.lo.z}
+  var hi3 : int3d = {r_gridbar.bounds.hi.x, r_gridbar.bounds.hi.y, r_gridbar.bounds.hi.z}
+  var s3 = ispace(int3d, lo3, hi3)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+
+  for s in s3 do
+    for Dim = 0, effD do
+
+      var bc = BC(s.x, s.y, s.z, Dim, BCs, N)
+      var IL : int32 = bc[0]
+      var IR : int32 = bc[1]
+      var JL : int32 = bc[2]
+      var JR : int32 = bc[3]
+      var KL : int32 = bc[4]
+      var KR : int32 = bc[5]
+
+      -- Gather Right Indices
+      var eR3 : int3d = {IR2, JR2, KR2}
+
+      for v in v3 do
+
+        -- Gather Right Indices
+        var e7 : int6d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
+        var eR : int6d = {e.x, e.y, e.z, IR2, JR2, KR2}
+        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR2, JR2, KR2}
+
+        Xi[0] = vxmesh[v.x].v
+        Xi[1] = vxmesh[v.y].v
+        Xi[2] = vxmesh[v.z].v
     
 
-    -- Phibar at Interface, at t = n+1/2
-    r_gridbar[e].g = r_gridbarpb[e].g
-    r_gridbar[e].b = r_gridbarpb[e].b
+        -- Phibar at Interface, at t = n+1/2
+        --r_gridbar[e].g = r_gridbarpb[e].g
+        --r_gridbar[e].b = r_gridbarpb[e].b
 
-    var dg : double = 0
-    var db : double = 0
+        for Dim2 = 0, effD do
+          var swap : double = 1.0
+          var gsig2 : double
+          var bsig2 : double
 
-    for Dim2 = 0, effD do
-      var IL2 : int32 
-      var IR2 : int32
-      var JL2 : int32
-      var JR2 : int32
-      var KL2 : int32
-      var KR2 : int32
-   
-      var i : int32 = e.v
-      var j : int32 = e.u
-      var k : int32 = e.t
+          var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+          var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+          
+          if (vxmesh[v.x].v < 0 and Dim == 0) then
+            gsig2 = plx_rsig2[eR8].g
+            bsig2 = plx_rsig2[eR8].b
+            swap = -1
+          else
+            gsig2 = r_sig2[e8].g
+            bsig2 = r_sig2[e8].b
+          end
+        
+          if (vymesh[v.y].v < 0 and Dim == 1) then
+            gsig2 = ply_rsig2[eR8].g
+            bsig2 = ply_rsig2[eR8].b
+            swap = -1
+          else
+            gsig2 = r_sig2[e8].g
+            bsig2 = r_sig2[e8].b
+          end
+ 
+          if (vzmesh[v.z].v < 0 and Dim == 2) then
+            gsig2 = plz_rsig2[eR8].g
+            bsig2 = plz_rsig2[eR8].b
+            swap = -1
+          else
+            gsig2 = r_sig2[e8].g
+            bsig2 = r_sig2[e8].b
+          end
 
-      -- Periodic Boundary Conditions
-      if (Dim2 == 0 and BCs[0] == 0) then 
-        IL2 = (i - 1 + N[0])%N[0] 
-        IR2 = (i + 1)%N[0] 
-        JL2 = j
-        JR2 = j
-        KL2 = k
-        KR2 = k
+          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim]*gsig2
+          r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim]*bsig2
+    
+          regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 1c\n")
+          regentlib.assert(not [bool](isnan(r_gridbarpb[e7].b)), "Step 1c\n")
+        
+        end 
       end 
-      if (Dim2 == 1 and BCs[1] == 0) then
-        IL2 = i
-        IR2 = i
-        JL2 = (j - 1 + N[1])%N[1]
-        JR2 = (j + 1)%N[1] 
-        KL2 = k
-        KR2 = k
-      end
-      if (Dim2 == 2 and BCs[2] == 0) then
-        IL2 = i
-        IR2 = i
-        JL2 = j
-        JR2 = j
-        KL2 = (k - 1 + N[2])%N[2] 
-        KR2 = (k + 1)%N[2] 
-      end
-
-
-      -- Dirichlet Boundary Conditions
-      if (Dim2 == 0 and BCs[0] == 1) then
-        IL2 = i - 1 
-        IR2 = i + 1 
-        if IL2 <  0 then IL2 = 0 end 
-        if IR2 == N[0] then IR2 = N[0] - 1 end
-        JL2 = j
-        JR2 = j
-        KL2 = k
-        KR2 = k
-      end 
-      if (Dim2 == 1 and BCs[1] == 1) then
-        IL2 = i
-        IR2 = i
-        JL2 = j - 1 
-        JR2 = j + 1
-        if JL2 <  0 then JL2 = 0 end 
-        if JR2 == N[1] then JR2 = N[1] - 1 end
-        KL2 = k
-        KR2 = k
-      end
-      if (Dim2 == 2 and BCs[2] == 1) then
-        IL2 = i
-        IR2 = i
-        JL2 = j
-        JR2 = j
-        KL2 = k - 1 
-        KR2 = k + 1 
-        if KL2 <  0 then KL2 = 0 end 
-        if KR2 == N[2] then KR2 = N[2] - 1 end
-      end
-    
-    
-      -- Neumann Boundary Conditions
-      if (Dim2 == 0 and BCs[0] == 2) then
-        IL2 = i - 1 
-        IR2 = i + 1 
-        if IL2 <  0 then IL2 = 0 end 
-        if IR2 == N[0] then IR2 = N[0] - 1 end
-        JL2 = j
-        JR2 = j
-        KL2 = k
-        KR2 = k
-      end 
-      if (Dim2 == 1 and BCs[1] == 2) then
-        IL2 = i
-        IR2 = i
-        JL2 = j - 1 
-        JR2 = j + 1
-        if JL2 <  0 then JL2 = 0 end 
-        if JR2 == N[1] then JR2 = N[1] - 1 end
-        KL2 = k
-        KR2 = k
-      end
-      if (Dim2 == 2 and BCs[2] == 2) then
-        IL2 = i
-        IR2 = i
-        JL2 = j
-        JR2 = j
-        KL2 = k - 1 
-        KR2 = k + 1 
-        if KL2 <  0 then KL2 = 0 end 
-        if KR2 == N[2] then KR2 = N[2] - 1 end
-      end
-
-      -- Gather Left and Right Indices
-      var eL2 : int6d = {e.x, e.y, e.z, IL2, JL2, KL2}
-      var eR2 : int6d = {e.x, e.y, e.z, IR2, JR2, KR2}
-      var eL2_3 : int3d = {IL2, JL2, KL2}
-      var eR2_3 : int3d = {IR2, JR2, KR2}
-      var eL2_7 : int7d = {e.x, e.y, e.z, Dim2, IL2, JL2, KL2}
-      var eR2_7 : int7d = {e.x, e.y, e.z, Dim2, IR2, JR2, KR2}
-
-
-
-      var interpidx : int7d = e
-      var swap : double = 1.0
-
-      if (vxmesh[e.x].v < 0 and Dim2 == 0) then
-        interpidx = eR2_7
-        swap = -1
-      elseif (vymesh[e.y].v < 0 and Dim2 == 1) then
-        interpidx = eR2_7 
-        swap = -1
-      elseif (vzmesh[e.z].v < 0 and Dim2 == 2) then
-        interpidx = eR2_7 
-        swap = -1
-      end
-
-
-      var interpol8 : int8d = {interpidx.x, interpidx.y, interpidx.z, interpidx.w, Dim2, interpidx.v, interpidx.u, interpidx.t} 
-         
-      r_gridbar[e].g = r_gridbar[e].g - dt/2.0*Xi[Dim2]*r_sig2[interpol8].g
-      r_gridbar[e].b = r_gridbar[e].b - dt/2.0*Xi[Dim2]*r_sig2[interpol8].b
-    
-      regentlib.assert(not [bool](isnan(r_gridbar[e].g)), "Step 1c\n")
-      regentlib.assert(not [bool](isnan(r_gridbar[e].b)), "Step 1c\n")
-
     end
   end 
 end
 
 --Step 2: Microflux
---Step 2a: Interpolate W to interface.
-task Step2a(r_gridbar : region(ispace(int7d), grid),
+--Step 2a: Compute W at interface.
+task Step2a(r_gridbarpb : region(ispace(int7d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
@@ -1918,15 +1863,13 @@ where
   reads(r_gridbar, vxmesh, vymesh, vzmesh),
   reads writes(r_Wb)
 do    
-  -- Compute conserved variables W at t+1/2
-  
   -- Reset field space
   fill(r_Wb.rho, 0)
  
   -- First do density at boundary, density is needed for others.
-  for e in r_gridbar do
-    var e4 : int4d = {e.w, e.v, e.u, e.t}  
-    r_Wb[e4].rho = r_Wb[e4].rho + vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w*r_gridbar[e].g
+  for e in r_gridbarpb do
+    var e4 : int4d = {e.x, e.y, e.z, e.w}  
+    r_Wb[e4].rho = r_Wb[e4].rho + vxmesh[e.v].w*vymesh[e.u].w*vzmesh[e.t].w*r_gridbarpb[e].g
   end
       
   -- Then do momentum and energy
@@ -1940,27 +1883,31 @@ do
 
   -- Then iterate over contributions in velocity space
   var U : double[3]
-  for e in r_gridbar do
+
+  var s3 = ispace(int3d, {r_Wb.bounds.lo.x, r_Wb.bounds.lo.y, r_Wb.bounds.lo.z}, {r_Wb.bounds.hi.x, r_Wb.bounds.hi.y, r_Wb.bounds.hi.z})
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.y, vzmesh.bounds.lo.z}, {vxmesh.bounds.hi.x, vxmesh.bounds.hi.y, vxmesh.bounds.hi.z})
+ 
+  for v in v3 do
    
     U[0] = vxmesh[e.x].v
     U[1] = vymesh[e.y].v
     U[2] = vzmesh[e.z].v
+ 
+    for s in s3 do
+      for Dim = 0, effD do
+        var e4 : int4d = {s.x, s.y, s.z, Dim}  
 
-    var e4 : int4d = {e.w, e.v, e.u, e.t}  
-
-    for v = 0, effD do
-      r_Wb[e4].rhov[v] = r_Wb[e4].rhov[v] + vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w*U[v]*r_gridbar[e].g 
-    end
+        for d = 0, effD do
+          r_Wb[e4].rhov[d] = r_Wb[e4].rhov[d] + vxmesh[evx].w*vymesh[v.y].w*vzmesh[v.z].w*U[d]*r_gridbarpb[e].g 
+        end
           
-    r_Wb[e4].rhoE = r_Wb[e4].rhoE + vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w*r_gridbar[e].b
-
-
-  end
-  for e in r_Wb do
-
-    if e.x == 0 then
-      --c.printf("rho[%d] = %f\n", e.y, r_Wb[e].rho)
+        r_Wb[e4].rhoE = r_Wb[e4].rhoE + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e].b
+      end
     end
+  end
+
+  -- NAN checker
+  for e in r_Wb do
 
     regentlib.assert(not [bool](isnan(r_Wb[e].rho)), "Step 2a\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[0])), "Step 2a\n")
@@ -1974,7 +1921,7 @@ end
 
 -- Step 2b: compute original phi at interface using gbar, W at interface
 -- Memory Recycling: phibar @ interface is used to store phi @ interface.
-task Step2b(r_gridbar : region(ispace(int7d), grid), 
+task Step2b(r_gridbarpb : region(ispace(int7d), grid), 
             r_Wb      : region(ispace(int4d), W),
             vxmesh    : region(ispace(int1d), vmesh),
             vymesh    : region(ispace(int1d), vmesh),
@@ -1982,259 +1929,223 @@ task Step2b(r_gridbar : region(ispace(int7d), grid),
             dt : double, R : double, K : double, Cv : double, g : double,
             w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads writes(r_gridbar),
+  reads writes(r_gridbarpb),
   reads(r_Wb, vxmesh, vymesh, vzmesh)
 do
-  for e in r_gridbar do
+  var s3 = ispace(int3d, {r_Wb.bounds.lo.x, r_Wb.bounds.lo.y, r_Wb.bounds.lo.z}, {r_Wb.bounds.hi.x, r_Wb.bounds.hi.y, r_Wb.bounds.hi.z})
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.y, vzmesh.bounds.lo.z}, {vxmesh.bounds.hi.x, vxmesh.bounds.hi.y, vxmesh.bounds.hi.z})
+
+  for s in s3 do
+
     var tg : double
     var tb : double
     var u : double
     var T : double
-    var g_eq : double
-    var b_eq : double
-    var c2 : double
     var Xi : double[3]
+    var e3 : int3d = {s.x, s.y, s.z}
 
+    for Dim = 0, effD do
 
-    var e3 : int3d = {e.v, e.u, e.t}
-    var e4 : int4d = {e.w, e.v, e.u, e.t}
+      var e4 : int4d = {s.x, s.y, s.z, Dim}
 
-
-    u = 0 
-    for v = 0, effD do
-      u = u + r_Wb[e4].rhov[v]/r_Wb[e4].rho*r_Wb[e4].rhov[v]/r_Wb[e4].rho
-    end
-    u = sqrt(u)
+      u = 0 
+      for v = 0, effD do
+        u = u + r_Wb[e4].rhov[v]/r_Wb[e4].rho*r_Wb[e4].rhov[v]/r_Wb[e4].rho
+      end
+      u = sqrt(u)
       
-    T = Temperature(r_Wb[e4].rhoE/r_Wb[e4].rho, u, g, R)
+      T = Temperature(r_Wb[e4].rhoE/r_Wb[e4].rho, u, g, R)
 
-    tg = visc(T, ur, Tr, w)/r_Wb[e4].rho/R/T
-    tb = tg/Pr
-    --c.printf("tg = %f, tb = %f\n", tg, tb)
+      tg = visc(T, ur, Tr, w)/r_Wb[e4].rho/R/T
+      tb = tg/Pr
+      --c.printf("tg = %f, tb = %f\n", tg, tb)
 
+      for v in v3 do
 
-    c2 = 0
-    Xi[0] = vxmesh[e.x].v
-    Xi[1] = vymesh[e.y].v
-    Xi[2] = vzmesh[e.z].v
+        var e : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
+        var c2 : double = 0
+        var g_eq : double
+        var b_eq : double
 
-    for v = 0, effD do
-      c2 =  c2 + (Xi[v] - r_Wb[e4].rhov[v]/r_Wb[e4].rho)*(Xi[v] - r_Wb[e4].rhov[v]/r_Wb[e4].rho)
-    end
+        Xi[0] = vxmesh[v.x].v
+        Xi[1] = vymesh[v.y].v
+        Xi[2] = vzmesh[v.z].v
 
-    g_eq = geq(c2, r_Wb[e4].rho, T, R, effD)
-    b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+        for d = 0, effD do
+          c2 =  c2 + (Xi[d] - r_Wb[e4].rhov[d]/r_Wb[e4].rho)*(Xi[d] - r_Wb[e4].rhov[d]/r_Wb[e4].rho)
+        end
 
-    -- this is actually the original distribution function, recycling memory from gbar
-    r_gridbar[e].g = 2*tg/(2*tg + dt/2.)*r_gridbar[e].g + dt/(4*tg + dt)*g_eq + dt*tg/(4*tg + dt)*0 -- TODO replace this last *0 with source term 
-    r_gridbar[e].b = 2*tb/(2*tb + dt/2.)*r_gridbar[e].b + dt/(4*tb + dt)*b_eq + dt*tb/(4*tb + dt)*0 -- TODO replace this last *0 with source term
+        g_eq = geq(c2, r_Wb[e4].rho, T, R, effD)
+        b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
 
-    if (isnan(r_gridbar[e].g) == 1 or isnan(r_gridbar[e].b) == 1) then
+        -- this is actually the original distribution function, recycling memory from gbar
+        r_gridbarpb[e].g = 2*tg/(2*tg + dt/2.)*r_gridbarpb[e].g + dt/(4*tg + dt)*g_eq + dt*tg/(4*tg + dt)*0 -- TODO replace this last *0 with source term 
+        r_gridbarpb[e].b = 2*tb/(2*tb + dt/2.)*r_gridbarpb[e].b + dt/(4*tb + dt)*b_eq + dt*tb/(4*tb + dt)*0 -- TODO replace this last *0 with source term
 
-      c.printf("gbar = %.10f, bbar = %.10f, g_eq = %.10f, tg = %.10f, tb = %.10f\n", r_gridbar[e].g, r_gridbar[e].b, g_eq, tg, tb)
+        if (isnan(r_gridbarpb[e].g) == 1 or isnan(r_gridbarpb[e].b) == 1) then
+
+          c.printf("gbar = %.10f, bbar = %.10f, g_eq = %.10f, tg = %.10f, tb = %.10f\n", r_gridbarpb[e].g, r_gridbarpb[e].b, g_eq, tg, tb)
       
-      regentlib.assert(not [bool](isnan(r_gridbar[e].g)), "Step 2b\n")
-      regentlib.assert(not [bool](isnan(r_gridbar[e].b)), "Step 2b\n")
+        regentlib.assert(not [bool](isnan(r_gridbarpb[e].g)), "Step 2b\n")
+        regentlib.assert(not [bool](isnan(r_gridbarpb[e].b)), "Step 2b\n")
     
+        end
+
+      end
     end 
   end
 end
 
 -- Step 2c: Compute Microflux F at interface at half timestep using W/phi at interface.
-task Step2c(r_gridbar : region(ispace(int7d), grid),
+task Step2c(r_gridbarpb : region(ispace(int7d), grid),
             r_F       : region(ispace(int6d), grid),
             r_mesh    : region(ispace(int3d), mesh),
             vxmesh    : region(ispace(int1d), vmesh),
             vymesh    : region(ispace(int1d), vmesh),
             vzmesh    : region(ispace(int1d), vmesh),
+            plx_gridbarpb : region(ispace(int7d), grid),
+            ply_gridbarpb : region(ispace(int7d), grid),
+            ply_gridbarpb : region(ispace(int7d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, g : double,
             w : double, Tr : double, Pr : double, effD : int32, N : int32[3])
 where
-  reads(r_gridbar, vxmesh, vymesh, vzmesh, r_mesh),
+  reads(r_gridbarpb, vxmesh, vymesh, vzmesh, r_mesh),
   reads writes(r_F)
 do    
-  var sold : int3d = {-1, -1, -1}
   var A : double[3]
   var Xi : double[3]
 
   fill(r_F.g, 0)
   fill(r_F.b, 0)
 
-  for e in r_F do
-    var e3 : int3d = {e.w, e.v, e.u}
-    if (not e3.x == sold.x and not e3.y == sold.y and not e3.z == sold.z) then
-      A[0] = r_mesh[e3].dy*r_mesh[e3].dz
-      A[1] = r_mesh[e3].dx*r_mesh[e3].dz
-      A[2] = r_mesh[e3].dx*r_mesh[e3].dy
-    end
+  var s3 = ispace(int3d, {r_F.bounds.lo.x, r_F.bounds.lo.y, r_F.bounds.lo.z}, {r_F.bounds.hi.x, r_F.bounds.hi.y, r_F.bounds.hi.z})
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.y, vzmesh.bounds.lo.z}, {vxmesh.bounds.hi.x, vxmesh.bounds.hi.y, vxmesh.bounds.hi.z})
+
+  for s in s3 do
+    var e3 : int3d = {s.x, s.y, s.z}
+
+    A[0] = r_mesh[e3].dy*r_mesh[e3].dz
+    A[1] = r_mesh[e3].dx*r_mesh[e3].dz
+    A[2] = r_mesh[e3].dx*r_mesh[e3].dy
 
     for Dim = 0, effD do
-      var IL : int32 
-      var IR : int32
-      var JL : int32
-      var JR : int32
-      var KL : int32
-      var KR : int32
+      var bc : BC(s.x, s.y, s.z, Dim, BCs, N)
+      var IL : int32 = bc[0]
+      var IR : int32 = bc[1]
+      var JL : int32 = bc[2]
+      var JR : int32 = bc[3]
+      var KL : int32 = bc[4]
+      var KR : int32 = bc[5]
 
-      var e7 : int7d = {e.x, e.y, e.z, Dim, e.w, e.v, e.u}
+      var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
 
-      var i : int32 = e.w
-      var j : int32 = e.v
-      var k : int32 = e.u
 
       -- Boundary Conditions
       var right : double = 1.0 
       var left : double = 1.0
 
-      -- Periodic Boundary Conditions
-      if (Dim == 0 and BCs[0] == 0) then 
-        IL = (i - 1 + N[0])%N[0] 
-        IR = (i + 1)%N[0] 
-        JL = j
-        JR = j
-        KL = k
-        KR = k
-      end 
-      if (Dim == 1 and BCs[1] == 0) then
-        IL = i
-        IR = i
-        JL = (j - 1 + N[1])%N[1]
-        JR = (j + 1)%N[1] 
-        KL = k
-        KR = k
-      end
-      if (Dim == 2 and BCs[2] == 0) then
-        IL = i
-        IR = i
-        JL = j
-        JR = j
-        KL = (k - 1 + N[2])%N[2] 
-        KR = (k + 1)%N[2] 
-      end
-
-
       -- Dirichlet Boundary Conditions
       if (Dim == 0 and BCs[0] == 1) then
-        IL = i - 1 
-        IR = i + 1 
-        if IL <  0 then 
-          IL = 0  
+        if s.x == 0 then 
           left = 0
           right = 0
         end
-        if IR == N[0] then 
-          IR = N[0] - 1 
+        if s.x == N[0] - 1 then 
           left = 0
           right = 0
         end
-        JL = j
-        JR = j
-        KL = k
-        KR = k
       end 
       if (Dim == 1 and BCs[1] == 1) then
-        IL = i
-        IR = i
-        JL = j - 1 
-        JR = j + 1
-        if JL <  0 then 
-          JL = 0  
+        if s.y == 0 then 
           left = 0
           right = 0
         end
-        if JR == N[1] then 
-          JR = N[1] - 1 
+        if s.y == N[1] - 1 then 
           left = 0
           right = 0
         end
-        KL = k
-        KR = k
       end
       if (Dim == 2 and BCs[2] == 1) then
-        IL = i
-        IR = i
-        JL = j
-        JR = j
-        KL = k - 1 
-        KR = k + 1 
-        if KL <  0 then 
-          KL = 0  
+        if s.z == 0 then 
           left = 0
           right = 0
         end
-        if KR == N[2] then 
-          KR = N[2] - 1 
+        if s.z == N[2] - 1 then 
           left = 0
           right = 0
         end
       end
-      
-      
+
       -- Neumann Boundary Conditions
-      if (Dim == 0 and BCs[0] == 2) then
-        IL = i - 1 
-        IR = i + 1 
-        if IL <  0 then 
-          IL = 0  
+      if (Dim == 0 and BCs[0] == 1) then
+        if s.x == 0 then 
           left = 0
         end
-        if IR == N[0] then 
-          IR = N[0] - 1 
+        if s.x == N[0] - 1 then 
           right = 0
         end
-        JL = j
-        JR = j
-        KL = k
-        KR = k
       end 
-      if (Dim == 1 and BCs[1] == 2) then
-        IL = i
-        IR = i
-        JL = j - 1 
-        JR = j + 1
-        if JL <  0 then 
-          JL = 0  
+      if (Dim == 1 and BCs[1] == 1) then
+        if s.y == 0 then 
           left = 0
         end
-        if JR == N[1] then 
-          JR = N[1] - 1 
-          right = 0
-        end
-        KL = k
-        KR = k
-      end
-      if (Dim == 2 and BCs[2] == 2) then
-        IL = i
-        IR = i
-        JL = j
-        JR = j
-        KL = k - 1 
-        KR = k + 1 
-        if KL <  0 then 
-          KL = 0  
-          left = 0
-        end
-        if KR == N[2] then 
-          KR = N[2] - 1 
+        if s.y == N[1] - 1 then 
           right = 0
         end
       end
-      
-      -- Gather Left and Right Indices
-      var eL : int6d = {e.x, e.y, e.z, IL, JL, KL}
-      var eR : int6d = {e.x, e.y, e.z, IR, JR, KR}
+      if (Dim == 2 and BCs[2] == 1) then
+        if s.z == 0 then 
+          left = 0
+        end
+        if s.z == N[2] - 1 then 
+          right = 0
+        end
+      end
+
       var eL3 : int3d = {IL, JL, KL}
       var eR3 : int3d = {IR, JR, KR}
-      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      
+      for v in v3 do 
+        -- Gather Left Indices
+        var e7 : int3d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
+        var eL : int6d = {IL, JL, KL, v.x, v.y, v.z}
+        var eL7 : int7d = {IL, JL, KL, Dim, v.x, v.y, v.z}
 
-      Xi[0] = vxmesh[e.x].v
-      Xi[1] = vymesh[e.y].v
-      Xi[2] = vzmesh[e.z].v
+        Xi[0] = vxmesh[v.x].v
+        Xi[1] = vymesh[v.y].v
+        Xi[2] = vzmesh[v.z].v
   
-      r_F[e].g = r_F[e].g + Xi[Dim]*A[Dim]*(right*r_gridbar[e7].g - left*r_gridbar[eL7].g)
-      r_F[e].b = r_F[e].b + Xi[Dim]*A[Dim]*(right*r_gridbar[e7].b - left*r_gridbar[eL7].b)
+        var gL : double
+        var bL : double
 
+        if (Dim == 0 and s.x == s3.bounds.lo.x) then
+          gL = plx_gridbarpb[eL7].b
+          bL = plx_gridbarpb[eL7].b
+        else
+          gL = r_gridbarpb[e7].b
+          bL = r_gridbarpb[e7].b
+        end
+
+        if (Dim == 1 and s.y == s3.bounds.lo.y) then
+          gL = ply_gridbarpb[eL7].b
+          bL = ply_gridbarpb[eL7].b
+        else
+          gL = r_gridbarpb[e7].b
+          bL = r_gridbarpb[e7].b
+        end
+
+        if (Dim == 2 and s.z == s3.bounds.lo.z) then
+          gL = plz_gridbarpb[eL7].b
+          bL = plz_gridbarpb[eL7].b
+        else
+          gL = r_gridbarpb[e7].b
+          bL = r_gridbarpb[e7].b
+        end
+           
+        r_F[e7].g = r_F[e7].g + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].g - left*gL)
+        r_F[e7].b = r_F[e7].b + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].b - left*bL)
+
+      end 
 
       regentlib.assert(not [bool](isnan(r_F[e].g)), "Step 2c\n")
       regentlib.assert(not [bool](isnan(r_F[e].b)), "Step 2c\n")
@@ -2595,12 +2506,11 @@ task toplevel()
   c.printf("w = %f, ur = %f, Tr = %f, Pr = %f\n", w, ur, Tr, Pr)
 
   -- Create regions for distribution functions and gradients
-  var r_grid      = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
-  var r_gridbarp  = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
-  var r_gridbarpb = region(ispace(int7d, {NV[0], NV[1], NV[2], effD, N[0], N[1], N[2]}), grid)
-  var r_gridbar   = region(ispace(int7d, {NV[0], NV[1], NV[2], effD, N[0], N[1], N[2]}), grid)
-  var r_sig       = region(ispace(int7d, {NV[0], NV[1], NV[2], effD, N[0], N[1], N[2]}), grid)
-  var r_sig2      = region(ispace(int8d, {NV[0], NV[1], NV[2], effD, effD, N[0], N[1], N[2]}), grid)
+  var r_grid      = region(ispace(int6d, {N[0], N[1], N[2], NV[0], NV[1], NV[2]}), grid)
+  var r_gridbarp  = region(ispace(int6d, {N[0], N[1], N[2], NV[0], NV[1], NV[2]}), grid)
+  var r_gridbarpb = region(ispace(int7d, {N[0], N[1], N[2], effD, NV[0], NV[1], NV[2]}), grid)
+  var r_sig       = region(ispace(int7d, {N[0], N[1], N[2], effD, NV[0], NV[1], NV[2]}), grid)
+  var r_sig2      = region(ispace(int8d, {N[0], N[1], N[2], effD, effD, NV[0], NV[1], NV[2]}), grid)
  
   -- Create regions for mesh and conserved variables (cell center and interface)
   var r_mesh = region(ispace(int3d, {N[0], N[1], N[2]}), mesh)
@@ -2614,8 +2524,8 @@ task toplevel()
   NewtonCotes(vxmesh, vymesh, vzmesh, NV, Vmin, Vmax)
 
   -- Create regions for source terms and flux
-  var r_S = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
-  var r_F = region(ispace(int6d, {NV[0], NV[1], NV[2], N[0], N[1], N[2]}), grid)
+  var r_S = region(ispace(int6d, {N[0], N[1], N[2], NV[0], NV[1], NV[2]}), grid)
+  var r_F = region(ispace(int6d, {N[0], N[1], N[2], NV[0], NV[1], NV[2]}), grid)
 
 
   -- Create partitions for regions
@@ -2632,7 +2542,6 @@ task toplevel()
   var p_grid = partition(equal, r_grid, p6)
   var p_gridbarp = partition(equal, r_gridbarp, p6)
   var p_gridbarpb = partition(equal, r_gridbarpb, p7)
-  var p_gridbar = partition(equal, r_gridbar, p7)
   var p_sig = partition(equal, r_sig, p7)
   var p_sig2 = partition(equal, r_sig2, p8)
   var p_mesh = partition(equal, r_mesh, p3)
