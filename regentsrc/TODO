@@ -1,11 +1,21 @@
-rewrite Evolution
-
 IO
 
 Potential Optimizations: Combine steps that use interpidx. I think I can get rid of an entire 7d grid worth of memory.
 
-
-rewrite everything as space-first again. Done:
+rewrite everything as space-first again. 
+Done:
   sigx
   sigy
   sigz
+  sigxx
+  sigyx
+  sigzx
+  sigxy
+  sigyy
+  sigzy
+  sigxz
+  sigyz
+  sigzz
+
+
+Break up tasks for max parallelism -- change privileges to be field specific (mesh dimension, specific phi)
