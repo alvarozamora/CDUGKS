@@ -24,3 +24,5 @@ Done:
 
 
 Break up tasks for max parallelism -- change privileges to be field specific (mesh dimension, specific phi)
+
+repartition to allow for parallelism across dimensions (gradients and gradients thereof)

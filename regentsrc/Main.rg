@@ -636,8 +636,8 @@ do
   var Xi : double[3]
   var T : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, {r_grid.bounds.lo.x, r_grid.bounds.lo.x, r_grid.bounds.lo.x}, {r_grid.bounds.hi.x, r_grid.bounds.hi.x, r_grid.bounds.hi.x})
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
   
   for s in s3 do
  
@@ -701,7 +701,7 @@ task Step1b_sigx(r_gridbarp : region(ispace(int6d), grid),
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where 
   reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
-  writes(r_sig)
+  reads writes(r_sig)
 do
   var Dim : int32 = 0 -- change when copy
 
@@ -712,8 +712,8 @@ do
 
   var olds : int3d = {-1, -1, -1}  
   
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
   
   for s in s3 do
     xC = r_mesh[s].x -- change when copy
@@ -736,6 +736,7 @@ do
 
     for v in v3 do
       
+      var e : int6d = {s.x, s.y, s.z, v.x, v.y, v.z}
       var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
       var eL : int6d = {IL, JL, KL, v.x, v.y, v.z}
       var eR : int6d = {IR, JR, KR, v.x, v.y, v.z}
@@ -799,7 +800,7 @@ task Step1b_sigy(r_gridbarp : region(ispace(int6d), grid),
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where 
   reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, ply_mesh, pry_mesh, ply_gridbarp, pry_gridbarp),
-  writes(r_sig)
+  reads writes(r_sig)
 do
   var Dim : int32 = 1 -- change when copy
 
@@ -810,8 +811,8 @@ do
 
   var olds : int3d = {-1, -1, -1}  
   
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
   
   for s in s3 do
   
@@ -835,6 +836,7 @@ do
   
     for v in v3 do
       
+      var e : int6d = {s.x, s.y, s.z, v.x, v.y, v.z}
       var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
       var eL : int6d = {IL, JL, KL, v.x, v.y, v.z}
       var eR : int6d = {IR, JR, KR, v.x, v.y, v.z}
@@ -898,7 +900,7 @@ task Step1b_sigz(r_gridbarp : region(ispace(int6d), grid),
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where 
   reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plz_mesh, prz_mesh, plz_gridbarp, prz_gridbarp),
-  writes(r_sig)
+  reads writes(r_sig)
 do
   var Dim : int32 = 2 -- change when copy
 
@@ -907,8 +909,8 @@ do
   var zL : double
   var zR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
   
   for s in s3 do
     zC = r_mesh[s].z -- change when copy
@@ -931,8 +933,8 @@ do
   
     for v in v3 do
       
+      var e : int6d = {s.x, s.y, s.z, v.x, v.y, v.z}
       var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
-
       var eL : int6d = {IL, JL, KL, v.x, v.y, v.z}
       var eR : int6d = {IR, JR, KR, v.x, v.y, v.z}
 
@@ -970,23 +972,20 @@ do
 end
 
       
-task Step1b_sigx_x(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigx_x(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             plx_mesh : region(ispace(int3d), mesh),
             prx_mesh : region(ispace(int3d), mesh),
-            plz_sig : region(ispace(int7d), grid),
-            prz_sig : region(ispace(int7d), grid),
+            plx_sig : region(ispace(int7d), grid),
+            prx_sig : region(ispace(int7d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
-            g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
+            BCs : int32[3], N : int32[3])
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
-  writes(r_sig)
+  reads(r_sigp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
@@ -998,8 +997,8 @@ do
   var xL : double
   var xR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     xC = r_mesh[s].x -- change when copy
@@ -1018,46 +1017,43 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
-
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      var e7 : int8d = {e.x, e.y, e.z, Dim, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
      
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.x == s.x then
-          gsigL = plx_sig[eL7].g 
-          bsigL = plx_sig[eL7].b 
-          xL = plx_mesh[eL3].x
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          xL = r_mesh[eL3].x
-        end
-
-        if r_sig.bounds.hi.x == s.x then
-          gsigR = prx_sig[eR7].g
-          bsigR = prx_sig[eR7].b
-          xR = prx_mesh[eR3].x
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          xR = r_mesh[eR3].x
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (xC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
-        r_sig2[e8].b = r_sig[e7].b + (xC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
+      if r_sig.bounds.lo.x == s.x then
+        gsigL = plx_sig[eL7].g 
+        bsigL = plx_sig[eL7].b 
+        xL = plx_mesh[eL3].x
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        xL = r_mesh[eL3].x
       end
+
+      if r_sig.bounds.hi.x == s.x then
+        gsigR = prx_sig[eR7].g
+        bsigR = prx_sig[eR7].b
+        xR = prx_mesh[eR3].x
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        xR = r_mesh[eR3].x
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (xC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
+      r_sig2[e8].b = r_sig[e7].b + (xC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
     end
   end
 end
 
-task Step1b_sigy_x(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigy_x(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             plx_mesh : region(ispace(int3d), mesh),
@@ -1070,8 +1066,8 @@ task Step1b_sigy_x(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
-  writes(r_sig)
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_sig, prx_sigp),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
@@ -1083,8 +1079,8 @@ do
   var xL : double
   var xR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     xC = r_mesh[s].x -- change when copy
@@ -1103,46 +1099,43 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
 
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
-     
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+    
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.x == s.x then
-          gsigL = plx_sig[eL7].g 
-          bsigL = plx_sig[eL7].b 
-          xL = plx_mesh[eL3].x
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          xL = r_mesh[eL3].x
-        end
-
-        if r_sig.bounds.hi.x == s.x then
-          gsigR = prx_sig[eR7].g
-          bsigR = prx_sig[eR7].b
-          xR = prx_mesh[eR3].x
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          xR = r_mesh[eR3].x
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (xC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
-        r_sig2[e8].b = r_sig[e7].b + (xC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
+      if r_sig.bounds.lo.x == s.x then
+        gsigL = plx_sig[eL7].g 
+        bsigL = plx_sig[eL7].b 
+        xL = plx_mesh[eL3].x
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        xL = r_mesh[eL3].x
       end
+
+      if r_sig.bounds.hi.x == s.x then
+        gsigR = prx_sig[eR7].g
+        bsigR = prx_sig[eR7].b
+        xR = prx_mesh[eR3].x
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        xR = r_mesh[eR3].x
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (xC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
+      r_sig2[e8].b = r_sig[e7].b + (xC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
     end
   end
 end
 
-task Step1b_sigz_x(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigz_x(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             plx_mesh : region(ispace(int3d), mesh),
@@ -1155,8 +1148,8 @@ task Step1b_sigz_x(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
-  writes(r_sig)
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
@@ -1168,8 +1161,8 @@ do
   var xL : double
   var xR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     xC = r_mesh[s].x -- change when copy
@@ -1188,46 +1181,43 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
 
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
      
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.x == s.x then
-          gsigL = plx_sig[eL7].g 
-          bsigL = plx_sig[eL7].b 
-          xL = plx_mesh[eL3].x
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          xL = r_mesh[eL3].x
-        end
-
-        if r_sig.bounds.hi.x == s.x then
-          gsigR = prx_sig[eR7].g
-          bsigR = prx_sig[eR7].b
-          xR = prx_mesh[eR3].x
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          xR = r_mesh[eR3].x
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (xC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
-        r_sig2[e8].b = r_sig[e7].b + (xC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
+      if r_sig.bounds.lo.x == s.x then
+        gsigL = plx_sig[eL7].g 
+        bsigL = plx_sig[eL7].b 
+        xL = plx_mesh[eL3].x
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        xL = r_mesh[eL3].x
       end
+
+      if r_sig.bounds.hi.x == s.x then
+        gsigR = prx_sig[eR7].g
+        bsigR = prx_sig[eR7].b
+        xR = prx_mesh[eR3].x
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        xR = r_mesh[eR3].x
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (xC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
+      r_sig2[e8].b = r_sig[e7].b + (xC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
     end
   end
 end
 
-task Step1b_sigy_y(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigx_y(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             ply_mesh : region(ispace(int3d), mesh),
@@ -1240,12 +1230,12 @@ task Step1b_sigy_y(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, ply_mesh, pry_mesh, ply_gridbarp, pry_gridbarp),
-  writes(r_sig)
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
-  var Dim : int32 = 1  --change when copy
+  var Dim : int32 = 0  --change when copy
   var Dim2 : int32 = 1
 
   -- Cell Centers
@@ -1253,8 +1243,8 @@ do
   var yL : double
   var yR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     yC = r_mesh[s].y -- change when copy
@@ -1273,46 +1263,43 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
 
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
      
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.y == s.y then
-          gsigL = ply_sig[eL7].g 
-          bsigL = ply_sig[eL7].b 
-          yL = ply_mesh[eL3].y
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          yL = r_mesh[eL3].y
-        end
-
-        if r_sig.bounds.hi.y == s.y then
-          gsigR = pry_sig[eR7].g
-          bsigR = pry_sig[eR7].b
-          yR = pry_mesh[eR3].y
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          yR = r_mesh[eR3].y
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (yC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, yL, yC, yR)
-        r_sig2[e8].b = r_sig[e7].b + (yC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
+      if r_sig.bounds.lo.y == s.y then
+        gsigL = ply_sig[eL7].g 
+        bsigL = ply_sig[eL7].b 
+        yL = ply_mesh[eL3].y
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        yL = r_mesh[eL3].y
       end
+
+      if r_sig.bounds.hi.y == s.y then
+        gsigR = pry_sig[eR7].g
+        bsigR = pry_sig[eR7].b
+        yR = pry_mesh[eR3].y
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        yR = r_mesh[eR3].y
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (yC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, yL, yC, yR)
+      r_sig2[e8].b = r_sig[e7].b + (yC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
     end
   end
 end
 
-task Step1b_sigz_y(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigy_y(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             ply_mesh : region(ispace(int3d), mesh),
@@ -1325,12 +1312,12 @@ task Step1b_sigz_y(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, ply_mesh, pry_mesh, ply_gridbarp, pry_gridbarp),
-  writes(r_sig)
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
-  var Dim : int32 = 2  --change when copy
+  var Dim : int32 = 1  --change when copy
   var Dim2 : int32 = 1
 
   -- Cell Centers
@@ -1338,8 +1325,8 @@ do
   var yL : double
   var yR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     yC = r_mesh[s].y -- change when copy
@@ -1358,46 +1345,125 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
 
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
      
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.y == s.y then
-          gsigL = ply_sig[eL7].g 
-          bsigL = ply_sig[eL7].b 
-          yL = ply_mesh[eL3].y
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          yL = r_mesh[eL3].y
-        end
-
-        if r_sig.bounds.hi.y == s.y then
-          gsigR = pry_sig[eR7].g
-          bsigR = pry_sig[eR7].b
-          yR = pry_mesh[eR3].y
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          yR = r_mesh[eR3].y
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (yC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, yL, yC, yR)
-        r_sig2[e8].b = r_sig[e7].b + (yC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
+      if r_sig.bounds.lo.y == s.y then
+        gsigL = ply_sig[eL7].g 
+        bsigL = ply_sig[eL7].b 
+        yL = ply_mesh[eL3].y
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        yL = r_mesh[eL3].y
       end
+
+      if r_sig.bounds.hi.y == s.y then
+        gsigR = pry_sig[eR7].g
+        bsigR = pry_sig[eR7].b
+        yR = pry_mesh[eR3].y
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        yR = r_mesh[eR3].y
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (yC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, yL, yC, yR)
+      r_sig2[e8].b = r_sig[e7].b + (yC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
     end
   end
 end
 
-task Step1b_sigx_z(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigz_y(r_sig : region(ispace(int7d), grid),
+            r_sig2 : region(ispace(int8d), grid),
+            r_mesh : region(ispace(int3d), mesh),
+            ply_mesh : region(ispace(int3d), mesh),
+            pry_mesh : region(ispace(int3d), mesh),
+            ply_sig : region(ispace(int7d), grid),
+            pry_sig : region(ispace(int7d), grid),
+            vxmesh : region(ispace(int1d), vmesh),
+            vymesh : region(ispace(int1d), vmesh),
+            vzmesh : region(ispace(int1d), vmesh),
+            BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
+            g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
+where
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
+  reads writes(r_sig2)
+do
+  -- Dim  is vector component that is being interpolated.
+  -- Dim2 is direction of interpolation.
+  var Dim : int32 = 2  --change when copy
+  var Dim2 : int32 = 1
+
+  -- Cell Centers
+  var yC : double
+  var yL : double
+  var yR : double
+
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
+
+  for s in s3 do
+    yC = r_mesh[s].y -- change when copy
+
+    -- Gather Left and Right Indices
+    var bc : int32[6] = BC(i, j, k, Dim2, BCs, N)
+    var IL : int32 = bc[0]
+    var JL : int32 = bc[0]
+    var KL : int32 = bc[0]
+    var IR : int32 = bc[0]
+    var JR : int32 = bc[0]
+    var KR : int32 = bc[0]
+
+    var eL3 : int3d = {IL, JL, KL}
+    var eR3 : int3d = {IR, JR, KR}
+
+    for v in v3 do
+
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+     
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
+
+      if r_sig.bounds.lo.y == s.y then
+        gsigL = ply_sig[eL7].g 
+        bsigL = ply_sig[eL7].b 
+        yL = ply_mesh[eL3].y
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        yL = r_mesh[eL3].y
+      end
+
+      if r_sig.bounds.hi.y == s.y then
+        gsigR = pry_sig[eR7].g
+        bsigR = pry_sig[eR7].b
+        yR = pry_mesh[eR3].y
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        yR = r_mesh[eR3].y
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (yC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, yL, yC, yR)
+      r_sig2[e8].b = r_sig[e7].b + (yC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
+    end
+  end
+end
+
+task Step1b_sigx_z(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             plz_mesh : region(ispace(int3d), mesh),
@@ -1410,8 +1476,8 @@ task Step1b_sigx_z(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plz_mesh, prz_mesh, plz_gridbarp, prz_gridbarp),
-  writes(r_sig)
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
@@ -1423,8 +1489,8 @@ do
   var zL : double
   var zR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     zC = r_mesh[s].z -- change when copy
@@ -1443,46 +1509,43 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
 
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
      
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.z == s.z then
-          gsigL = plz_sig[eL7].g 
-          bsigL = plz_sig[eL7].b 
-          zL = plz_mesh[eL3].z
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          zL = r_mesh[eL3].z
-        end
-
-        if r_sig.bounds.hi.z == s.z then
-          gsigR = prz_sig[eR7].g
-          bsigR = prz_sig[eR7].b
-          zR = prz_mesh[eR3].z
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          zR = r_mesh[eR3].z
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (zC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, zL, zC, zR)
-        r_sig2[e8].b = r_sig[e7].b + (zC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, zL, zC, zR)
+      if r_sig.bounds.lo.z == s.z then
+        gsigL = plz_sig[eL7].g 
+        bsigL = plz_sig[eL7].b 
+        zL = plz_mesh[eL3].z
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        zL = r_mesh[eL3].z
       end
+
+      if r_sig.bounds.hi.z == s.z then
+        gsigR = prz_sig[eR7].g
+        bsigR = prz_sig[eR7].b
+        zR = prz_mesh[eR3].z
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        zR = r_mesh[eR3].z
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (zC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, zL, zC, zR)
+      r_sig2[e8].b = r_sig[e7].b + (zC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, zL, zC, zR)
     end
   end
 end
 
-task Step1b_sigy_z(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigy_z(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             plz_mesh : region(ispace(int3d), mesh),
@@ -1495,8 +1558,8 @@ task Step1b_sigy_z(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plz_mesh, prz_mesh, plz_gridbarp, prz_gridbarp),
-  writes(r_sig)
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
@@ -1508,8 +1571,8 @@ do
   var zL : double
   var zR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     zC = r_mesh[s].z -- change when copy
@@ -1528,46 +1591,43 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
 
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
      
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.z == s.z then
-          gsigL = plz_sig[eL7].g 
-          bsigL = plz_sig[eL7].b 
-          zL = plz_mesh[eL3].z
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          zL = r_mesh[eL3].z
-        end
-
-        if r_sig.bounds.hi.z == s.z then
-          gsigR = prz_sig[eR7].g
-          bsigR = prz_sig[eR7].b
-          zR = prz_mesh[eR3].z
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          zR = r_mesh[eR3].z
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (zC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, zL, zC, zR)
-        r_sig2[e8].b = r_sig[e7].b + (zC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, zL, zC, zR)
+      if r_sig.bounds.lo.z == s.z then
+        gsigL = plz_sig[eL7].g 
+        bsigL = plz_sig[eL7].b 
+        zL = plz_mesh[eL3].z
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        zL = r_mesh[eL3].z
       end
+
+      if r_sig.bounds.hi.z == s.z then
+        gsigR = prz_sig[eR7].g
+        bsigR = prz_sig[eR7].b
+        zR = prz_mesh[eR3].z
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        zR = r_mesh[eR3].z
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (zC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, zL, zC, zR)
+      r_sig2[e8].b = r_sig[e7].b + (zC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, zL, zC, zR)
     end
   end
 end
 
-task Step1b_sigx_z(r_gridbarp : region(ispace(int6d), grid),
-            r_gridbarpb : region(ispace(int7d), grid),
-            r_sig : region(ispace(int7d), grid),
+task Step1b_sigz_z(r_sig : region(ispace(int7d), grid),
             r_sig2 : region(ispace(int8d), grid),
             r_mesh : region(ispace(int3d), mesh),
             plz_mesh : region(ispace(int3d), mesh),
@@ -1580,8 +1640,8 @@ task Step1b_sigx_z(r_gridbarp : region(ispace(int6d), grid),
             BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
             g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(r_gridbarp, r_mesh, vxmesh, vymesh, vzmesh, plz_mesh, prz_mesh, plz_gridbarp, prz_gridbarp),
-  writes(r_sig)
+  reads(r_sig, r_mesh, vxmesh, vymesh, vzmesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
+  reads writes(r_sig2)
 do
   -- Dim  is vector component that is being interpolated.
   -- Dim2 is direction of interpolation.
@@ -1593,8 +1653,8 @@ do
   var zL : double
   var zR : double
 
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     zC = r_mesh[s].z -- change when copy
@@ -1613,39 +1673,38 @@ do
 
     for v in v3 do
 
-        var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
+      var e8 : int8d = {e.x, e.y, e.z, Dim, Dim2, e.w, e.v, e.u}
 
-        var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
-        var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
+      var eL7 : int7d = {e.x, e.y, e.z, Dim, IL, JL, KL}
+      var eR7 : int7d = {e.x, e.y, e.z, Dim, IR, JR, KR}
      
-        var gsigL : double
-        var gsigR : double
-        var bsigL : double
-        var bsigR : double
+      var gsigL : double
+      var gsigR : double
+      var bsigL : double
+      var bsigR : double
 
-        if r_sig.bounds.lo.z == s.z then
-          gsigL = plz_sig[eL7].g 
-          bsigL = plz_sig[eL7].b 
-          zL = plz_mesh[eL3].z
-        else
-          gsigL = r_sig[eL7].g
-          bsigL = r_sig[eL7].b
-          zL = r_mesh[eL3].z
-        end
-
-        if r_sig.bounds.hi.z == s.z then
-          gsigR = prz_sig[eR7].g
-          bsigR = prz_sig[eR7].b
-          zR = prz_mesh[eR3].z
-        else
-          gsigR = r_sig[eR7].g
-          bsigR = r_sig[eR7].b
-          zR = r_mesh[eR3].z
-        end
-
-        r_sig2[e8].g = r_sig[e7].g + (zC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, zL, zC, zR)
-        r_sig2[e8].b = r_sig[e7].b + (zC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, zL, zC, zR)
+      if r_sig.bounds.lo.z == s.z then
+        gsigL = plz_sig[eL7].g 
+        bsigL = plz_sig[eL7].b 
+        zL = plz_mesh[eL3].z
+      else
+        gsigL = r_sig[eL7].g
+        bsigL = r_sig[eL7].b
+        zL = r_mesh[eL3].z
       end
+
+      if r_sig.bounds.hi.z == s.z then
+        gsigR = prz_sig[eR7].g
+        bsigR = prz_sig[eR7].b
+        zR = prz_mesh[eR3].z
+      else
+        gsigR = r_sig[eR7].g
+        bsigR = r_sig[eR7].b
+        zR = r_mesh[eR3].z
+      end
+
+      r_sig2[e8].g = r_sig[e7].g + (zC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, zL, zC, zR)
+      r_sig2[e8].b = r_sig[e7].b + (zC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, zL, zC, zR)
     end
   end
 end
@@ -1673,8 +1732,8 @@ where
   reads(r_sig, r_gridbarp, r_mesh.{dx,dy,dz}, vxmesh.v, vymesh.v, vzmesh.v),
   reads(prx_gridbarp, pry_gridbarp, prz_gridbarp, prx_sig, pry_sig, prz_sig, prx_mesh.dx, pry_mesh.dy, prz_mesh.dz)
 do
-  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh_bounds.hi)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var s3 = ispace(int3d, r_mesh.bounds.lo, r_mesh.bounds.hi)
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
 
@@ -1759,10 +1818,12 @@ task Step1c(r_gridbarpb : region(ispace(int7d), grid),
             vymesh : region(ispace(int1d), vmesh),        
             vzmesh : region(ispace(int1d), vmesh),        
             r_sig2 : region(ispace(int8d), grid),
-            dt : double, BCs : int32[3], R : double, K : double, Cv : double, N : int32[3], 
-            g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
+            prx_sig2: region(ispace(int8d), grid),
+            pry_sig2: region(ispace(int8d), grid),
+            prz_sig2: region(ispace(int8d), grid),
+            dt : double, BCs : int32[3],  N : int32[3], effD : int32)
 where
-  reads(vxmesh, vymesh, vzmesh, r_sig2, r_gridbarpb),
+  reads(vxmesh, vymesh, vzmesh, r_sig2, r_gridbarpb, prx_sig2, pry_sig2, prz_sig2),
   reads writes(r_gridbar)
 do     
   -- Compute gbar/bbar @ t=n+1/2  with interface sigma
@@ -1771,7 +1832,7 @@ do
   var lo3 : int3d = {r_gridbar.bounds.lo.x, r_gridbar.bounds.lo.y, r_gridbar.bounds.lo.z}
   var hi3 : int3d = {r_gridbar.bounds.hi.x, r_gridbar.bounds.hi.y, r_gridbar.bounds.hi.z}
   var s3 = ispace(int3d, lo3, hi3)
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}, {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x})
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi})
 
   for s in s3 do
     for Dim = 0, effD do
@@ -1812,8 +1873,8 @@ do
           var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
           
           if (vxmesh[v.x].v < 0 and Dim == 0) then
-            gsig2 = plx_rsig2[eR8].g
-            bsig2 = plx_rsig2[eR8].b
+            gsig2 = prx_rsig2[eR8].g
+            bsig2 = prx_rsig2[eR8].b
             swap = -1
           else
             gsig2 = r_sig2[e8].g
@@ -1821,8 +1882,8 @@ do
           end
         
           if (vymesh[v.y].v < 0 and Dim == 1) then
-            gsig2 = ply_rsig2[eR8].g
-            bsig2 = ply_rsig2[eR8].b
+            gsig2 = pry_rsig2[eR8].g
+            bsig2 = pry_rsig2[eR8].b
             swap = -1
           else
             gsig2 = r_sig2[e8].g
@@ -1830,8 +1891,8 @@ do
           end
  
           if (vzmesh[v.z].v < 0 and Dim == 2) then
-            gsig2 = plz_rsig2[eR8].g
-            bsig2 = plz_rsig2[eR8].b
+            gsig2 = prz_rsig2[eR8].g
+            bsig2 = prz_rsig2[eR8].b
             swap = -1
           else
             gsig2 = r_sig2[e8].g
@@ -1857,8 +1918,7 @@ task Step2a(r_gridbarpb : region(ispace(int7d), grid),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
             r_Wb   : region(ispace(int4d), W),
-            dt : double, R : double, K : double, Cv : double, g : double,
-            w : double, ur : double, Tr : double, Pr : double, effD : int32)
+            dt : double, effD : int32)
 where
   reads(r_gridbar, vxmesh, vymesh, vzmesh),
   reads writes(r_Wb)
@@ -1885,7 +1945,7 @@ do
   var U : double[3]
 
   var s3 = ispace(int3d, {r_Wb.bounds.lo.x, r_Wb.bounds.lo.y, r_Wb.bounds.lo.z}, {r_Wb.bounds.hi.x, r_Wb.bounds.hi.y, r_Wb.bounds.hi.z})
-  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.y, vzmesh.bounds.lo.z}, {vxmesh.bounds.hi.x, vxmesh.bounds.hi.y, vxmesh.bounds.hi.z})
+  var v3 = ispace(int3d, {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}, {vxmesh.bounds.hi, vxmesh.bounds.hi, vxmesh.bounds.hi})
  
   for v in v3 do
    
@@ -2103,7 +2163,6 @@ do
       end
 
       var eL3 : int3d = {IL, JL, KL}
-      var eR3 : int3d = {IR, JR, KR}
       
       for v in v3 do 
         -- Gather Left Indices
@@ -2174,121 +2233,152 @@ where
   reads(vxmesh, vymesh, vzmesh, r_mesh, r_F),
   reads writes(r_W, r_grid)
 do
-  var V : double 
-  var Xi : double[3]
-  var uo : double
-  var To : double
-  var tgo : double
-  var tbo : double
-  var u : double
-  var T : double
-  var tg : double
-  var tb : double
-  var c2 : double
-  var g_eq : double
+  var V : double      -- Volume of Cell
+  var Xi : double[3]  -- Discrete Velocity 
+  var uo : double     -- Old Flow Velocity
+  var To : double     -- Old Temp
+  var tgo : double    -- Old visc
+  var tbo : double    -- Old visc
+  var u : double      -- Flow Velocity
+  var T : double      -- Temperature 
+  var tg : double     -- visc
+  var tb : double     -- visc 
+  var c2 : double     -- peculiar velocity sq
+  var g_eq : double   -- Equils
   var b_eq : double
   var g_eqo : double
   var b_eqo : double
 
-  for e in r_grid do
-    var e3 : int3d = {e.w, e.v, e.u}
+  var s3 = ispace(int3d, {r_F.bounds.lo.x, r_F.bounds.lo.y, r_F.bounds.lo.z}, {r_F.bounds.hi.x, r_F.bounds.hi.y, r_F.bounds.hi.z})
+  var v3 = ispace(int3d, {vxmesh.bounds.lo.x, vymesh.bounds.lo.y, vzmesh.bounds.lo.z}, {vxmesh.bounds.hi.x, vxmesh.bounds.hi.y, vxmesh.bounds.hi.z})
+
+ 
+  for s in s3 do
+
+    var e3 : int3d = {s.x, s.y, s.z}
     
     V = r_mesh[e3].dx*r_mesh[e3].dy*r_mesh[e3].dz
 
+    -- Compute old flow velocity
+    uo = 0 -- old flow velocity
+    for d = 0, effD do
+      uo += r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho
+    end
+    uo = sqrt(uo)
+    regentlib.assert(bool(uo>=0), "uo")
+
+    -- Compute old temperature
+    To = Temperature(r_W[e3].rhoE/r_W[e3].rho, uo, g, R)
+    regentlib.assert(bool(To>=0), "To")
   
-
-  Xi[0] = vxmesh[e.x].v
-  Xi[1] = vymesh[e.y].v
-  Xi[2] = vzmesh[e.z].v
-
-  -- Compute old flow velocity
-  uo = 0 -- old flow velocity
-  for v = 0, effD do
-    uo += r_W[e3].rhov[v]/r_W[e3].rho*r_W[e3].rhov[v]/r_W[e3].rho
-  end
-  uo = sqrt(uo)
- 
-  regentlib.assert(bool(uo>=0), "uo")
-  -- Compute old temperature
-  To = Temperature(r_W[e3].rhoE/r_W[e3].rho, uo, g, R)
-  regentlib.assert(bool(To>=0), "To")
+    -- Compute old taus
+    tgo = visc(To, ur, Tr, w)/r_W[e3].rho/R/To
+    tbo = tgo/Pr 
   
-  -- Compute old taus
-  tgo = visc(To, ur, Tr, w)/r_W[e3].rho/R/To
-  tbo = tgo/Pr 
+    for v in v3 do 
+      Xi[0] = vxmesh[v.x].v
+      Xi[1] = vymesh[v.y].v
+      Xi[2] = vzmesh[v.z].v
 
-  -- Compute old eq's
-  c2 = 0
-  for v = 0, effD do
-    c2 += (Xi[v]-r_W[e3].rhov[v]/r_W[e3].rho)*(Xi[v]-r_W[e3].rhov[v]/r_W[e3].rho)
-  end
-  g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
-  b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*To)/2
+      -- Compute old eq's
+      c2 = 0
+      for d = 0, effD do
+        c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
+      end
+      g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
+      b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*To)/2
 
 
-  -- Step 4: Update W at cell center
-  r_W[e3].rho = r_W[e3].rho - (dt/V*r_F[e].g + dt*0)*vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w -- TODO replace 0 with source term.
-  for v = 0, effD do
-      r_W[e3].rhov[v] = r_W[e3].rhov[v] - dt/V*r_F[e].g*Xi[v]*vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w
-  end
+      -- Step 4: Update W at cell center
+      r_W[e3].rho = r_W[e3].rho - (dt/V*r_F[e].g + dt*0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term.
+      for d = 0, effD do
+        r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt/V*r_F[e].g*Xi[d]*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+      end
   
-  r_W[e3].rhoE = r_W[e3].rhoE - dt/V*r_F[e].b*vxmesh[e.x].w*vymesh[e.y].w*vzmesh[e.z].w
+      r_W[e3].rhoE = r_W[e3].rhoE - dt/V*r_F[e].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+  
+      -- First Update phi
+      var i : int32 = s.x
+      var j : int32 = s.y
+      var k : int32 = s.z
+      var e : int6d = {s.x, s.y, s.z, v.x, v.y, v.z} 
 
-  -- Step 5: Update Phi at cell center, need new eq and tau
+      -- Update First Step (terms involving oldW)
+      if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
+          (BCs[1] == 1 and j == 0) or (BCs[1] == 1 and j == N[1] - 1) or
+          (BCs[2] == 1 and k == 0) or (BCs[2] == 1 and k == N[2] - 1)) then
+       
+        r_grid[e].g = r_grid[e].g
+        r_grid[e].b = r_grid[e].b
+      else
+        r_grid[e].g = (r_grid[e].g + dt/2.0*((g_eqo-r_grid[e].g)/tgo) - dt/V*r_F[e].g + dt*0) -- TODO replace 0 with source term
+        r_grid[e].b = (r_grid[e].b + dt/2.0*((b_eqo-r_grid[e].b)/tbo) - dt/V*r_F[e].b + dt*0) -- TODO replace 0 with source term
+      end
+    end
+  end
+
+  -- Second Update Phi at cell center using new tau/W
   -- Compute flow velocity u
-  u = 0 
-  for v = 0, effD do 
-    u += r_W[e3].rhov[v]/r_W[e3].rho*r_W[e3].rhov[v]/r_W[e3].rho
-  end
-  u = sqrt(u)
-  regentlib.assert(bool(u>=0), "u")
 
-  -- Compute T
-  T = Temperature(r_W[e3].rhoE/r_W[e3].rho, u, g, R)
-  if T < 0 then
-    c.printf("r_W[%d].rhoE = %f, r_W[e3].rho = %f, u = %f\n", e3.x, r_W[e3].rhoE, r_W[e3].rho, u)
-  end
-  regentlib.assert(bool(T>=0), "T")
+  for s in s3 do
+    u = 0 
+    for d = 0, effD do 
+      u += r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho
+    end
+    u = sqrt(u)
+    regentlib.assert(bool(u>=0), "u")
+
+    -- Compute T
+    T = Temperature(r_W[e3].rhoE/r_W[e3].rho, u, g, R)
+    if T < 0 then
+      c.printf("r_W[%d].rhoE = %f, r_W[e3].rho = %f, u = %f\n", e3.x, r_W[e3].rhoE, r_W[e3].rho, u)
+    end
+    regentlib.assert(bool(T>=0), "T")
   
-  -- Compute new taus
-  tg = visc(T, ur, Tr, w)/r_W[e3].rho/R/T 
-  tb = tg/Pr 
+    -- Compute new taus
+    tg = visc(T, ur, Tr, w)/r_W[e3].rho/R/T 
+    tb = tg/Pr 
+    -- printf("taus are = {%f, %f}\n", tg, tb)
 
-  -- printf("taus are = {%f, %f}\n", tg, tb)
+    for v in v3 do
+      -- Compute new eq's
+      c2 = 0  -- reset c2 from before
+      for d = 0, effD do
+        c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
+      end
+      g_eq = geq(c2, r_W[e3].rho, T, R, effD)
+      b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*T)/2
 
-  -- Compute new eq's
-  c2 = 0  -- reset c2 from before
-  for v = 0, effD do
-    c2 += (Xi[v]-r_W[e3].rhov[v]/r_W[e3].rho)*(Xi[v]-r_W[e3].rhov[v]/r_W[e3].rho)
-  end
-  g_eq = geq(c2, r_W[e3].rho, T, R, effD)
-  b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*T)/2
 
+      -- Second Update phi
+      var i : int32 = s.x
+      var j : int32 = s.y
+      var k : int32 = s.z
+      var e : int6d = {s.x, s.y, s.z, v.x, v.y, v.z} 
 
-  -- Update phi
-  var i : int32 = e.w
-  var j : int32 = e.v
-  var k : int32 = e.u
+      if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
+         (BCs[1] == 1 and j == 0) or (BCs[1] == 1 and j == N[1] - 1) or
+         (BCs[2] == 1 and k == 0) or (BCs[2] == 1 and k == N[2] - 1)) then
+                
+        r_grid[e].g = r_grid[e].g
+        r_grid[e].b = r_grid[e].b
+      else
+        r_grid[e].g = r_grid[e].g + dt/2.0*g_eq/tg
+        r_grid[e].b = r_grid[e].b + dt/2.0*b_eq/tb -- TODO replace 0 with source term
 
-  if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
-      (BCs[1] == 1 and j == 0) or (BCs[1] == 1 and j == N[1] - 1) or
-      (BCs[2] == 1 and k == 0) or (BCs[2] == 1 and k == N[2] - 1)) then
-    r_grid[e].g = r_grid[e].g
-    r_grid[e].b = r_grid[e].b
-  else
-    r_grid[e].g = (r_grid[e].g + dt/2.0*(g_eq/tg + (g_eqo-r_grid[e].g)/tgo) - dt/V*r_F[e].g + dt*0)/(1+dt/2.0/tg) -- TODO replace 0 with source term
-    r_grid[e].b = (r_grid[e].b + dt/2.0*(b_eq/tb + (b_eqo-r_grid[e].b)/tbo) - dt/V*r_F[e].b + dt*0)/(1+dt/2.0/tb) -- TODO replace 0 with source term
-  end
+        r_grid[e].g = r_grid[e].g/(1+dt/2.0/tg)
+        r_grid[e].b = r_grid[e].b/(1+dt/2.0/tb)
+      end
 
-  if isnan(r_grid[e].g) == 1 then
-    c.printf("Step4and5: g_eq = %f, tg = %f, tgo = %f, r_F[e].g = %f\n", g_eq, tg, tgo, r_F[e].g)
-  end 
-  if isnan(r_grid[e].b) == 1 then
-    c.printf("Step4and5: b_eq = %f, tb = %f, tbo = %f, r_F[e].b = %f\n", b_eq, tb, tbo, r_F[e].b)
-  end 
-  regentlib.assert(not [bool](isnan(r_grid[e].g)), "Step4and5\n")
-  regentlib.assert(not [bool](isnan(r_grid[e].b)), "Step4and5\n")
-
+      if isnan(r_grid[e].g) == 1 then
+        c.printf("Step4and5: g_eq = %f, tg = %f, tgo = %f, r_F[e].g = %f\n", g_eq, tg, tgo, r_F[e].g)
+      end 
+      if isnan(r_grid[e].b) == 1 then
+        c.printf("Step4and5: b_eq = %f, tb = %f, tbo = %f, r_F[e].b = %f\n", b_eq, tb, tbo, r_F[e].b)
+      end 
+      regentlib.assert(not [bool](isnan(r_grid[e].g)), "Step4and5\n")
+      regentlib.assert(not [bool](isnan(r_grid[e].b)), "Step4and5\n")
+    end
   end --TODO Indentation
 end
 
@@ -2728,14 +2818,6 @@ task toplevel()
   __fence(__execution, __block)
   c.printf("sig Strips Done\n")
 
-  var plx_gridbar = partition(disjoint, r_gridbar, c7Lx, p7)
-  var ply_gridbar = partition(disjoint, r_gridbar, c7Ly, p7)
-  var plz_gridbar = partition(disjoint, r_gridbar, c7Lz, p7)
-  var prx_gridbar = partition(disjoint, r_gridbar, c7Rx, p7)
-  var pry_gridbar = partition(disjoint, r_gridbar, c7Ry, p7)
-  var prz_gridbar = partition(disjoint, r_gridbar, c7Rz, p7)
-  __fence(__execution, __block)
-  c.printf("gridbar Strips Done\n")
 
   var plx_sig2 = partition(disjoint, r_sig2, c8Lx, p8)
   var ply_sig2 = partition(disjoint, r_sig2, c8Ly, p8)
@@ -2777,31 +2859,127 @@ task toplevel()
 
     var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
 
+    -- Step 1a
     for col6 in p_grid.colors do 
-      var col3 : int3d = {col6.w, col6.v, col6.u}
+      var col3 : int3d = {col6.x, col6.y, col6.z}
       Step1a(p_grid[col6], p_gridbarp[col6], p_S[col6], p_W[col3], vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     end
 
+    -- Step 1b: Compute Gradient Sigma
     for col6 in p_grid.colors do 
-      var col3 : int3d = {col6.w, col6.v, col6.u}
+      var col3 : int3d = {col6.x, col6.y, col6.z}
+      var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+      Step1b_sigx(p_sig[col7], p_mesh[col3], p_gridbarp[col6], p_gridbarpb[col7], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], prx_sig[col7], pry_sig[col7], prz_sig[col7], prx_mesh[col3], pry_mesh[col3], prz_mesh[col3], vxmesh, vymesh, vzmesh, BCs, N)
+    end
+    if effD > 1 then
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        Step1b_sigy(p_sig[col7], p_mesh[col3], p_gridbarp[col6], p_gridbarpb[col7], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], prx_sig[col7], pry_sig[col7], prz_sig[col7], prx_mesh[col3], pry_mesh[col3], prz_mesh[col3], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+    end
+    if effD > 2 then
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        Step1b_sigz(p_sig[col7], p_mesh[col3], p_gridbarp[col6], p_gridbarpb[col7], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], prx_sig[col7], pry_sig[col7], prz_sig[col7], prx_mesh[col3], pry_mesh[col3], prz_mesh[col3], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+    end
+
+    -- Step 1b: Compute Gradient of Gradient Sigma, Sigma2
+    for col6 in p_grid.colors do 
+      var col3 : int3d = {col6.x, col6.y, col6.z}
       var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
       var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
-      Step1b_a(p_gridbarp[col6], p_gridbarpb[col7], p_sig[col7], p_sig2[col8], p_mesh[col3], plx_mesh[col3], ply_mesh[col3], plz_mesh[col3], prx_mesh[col3], pry_mesh[col3], prz_mesh[col3], plx_gridbarp[col6], ply_gridbarp[col6], plz_gridbarp[col6], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], plx_sig[col7], ply_sig[col7], plz_sig[col7], prx_sig[col7], pry_sig[col7], prz_sig[col7], vxmesh, vymesh, vzmesh, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+      Step1b_sigx_x(p_sig[col7], p_sig2[col8], p_mesh[col3], plx_mesh[col3], prx_mesh[col3], plx_sig[col7], plx_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+    end  
+    if effD > 1 then
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigx_y(p_sig[col7], p_sig2[col8], p_mesh[col3], ply_mesh[col3], pry_mesh[col3], ply_sig[col7], ply_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigy_y(p_sig[col7], p_sig2[col8], p_mesh[col3], ply_mesh[col3], pry_mesh[col3], ply_sig[col7], ply_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigy_x(p_sig[col7], p_sig2[col8], p_mesh[col3], plx_mesh[col3], prx_mesh[col3], plx_sig[col7], plx_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+    end
+    if effD > 2 then
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.z, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigz_x(p_sig[col7], p_sig2[col8], p_mesh[col3], plx_mesh[col3], prx_mesh[col3], plx_sig[col7], plx_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigz_y(p_sig[col7], p_sig2[col8], p_mesh[col3], ply_mesh[col3], pry_mesh[col3], ply_sig[col7], ply_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigz_z(p_sig[col7], p_sig2[col8], p_mesh[col3], plz_mesh[col3], prz_mesh[col3], plz_sig[col7], plz_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigx_z(p_sig[col7], p_sig2[col8], p_mesh[col3], plz_mesh[col3], prz_mesh[col3], plz_sig[col7], plz_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
+      for col6 in p_grid.colors do 
+        var col3 : int3d = {col6.x, col6.y, col6.z}
+        var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
+        var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+        Step1b_sigy_z(p_sig[col7], p_sig2[col8], p_mesh[col3], plz_mesh[col3], prz_mesh[col3], plz_sig[col7], plz_sig[col7], vxmesh, vymesh, vzmesh, BCs, N)
+      end  
     end
 
-    for col6 in p_grid.colors do 
-      var col3 : int3d = {col6.w, col6.v, col6.u}
-      var col7 : int7d = {col6.x, col6.y, col6.z, 0, col6.w, col6.v, col6.u}
-      
-      Step1b_b(p_sig[col7], p_mesh[col3], p_gridbarp[col6], p_gridbarpb[col7], prx_gridbarp[col6], pry_gridbarp[col6], prz_gridbarp[col6], prx_sig[col7], pry_sig[col7], prz_sig[col7], prx_mesh[col3], pry_mesh[col3], prz_mesh[col3], vxmesh, vymesh, vzmesh, BCs, N)
+    -- Step 1c
+    for col6 in p_grid.colors do
+      var col8 : int8d = {col6.x, col6.y, col6.z, 0, 0, col6.w, col6.v, col6.u}
+    
+      Step1c(p_gridbarpb[col7], vxmesh, vymesh, vzmesh, p_sig2[col8], prx_sig2[col8], pry_sig2[col8], prz_sig2[col8], dt, BCs, N, effD)
     end
 
-    Step1c(r_gridbar, r_gridbarpb, vxmesh, vymesh, vzmesh, r_sig2, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
-    Step2a(r_gridbar, vxmesh, vymesh, vzmesh, r_Wb, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
-    Step2b(r_gridbar, r_Wb, vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
-    Step2c(r_gridbar, r_F, r_mesh, vxmesh, vymesh, vzmesh, BCs, R, K, Cv, g, w, Tr, Pr, effD, N)
+    -- Step 2a
+    for col6 in p_grid.colors do
+      var col4 : int4d = {col6.x, col6.y, col6.z, 0}
+      Step2a(p_gridbarpb[col6], vxmesh, vymesh, vzmesh, p_wB[col4], dt, effD)
+    end
+
+    -- Step 2b
+    for col6 in p_grid.colors do
+      var col4 : int4d = {col6.x, col6.y, col6.z, 0}
+      Step2b(p_gridbarpb[col6], p_Wb[col4], vxmesh, vymesh, vzmesh, dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
+    end
+
+    -- Step 2c
+    for col7 in p_gridbarp.colors do
+      var col3 : int3d = {col7.x, col7.y, col7.z}
+      var col6 : int6d = {col7.x, col7.y, col7.z, col7.v, col7.u, col7.t}
+      Step2c(p_gridbarpb[col7], r_F[col6], r_mesh[col3], vxmesh, vymesh, vzmesh, plx_gridbarpb[col7], ply_gridbarpb[col7], plz_gridbarpb[col7], BCs, R, K, Cv, g, w, Tr, Pr, effD, N)
+    end
+
+    -- Step 3
     Step3() -- TODO
-    Step4and5(r_grid, r_W, r_mesh, r_F, vxmesh, vymesh, vzmesh, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+  
+    -- Step 4 and 5
+    for col6 in p_grid.colors do
+      var col3 : int3d = {col6.x, col6.y, col6.z}
+      Step4and5(p_grid[col6], p_W[col3], p_mesh[col3], r_F[col6], vxmesh, vymesh, vzmesh, dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+    end
     __fence(__execution, __block)
 
     if dt < calcdt then
