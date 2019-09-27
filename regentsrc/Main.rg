@@ -2193,7 +2193,9 @@ do
         r_F[e6].g = r_F[e6].g + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].g - left*gL)
         r_F[e6].b = r_F[e6].b + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].b - left*bL)
 
-
+        if (s.x == 64 and v.x == 64) then
+          c.printf("r_F.g = %f, r_F.b = %f\n", r_F[e6].g, r_F[e6].b)
+        end
         regentlib.assert(not [bool](isnan(r_F[e6].g)), "Step 2c\n")
         regentlib.assert(not [bool](isnan(r_F[e6].b)), "Step 2c\n")
       end 
@@ -2599,7 +2601,7 @@ task toplevel()
   -- Create regions for mesh and conserved variables (cell center and interface)
   var r_mesh = region(ispace(int3d, {N[0], N[1], N[2]}), mesh)
   var r_W    = region(ispace(int3d, {N[0], N[1], N[2]}), W)
-  var r_Wb   = region(ispace(int4d, {effD, N[0], N[1], N[2]}), W)
+  var r_Wb   = region(ispace(int4d, {N[0], N[1], N[2], effD}), W)
  
   -- Create regions for velocity space and initialize
   var vxmesh = region(ispace(int1d, NV[0]), vmesh) 
