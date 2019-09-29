@@ -104,11 +104,11 @@ do
 		r_params[e].NV[1] = 1
 		r_params[e].NV[2] = 1
                 
-		r_params[e].Vmin[0] = -10
+		r_params[e].Vmin[0] = -5
 		r_params[e].Vmin[1] = 0
 		r_params[e].Vmin[2] = 0
                 
-		r_params[e].Vmax[0] = 10
+		r_params[e].Vmax[0] = 5
 		r_params[e].Vmax[1] = 0
 		r_params[e].Vmax[2] = 0
                 
@@ -621,6 +621,7 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
   
+  var rhotest : double = 0
   for s in s3 do
 
     u = 0
@@ -648,8 +649,7 @@ do
       c2 = 0
       Xi[0] = vxmesh[v.x].v
       Xi[1] = vymesh[v.y].v
-      Xi[2] = vzmesh[v.z].v
-     
+      Xi[2] = vzmesh[v.z].v     
       for d = 0, effD do
         c2 += (Xi[d]-r_W[s].rhov[d]/r_W[s].rho)*(Xi[d]-r_W[s].rhov[d]/r_W[s].rho)
       end
@@ -657,9 +657,11 @@ do
       var g_eq : double = geq(c2, r_W[s].rho, T, R, effD)
       var b_eq : double = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
 
-      r_gridbarp[e].g = (2*tg - dt/2.)/(2.*tg)*r_grid[e].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e].g
-      r_gridbarp[e].b = (2*tb - dt/2.)/(2.*tb)*r_grid[e].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e].b
+      r_gridbarp[e].g = (tg - dt/4.)/tg*r_grid[e].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e].g
+      r_gridbarp[e].b = (tb - dt/4.)/tb*r_grid[e].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e].b
 
+      if s.x == r_gridbarp.bounds.lo.x + 1 then rhotest += r_gridbarp[e].g*vxmesh[v.x].w end
+    
       if (isnan(r_gridbarp[e].g) == 1 or isnan(r_gridbarp[e].b) == 1) then
 
         c.printf("Step 1a: gp = %.12f, bp = %.12f, g = %.12f, b = %.12f, g_eq = %.12f, Sg = %.12f, Sb = %.12f, taus = {%.12f, %.12f}\n", r_gridbarp[e].g, r_gridbarp[e].b, r_grid[e].g, r_grid[e].b, g_eq, r_S[e].g, r_S[e].b, tg, tb)
@@ -671,6 +673,7 @@ do
 
     end
   end
+  c.printf("rhotest = %f\n", rhotest)
 end
 
 --Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
@@ -1035,37 +1038,18 @@ do
         xL = r_mesh[eL3].x
       end
 
-      var gsig : double = r_sig[e7].g --testing something
-      var bsig : double = r_sig[e7].b --testing something
-      var swap : double = 1.0
-      var sC : double
-
       if r_sig.bounds.hi.x == s.x then
         gsigR = prx_sig[eR7].g
         bsigR = prx_sig[eR7].b
-        if vxmesh[v.x].v < 0 then
-          gsig = gsigR      --testing something
-          bsig = bsigR      --testing something
-          swap = -1
-          sC = prx_mesh[eR3].dx
-        end
         xR = prx_mesh[eR3].x
       else
         gsigR = r_sig[eR7].g
         bsigR = r_sig[eR7].b
-        if vxmesh[v.x].v < 0 then
-          gsig = gsigR      --testing something
-          bsig = bsigR      --testing something
-          sC = r_mesh[eR3].dx
-        end
         xR = r_mesh[eR3].x
       end
 
-      r_sig2[e8].g = r_sig[e7].g + (sC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
-      r_sig2[e8].b = r_sig[e7].b + (sC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
-      --testing something
-      --r_sig2[e8].g = gsig + swap*(sC/2.0)*VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
-      --r_sig2[e8].b = bsig + swap*(sC/2.0)*VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
+      r_sig2[e8].g = VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
+      r_sig2[e8].b = VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
     end
   end
 end
@@ -1140,8 +1124,10 @@ do
         bsig2 = r_sig2[e8].b
       end
  
-      r_sigb[e8].g = gsig + (sC/2.0)*gsig2
-      r_sigb[e8].b = bsig + (sC/2.0)*bsig2
+      r_sigb[e8].g = gsig + swap*(sC/2.0)*gsig2
+      r_sigb[e8].b = bsig + swap*(sC/2.0)*bsig2
+      
+      if v.x == 128 then c.printf("rsigb[%d] = {%f, %f}\n", s.x, r_sigb[e8].g, r_sigb[e8].b) end
     end
   end
 end
@@ -1931,9 +1917,9 @@ do
         end
 
         -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-        if v.x == 128 then c.printf("Interpolating from {%f, %f}\n", gb, bb) end
         r_gridbarpb[e7].g = gb + swap*sC[Dim]/2.0*gsig
         r_gridbarpb[e7].b = bb + swap*sC[Dim]/2.0*bsig
+        if v.x == 128 then c.printf("Interpolating from {%f, %f}, interpolated to {%f, %f}\n", gb, bb, r_gridbarpb[e7].g, r_gridbarpb[e7].b) end
 
         -- NAN checker
         if (isnan(r_gridbarpb[e7].g) == 1 or isnan(r_gridbarpb[e7].b) == 1) then
@@ -1955,10 +1941,10 @@ task Step1c(r_gridbarpb : region(ispace(int7d), grid),
             vxmesh : region(ispace(int1d), vmesh),        
             vymesh : region(ispace(int1d), vmesh),        
             vzmesh : region(ispace(int1d), vmesh),        
-            r_sig2 : region(ispace(int8d), grid),
+            r_sigb : region(ispace(int8d), grid),
             dt : double, BCs : int32[3],  N : int32[3], effD : int32)
 where
-  reads(vxmesh, vymesh, vzmesh, r_sig2), 
+  reads(vxmesh, vymesh, vzmesh, r_sigb), 
   reads writes(r_gridbarpb)
 do     
   -- Compute gbar/bbar @ t=n+1/2  with interface sigma
@@ -1982,8 +1968,8 @@ do
           var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
           var e7 : int7d = {s.x, s.y, s.z, Dim, v.x, v.y, v.z}
 
-          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim]*r_sig2[e8].g
-          r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim]*r_sig2[e8].g
+          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim]*r_sigb[e8].g
+          r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim]*r_sigb[e8].g
     
           regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 1c\n")
           regentlib.assert(not [bool](isnan(r_gridbarpb[e7].b)), "Step 1c\n")
@@ -2063,10 +2049,8 @@ do
 
   -- NAN checker
   for e in r_Wb do
-
-    if e.x > 120 and e.x < 140 then
-      c.printf("r_Wb[%d] = {%f, %f, %f}\n", e.x, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhoE)
-    end
+    
+    c.printf("r_Wb[%d] = {%f, %f, %f}\n", e.x, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhoE)
     regentlib.assert(not [bool](isnan(r_Wb[e].rho)), "Step 2a rho\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[0])), "Step 2a rhov0\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[1])), "Step 2a rhov1\n")
@@ -2219,8 +2203,6 @@ do
       var KL : int32 = bc[4]
       var KR : int32 = bc[5]
 
-
-
       -- Boundary Conditions
       var right : double = 1.0 
       var left : double = 1.0
@@ -2323,7 +2305,7 @@ end
 
 --Step 3: Source Terms
 task Step3()
-  --
+  -- 
 end
 
 --Step 4: Update Conservative Variables W at cell center at next timestep
@@ -2401,22 +2383,10 @@ do
       g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
       b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*To)/2
 
-
-      -- Step 4: Update W at cell center
-      r_W[e3].rho = r_W[e3].rho - (dt/V*r_F[e6].g + dt*0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term.
-      for d = 0, effD do
-        r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt/V*r_F[e6].g*Xi[d]*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
-      end
-  
-      r_W[e3].rhoE = r_W[e3].rhoE - dt/V*r_F[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
-      
-      if v.x == 128 then c.printf("updated W[%d] = {%f, %f, %f}\n", s.x, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhoE) end   
-      
       -- First Update phi
       var i : int32 = s.x
       var j : int32 = s.y
       var k : int32 = s.z
-      var e : int6d = {s.x, s.y, s.z, v.x, v.y, v.z} 
 
       -- Update First Step (terms involving oldW)
       if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
@@ -2428,11 +2398,39 @@ do
 
         --c.printf("Not updating : s = {%d, %d, %d}\n", s.x, s.y, s.z)
       else
-        r_grid[e6].g = r_grid[e6].g + dt/2.0*((g_eqo-r_grid[e6].g)/tgo) - dt/V*r_F[e6].g + dt*0 -- TODO replace 0 with source term
-        r_grid[e6].b = r_grid[e6].b + dt/2.0*((b_eqo-r_grid[e6].b)/tbo) - dt/V*r_F[e6].b + dt*0 -- TODO replace 0 with source term
+        r_grid[e6].g = r_grid[e6].g + dt/2.0*(g_eqo-r_grid[e6].g)/tgo - dt/V*r_F[e6].g + dt*0 -- TODO replace 0 with source term
+        r_grid[e6].b = r_grid[e6].b + dt/2.0*(b_eqo-r_grid[e6].b)/tbo - dt/V*r_F[e6].b + dt*0 -- TODO replace 0 with source term
       end
     end
   end
+  __fence(__execution, __block)
+
+
+  for s in s3 do
+    var e3 : int3d = {s.x, s.y, s.z}
+    var drho : double = 0
+    var drhov : double = 0
+    var dE : double = 0
+
+    for v in v3 do 
+      Xi[0] = vxmesh[v.x].v
+      Xi[1] = vymesh[v.y].v
+      Xi[2] = vzmesh[v.z].v
+
+      var e6 : int6d = {s.x, s.y, s.z, v.x, v.y, v.z}
+      -- Step 4: Update W at cell center
+      drho  += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+      drhov += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[0]
+      dE    += -dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+      r_W[e3].rho = r_W[e3].rho - dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term.
+      for d = 0, effD do
+        r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term
+      end
+  
+      r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term      
+    end
+    c.printf("updated W[%d] = {%f, %f, %f}, dW = {%f, %f, %f}\n", s.x, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhoE, drho, drhov, dE)
+  end     
 
   -- Second Update Phi at cell center using new tau/W
   -- Compute flow velocity u
