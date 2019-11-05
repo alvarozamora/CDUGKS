@@ -1,0 +1,28 @@
+IO
+
+Potential Optimizations: Combine steps that use interpidx. I think I can get rid of an entire 7d grid worth of memory.
+
+
+Break up tasks for max parallelism -- change privileges to be field specific (mesh dimension, specific phi)
+
+repartition to allow for parallelism across dimensions (gradients and gradients thereof)
+
+
+
+
+need to 8d-ify tasks
+Done:
+  InitializeMesh
+  InitializeW
+  InitializeGrid: MaxwellInitialization
+  Step1a
+  Step1b_sigx
+  Step1b_sigx_x
+  Step1b_sigx_x2
+  Step1b_b
+  Step1c
+  Step2a
+  Step2b
+  Step2c
+  Step4and5
+
