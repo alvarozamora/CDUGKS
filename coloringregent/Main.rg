@@ -142,7 +142,7 @@ do
                 --Dimensionality
                 r_params[e].effD = 2
 
-		var num : int32 = 128
+		var num : int32 = 64
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = num
@@ -177,7 +177,7 @@ do
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.5           			-- Viscosity exponent
+                r_params[e].w   = 0.8           			-- Viscosity exponent
                 r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
@@ -424,18 +424,22 @@ do
     var amp : double = 0.04
 
     for e in r_W do
-      if (0.25 <= r_mesh[e].y and r_mesh[e].y <= 0.75) then
+      if (0.25 <= r_mesh[e].y) and (r_mesh[e].y <= 0.75) then
         r_W[e].rho = p1
-       	r_W[e].rhov[0] = vrel/2
+       	r_W[e].rhov[0] = r_W[e].rho*(vrel/2.0)
        	r_W[e].rhov[1] = amp*cmath.sin(2*PI*r_mesh[e].x)*r_W[e].rho
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P1/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+
+        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       else
 	r_W[e].rho = p2
-        r_W[e].rhov[0] = -vrel/2
+        r_W[e].rhov[0] = r_W[e].rho*(-vrel/2.0)
         r_W[e].rhov[1] = amp*cmath.sin(2*PI*r_mesh[e].x)*r_W[e].rho
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P2/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+        
+        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       end      
     end
   end
@@ -628,6 +632,7 @@ do
     u = 0
     for d = 0, effD do
       u += r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho
+      --c.printf("u2 = %f, du2 = %f\n", u, r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho) 
     end
     u = sqrt(u)
 
@@ -2902,7 +2907,7 @@ do
       var KL : int32 = bc[4]
       var KR : int32 = bc[5]
 
-      -- Boundary Conditions
+      -- Periodic Boundary Conditions
       var right : double = 1.0 
       var left : double = 1.0
 
@@ -3003,7 +3008,7 @@ end
 
 --Step 3: Source Terms
 task Step3()
-  -- 
+  --TODO
 end
 
 --Step 4: Update Conservative Variables W at cell center at next timestep
@@ -3046,13 +3051,6 @@ do
 
   
 
-  --var gold : double[256]
-  --var gmid : double[256]
-  --var gnew : double[256]
-  --var bold : double[256]
-  --var bmid : double[256]
-  --var bnew : double[256]
-  
   for s in s3 do
 
     var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
@@ -3094,10 +3092,6 @@ do
       var j : int32 = s.y
       var k : int32 = s.z
 
-      --if v.x == 128 then 
-      --  gold[s.x] = r_grid[e6].g
-      --  bold[s.x] = r_grid[e6].b
-      --end
       -- Update First Step (terms involving oldW)
       if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
           (BCs[1] == 1 and j == 0 and effD > 1) or (BCs[1] == 1 and j == N[1] - 1 and effD > 1) or
@@ -3111,11 +3105,6 @@ do
         r_grid[e6].g = r_grid[e6].g + dt/2.0*(g_eqo-r_grid[e6].g)/tgo - dt/V*r_F[e6].g + dt*0 -- TODO replace 0 with source term
         r_grid[e6].b = r_grid[e6].b + dt/2.0*(b_eqo-r_grid[e6].b)/tbo - dt/V*r_F[e6].b + dt*0 -- TODO replace 0 with source term
       end
-
-      --if v.x == 128 then 
-      --  gmid[s.x] = r_grid[e6].g
-      --  bmid[s.x] = r_grid[e6].b
-      --end
 
     end
   end
@@ -3164,7 +3153,7 @@ do
     -- Compute T
     T = Temperature(r_W[e3].rhoE/r_W[e3].rho, u, g, R)
     if T < 0 then
-      c.printf("r_W[%d].rhoE = %f, r_W[e3].rho = %f, u = %f\n", e3.x, r_W[e3].rhoE, r_W[e3].rho, u)
+      c.printf("r_W[%d].rhoE = %f, r_W[e3].rho = %f, u = %f, g = %f, R = %f\n", e3.x, r_W[e3].rhoE, r_W[e3].rho, u, g, R)
     end
     regentlib.assert(bool(T>=0), "T")
   
@@ -3224,6 +3213,7 @@ do
       regentlib.assert(not [bool](isnan(r_grid[e6].b)), "Step4and5\n")
     end
   end --TODO Indentation
+  c.printf("Step4and5 Complete\n")
 end
 
 
@@ -3745,7 +3735,7 @@ task toplevel()
   c.printf("Mesh Initialized\n")
 
   --Initialize r_W
-  __demand(__parallel)
+  __demand(__index_launch)
   for col8 in p_W.colors do
     InitializeW(p_W[col8], p_mesh[col8], N, NV, testProblem, R, Cv)
   end
@@ -3753,7 +3743,7 @@ task toplevel()
   c.printf("W Initialized\n")
   
   --Initialize r_grid
-  __demand(__parallel)
+  __demand(__index_launch)
   for col8 in p_grid.colors do
     InitializeGrid(p_grid[col8], p_mesh[col8], p_W[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], testProblem, R, K, Cv, g, w, ur, Tr, Pr, N, NV, effD)
   end
@@ -3761,7 +3751,7 @@ task toplevel()
   c.printf("Grid Initialized\n")
 
   --Timestep
-  var CFL : double = 0.95 -- Safety Factor
+  var CFL : double = 0.8 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
@@ -3784,7 +3774,7 @@ task toplevel()
     __fence(__execution, __block)
     --c.printf("Starting Step1a\n")
     -- Step 1a
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_grid.colors do 
       Step1a(p_grid[col8], p_gridbarp[col8], p_S[col8], p_W[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     end
@@ -3792,7 +3782,7 @@ task toplevel()
     --c.printf("Step1a Complete\n")
 
     -- Step 1b: Compute Gradient Sigma
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_grid.colors do 
       Step1b_sigx(p_gridbarp[col8], p_sig[col8], p_mesh[col8], plx_mesh[col8], prx_mesh[col8], plx_gridbarp[col8], prx_gridbarp[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
     end
@@ -3880,7 +3870,7 @@ task toplevel()
     end
 
     -- Step 1b_b: Interpolate to velocity dependent time in past
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
       Step1b_b(p_sig[col8], p_mesh[col8], p_gridbarp[col8], p_gridbarpb[col8], prx_gridbarp[col8], pry_gridbarp[col8], prz_gridbarp[col8], prx_sig[col8], pry_sig[col8], prz_sig[col8], prx_mesh[col8], pry_mesh[col8], prz_mesh[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
     end
@@ -3889,7 +3879,7 @@ task toplevel()
 
 
     -- Step 1c
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_grid.colors do
       Step1c(p_gridbarpb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], p_sigb[col8], dt, BCs, N, effD)
     end
@@ -3897,19 +3887,19 @@ task toplevel()
     --c.printf("Step1c Complete\n")
 
     -- Step 2a
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
       Step2a(p_gridbarpb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], p_Wb[col8], dt, effD)
     end
 
     -- Step 2b
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
       Step2b(p_gridbarpb[col8], p_Wb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     end
 
     -- Step 2c
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
       Step2c(p_gridbarpb[col8], p_F[col8], p_mesh[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], plx_gridbarpb[col8], ply_gridbarpb[col8], plz_gridbarpb[col8], BCs, R, K, Cv, g, w, Tr, Pr, effD, N)
     end
@@ -3918,7 +3908,7 @@ task toplevel()
     Step3() -- TODO
   
     -- Step 4 and 5
-    __demand(__parallel)
+    __demand(__index_launch)
     for col8 in p_grid.colors do
       Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
     end
