@@ -239,6 +239,12 @@ do
   --vxmesh[NV[0]-1].w = 7.0
 
 
+   
+  for kx = 0, NV[0] do
+    vxmesh[kx].w = vxmesh[kx].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
+  end
+
+
   -- Check Weights
   --for kx = 0, NV[0] do
   --  c.printf("Main.hh vxmesh[%d].v = %f\n", kx, vxmesh[kx].v)
@@ -247,10 +253,6 @@ do
   --  c.printf("Main.hh vxmesh[%d].w = %f\n", kx, vxmesh[kx].w)
   --end
   
-   
-  for kx = 0, NV[0] do
-    vxmesh[kx].w = vxmesh[kx].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
-  end
 
   -- Second Dimension
   if NV[1] >= 4 then
@@ -418,10 +420,12 @@ do
     
     var p1 : double = 2.0
     var p2 : double = 1.0
+    
     var P1 : double = 2.0
     var P2 : double = 2.0
+    
     var vrel : double = 2.0
-    var amp : double = 0.04
+    var amp : double = 0.00
 
     for e in r_W do
       if (0.25 <= r_mesh[e].y) and (r_mesh[e].y <= 0.75) then
@@ -431,7 +435,7 @@ do
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P1/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
 
-        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+        --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       else
 	r_W[e].rho = p2
         r_W[e].rhov[0] = r_W[e].rho*(-vrel/2.0)
@@ -439,7 +443,7 @@ do
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P2/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
         
-        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+        --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       end      
     end
   end
@@ -608,6 +612,7 @@ task Step1a(r_grid : region(ispace(int8d), grid),
             Pr : double, effD : int32)
 where
   reads(r_grid, r_W, vxmesh.v, vymesh.v, vzmesh.v), 
+  reads(vxmesh.w, vymesh.w, vzmesh.w),  -- for rhotest
   reads writes(r_S),
   reads writes(r_gridbarp)
 do
@@ -617,6 +622,8 @@ do
   var u : double
   var Xi : double[3]
   var T : double
+
+  var rhotest : double = 0
 
   var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
   var shi : int3d = {r_grid.bounds.hi.x, r_grid.bounds.hi.y, r_grid.bounds.hi.z}
@@ -665,8 +672,11 @@ do
 
       r_gridbarp[e6].g = (tg - dt/4.)/tg*r_grid[e6].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e6].g
       r_gridbarp[e6].b = (tb - dt/4.)/tb*r_grid[e6].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e6].b
+  
+      if s.x == 0 and s.y == 0 then
+        rhotest += r_gridbarp[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+      end
 
-    
       if (isnan(r_gridbarp[e6].g) == 1 or isnan(r_gridbarp[e6].b) == 1) then
 
         c.printf("Step 1a: gp = %.12f, bp = %.12f, g = %.12f, b = %.12f, g_eq = %.12f, Sg = %.12f, Sb = %.12f, taus = {%.12f, %.12f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b, r_grid[e6].g, r_grid[e6].b, g_eq, r_S[e6].g, r_S[e6].b, tg, tb)
@@ -678,6 +688,7 @@ do
 
     end
   end
+  c.printf("Step1a : rhotest[0,0] = %f\n", rhotest)
 end
 
 --Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
@@ -868,8 +879,8 @@ do
       r_sig[e7].g = VanLeer(gbpL, r_gridbarp[e6].g, gbpR, yL, yC, yR)
       r_sig[e7].b = VanLeer(bbpL, r_gridbarp[e6].b, bbpR, yL, yC, yR)
 
-      if s.y == 128 and v.y == 128 then
-        --c.printf("r_sig[%d] = {%f, %f}\n", e7.y, r_sig[e7].g, r_sig[e7].b)
+      if s.x == 32 and v.x == 32 and v.y == 32 then
+        --c.printf("r_sigy[{%d, %d}, {%d, %d}]: gbpL = %f, r_gridbarp.g = %f, gbpR = %f\n", s.x, s.y, v.x, v.y, gbpL, r_gridbarp[e6].g, gbpR)
       end
 
       -- NAN checker
@@ -1071,6 +1082,7 @@ do
 
       r_sig2[e8].g = VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
       r_sig2[e8].b = VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
+      --if s.y == 32 and v.x == 32 then c.printf("sigx_x[%d].g = %f\n", Dim2, r_sig2[e8].g) end
     end
   end
 end
@@ -1158,6 +1170,12 @@ do
 
       r_sig2[e8].g = VanLeer(gsigL, r_sig[e7].g, gsigR, xL, xC, xR)
       r_sig2[e8].b = VanLeer(bsigL, r_sig[e7].b, bsigR, xL, xC, xR)
+
+      --if s.x == 32 and v.x == 32 then c.printf("sigy_x[%d].g = %f\n", Dim2, r_sig2[e8].g) end
+      if s.x == 32 and v.x == 32 and v.y == 32 then
+        --c.printf("r_sigy_x[{%d, %d}, {%d, %d}]: gsigL = %f, r_gridbarp.g = %f, gsigR = %f\n", s.x, s.y, v.x, v.y, gsigL, r_sig[e7].g, gsigR)
+      end
+
     end
   end
 end
@@ -1332,6 +1350,11 @@ do
 
       r_sig2[e8].g = VanLeer(gsigL, r_sig[e7].g, gsigR, yL, yC, yR)
       r_sig2[e8].b = VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
+
+      --if s.x == 32 and v.x == 32 then c.printf("sigx_y[%d].g = %f\n", Dim2, r_sig2[e8].g) end
+      if s.x == 32 and v.x == 32 and v.y == 32 then
+        c.printf("r_sigx_y[{%d, %d}, {%d, %d}]: gsigL = %f, r_sig.g = %f, gsigR = %f\n", s.x, s.y, v.x, v.y, gsigL, r_sig[e7].g, gsigR)
+      end
     end
   end
 end
@@ -1419,6 +1442,9 @@ do
 
       r_sig2[e8].g = VanLeer(gsigL, r_sig[e7].g, gsigR, yL, yC, yR)
       r_sig2[e8].b = VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
+
+      --if s.x == 32 and v.x == 32 then c.printf("sigy_y[%d].g = %f\n", Dim2, r_sig2[e8].g) end
+
     end
   end
 end
@@ -1848,7 +1874,7 @@ do
       r_sigb[e8].g = gsig + swap*(sC/2.0)*gsig2
       r_sigb[e8].b = bsig + swap*(sC/2.0)*bsig2
       
-      --if v.x == 128 then c.printf("rsigb[%d] = {%f, %f}\n", s.x, r_sigb[e8].g, r_sigb[e8].b) end
+      --if v.x == 32 and s.x == 32 then c.printf("rsigb[%d] = {%f, %f}\n", s.x, r_sigb[e8].g, r_sigb[e8].b) end
     end
   end
 end
@@ -2068,7 +2094,7 @@ do
       var gsig2 : double
       var bsig2 : double
       var swap : double = 1.0
-      if (vymesh[v.y].v < 0 and Dim == 0) then
+      if (vymesh[v.y].v < 0 and Dim == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -2150,7 +2176,7 @@ do
       var gsig2 : double
       var bsig2 : double
       var swap : double = 1.0
-      if (vymesh[v.y].v < 0 and Dim == 0) then
+      if (vymesh[v.y].v < 0 and Dim == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -2176,7 +2202,7 @@ do
       r_sigb[e8].g = gsig + swap*(sC/2.0)*gsig2
       r_sigb[e8].b = bsig + swap*(sC/2.0)*bsig2
       
-      --if v.y == 128 then c.printf("rsigb[%d] = {%f, %f}\n", s.y, r_sigb[e8].g, r_sigb[e8].b) end
+      --if v.y == 32 and s.x == 32 then c.printf("rsigb[%d] = {%f, %f}\n", s.y, r_sigb[e8].g, r_sigb[e8].b) end
     end
   end
 end
@@ -2232,7 +2258,7 @@ do
       var gsig2 : double
       var bsig2 : double
       var swap : double = 1.0
-      if (vymesh[v.y].v < 0 and Dim == 0) then
+      if (vymesh[v.y].v < 0 and Dim == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -2539,7 +2565,7 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
-  --var rhotest : double = 0
+  var rhotest : double = 0
 
   --c.printf("slo = {%d, %d, %d}, shi = {%d, %d, %d}\n", slo.x, slo.y, slo.z, shi.x, shi.y, shi.z)
   for s in s3 do
@@ -2593,33 +2619,46 @@ do
             sC[Dim] = r_mesh[eR3].dx
            end
         elseif (vymesh[v.y].v < 0 and Dim == 1) then
-          gsig = pry_sig[eR7].g
-          bsig = pry_sig[eR7].b
-          gb = pry_gridbarp[eR6].g
-          bb = pry_gridbarp[eR6].b
           swap = -1
-          sC[Dim] = pry_mesh[eR3].dy
+          if s.y == r_mesh.bounds.hi.y then
+            gsig = pry_sig[eR7].g
+            bsig = pry_sig[eR7].b
+            gb = pry_gridbarp[eR6].g
+            bb = pry_gridbarp[eR6].b
+            sC[Dim] = pry_mesh[eR3].dy
+          else
+            gsig = r_sig[eR7].g
+            bsig = r_sig[eR7].b
+            gb = r_gridbarp[eR6].g
+            bb = r_gridbarp[eR6].b
+            sC[Dim] = r_mesh[eR3].dy
+          end
         elseif (vzmesh[v.z].v < 0 and Dim == 2) then
-          gsig = prz_sig[eR7].g
-          bsig = prz_sig[eR7].b
-          gb = prz_gridbarp[eR6].g
-          bb = prz_gridbarp[eR6].b
           swap = -1
-          sC[Dim] = prz_mesh[eR3].dz
+          if s.z == r_mesh.bounds.hi.z then
+            gsig = prz_sig[eR7].g
+            bsig = prz_sig[eR7].b
+            gb = prz_gridbarp[eR6].g
+            bb = prz_gridbarp[eR6].b
+            sC[Dim] = prz_mesh[eR3].dz
+          else
+            gsig = r_sig[eR7].g
+            bsig = r_sig[eR7].b
+            gb = r_gridbarp[eR6].g
+            bb = r_gridbarp[eR6].b
+            sC[Dim] = r_mesh[eR3].dz
+          end
         end
      
-        if s.x == 128 and v.x == 128 then
-          --c.printf("gb = %f, dgb = %f\n", gb, swap*sC[Dim]/2.0*gsig)
-        end
-
         -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-        r_gridbarpb[e7].g = gb + swap*sC[Dim]/2.0*gsig
-        r_gridbarpb[e7].b = bb + swap*sC[Dim]/2.0*bsig
-        --c.printf("Interpolating g[%d][%d] {%f, %f}\n", s.x, v.x, gb, r_gridbarpb[e7].g)
+        r_gridbarpb[e7].g = gb + 0*swap*sC[Dim]/2.0*gsig 
+        r_gridbarpb[e7].b = bb + 0*swap*sC[Dim]/2.0*bsig -- URGENT
+        --if s.x == 32 and v.x == 32 and v.y == 32 then c.printf("Interpolating Dim = %d g[x = %d, %d; v = %d, %d]: gb = %f, dgb = %f, final = %f}\n", Dim, s.x, s.y, v.x, v.y, gb, swap*sC[Dim]/2.0*gsig, r_gridbarpb[e7].g) end
 
-        --if s.x == 129 then
-        --  rhotest += vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
-        --end
+        if s.x == 15 and s.y == 15 and Dim == 0 then
+          c.printf("Step1b_b adding to rhotest v = {%d, %d} = %f\n", v.x, v.y, vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g)
+          rhotest += vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
+        end
 
         -- NAN checker
         if (isnan(r_gridbarpb[e7].g) == 1 or isnan(r_gridbarpb[e7].b) == 1) then
@@ -2634,7 +2673,7 @@ do
       end
     end 
   end
-  --c.printf("Step1b rhotest[129] = %f\n", rhotest)
+  c.printf("Step1b rhotest[32] = %f\n", rhotest)
 end
 
 -- Step 1c: Compute phibar at interface by interpolating w/ phisigma2, x-Xi*dt/2
@@ -2667,11 +2706,12 @@ do
       for Dim = 0, effD do
         for Dim2 = 0, effD do
           -- Gather Indices
-          var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-          var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+          var e8 : int8d = {s.x, s.y, s.z, Dim2, Dim, v.x, v.y, v.z}
+          var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z} -- URGENT trying Dim2 instead of Dim
 
-          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim]*r_sigb[e8].g
-          r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim]*r_sigb[e8].b
+          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim2]*r_sigb[e8].g -- URGENT trying Dim2 instead of Dim
+          r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim2]*r_sigb[e8].b
+
     
           --if s.x == 129 then rhotest += r_gridbarpb[e7].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w end
           regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 1c\n")
@@ -2704,12 +2744,14 @@ do
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
   -- Reset field space
-  fill(r_Wb.rho, 0)
+  --fill(r_Wb.rho, 0)
 
   -- First do density at boundary, density is needed for others.
   for s in s3 do
     for Dim = 0, effD do
       var e4 : int8d = {s.x, s.y, s.z, Dim, 0, 0, 0, 0}
+      r_Wb[e4].rho = 0
+
       for v in v3 do
         var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
         r_Wb[e4].rho = r_Wb[e4].rho + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
@@ -2743,7 +2785,7 @@ do
         end
 
         for d = effD, 3 do
-          r_Wb[e4].rhov[d] = 0 -- Bug Preventer
+          --r_Wb[e4].rhov[d] = 0 -- Bug Preventer
         end
           
         r_Wb[e4].rhoE = r_Wb[e4].rhoE + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].b
@@ -2754,7 +2796,7 @@ do
   -- NAN checker
   for e in r_Wb do
     
-    --c.printf("r_Wb[%d] = {%f, %f, %f}\n", e.x, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhoE)
+    if e.x == 32 then c.printf("r_Wb[%d, %d, Dim = %d] = {%f, {%f, %f}, %f}\n", e.x, e.y, e.w, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhov[1], r_Wb[e].rhoE) end
     regentlib.assert(not [bool](isnan(r_Wb[e].rho)), "Step 2a rho\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[0])), "Step 2a rhov0\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[1])), "Step 2a rhov1\n")
@@ -2996,8 +3038,8 @@ do
         r_F[e6].g = r_F[e6].g + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].g - left*gL)
         r_F[e6].b = r_F[e6].b + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].b - left*bL)
 
-        if (v.x == 128) then
-          --c.printf("r_F[%d]= {%f, %f), right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}\n", s.x, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b)
+        if (v.x == 16 and s.x == 16) then
+         -- c.printf("r_F[{%d, %d}}]= {%f, %f|, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
         end
         regentlib.assert(not [bool](isnan(r_F[e6].g)), "Step 2c\n")
         regentlib.assert(not [bool](isnan(r_F[e6].b)), "Step 2c\n")
@@ -3113,9 +3155,11 @@ do
 
   for s in s3 do
     var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    --var drho : double = 0
-    --var drhov : double = 0
-    --var dE : double = 0
+    
+    var drho : double = 0
+    var drhovx : double = 0
+    var drhovy : double = 0
+    var dE : double = 0
 
     for v in v3 do 
       Xi[0] = vxmesh[v.x].v
@@ -3124,9 +3168,10 @@ do
 
       var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
       -- Step 4: Update W at cell center
-      --drho  += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
-      --drhov += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[0]
-      --dE    += -dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+      drho  += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+      drhovx += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[0]
+      drhovy += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[1]
+      dE    += -dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
       r_W[e3].rho = r_W[e3].rho - dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term.
       for d = 0, effD do
         r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term
@@ -3134,7 +3179,7 @@ do
   
       r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term      
     end
-    --c.printf("updated W[%d] = {%f, %f, %f}, dW = {%f, %f, %f}\n", s.x, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhoE, drho, drhov, dE)
+    --c.printf("updated W[{%d, %d}] = {%f, {%f, %f}, %f}, dW = {%f, {%f, %f}, %f}\n", s.x, s.y, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhov[1], r_W[e3].rhoE, drho, drhovx, drhovy, dE)
   end     
 
   -- Second Update Phi at cell center using new tau/W
@@ -3213,7 +3258,7 @@ do
       regentlib.assert(not [bool](isnan(r_grid[e6].b)), "Step4and5\n")
     end
   end --TODO Indentation
-  c.printf("Step4and5 Complete\n")
+  --c.printf("Step4and5 Complete\n")
 end
 
 
@@ -3751,7 +3796,7 @@ task toplevel()
   c.printf("Grid Initialized\n")
 
   --Timestep
-  var CFL : double = 0.8 -- Safety Factor
+  var CFL : double = 0.01 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
@@ -3766,7 +3811,7 @@ task toplevel()
     __fence(__execution, __block)
     c.printf("Dump %d\n", dumpiter)
   end
-  while Tsim < Tf do --and iter < 3 do
+  while Tsim < Tf do --and iter < 10 do
     iter += 1
 
     var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
@@ -3787,13 +3832,13 @@ task toplevel()
       Step1b_sigx(p_gridbarp[col8], p_sig[col8], p_mesh[col8], plx_mesh[col8], prx_mesh[col8], plx_gridbarp[col8], prx_gridbarp[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
     end
     if effD > 1 then
-      for col6 in p_grid.colors do 
-        --Step1b_sigy(p_gridbarp[col6], p_sig[col7], p_mesh[col3], ply_mesh[col3], pry_mesh[col3], ply_gridbarp[col6], pry_gridbarp[col6], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
+      for col8 in p_grid.colors do 
+        Step1b_sigy(p_gridbarp[col8], p_sig[col8], p_mesh[col8], ply_mesh[col8], pry_mesh[col8], ply_gridbarp[col8], pry_gridbarp[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
       end  
     end
     if effD > 2 then
-      for col6 in p_grid.colors do 
-        --Step1b_sigz(p_gridbarp[col6], p_sig[col7], p_mesh[col3], plz_mesh[col3], prz_mesh[col3], plz_gridbarp[col6], prz_gridbarp[col6], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
+      for col8 in p_grid.colors do 
+        --Step1b_sigz(p_gridbarp[col8], p_sig[col8], p_mesh[col8], plz_mesh[col8], prz_mesh[col8], plz_gridbarp[col8], prz_gridbarp[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
       end  
     end
     __fence(__execution, __block)
@@ -3804,31 +3849,31 @@ task toplevel()
       Step1b_sigx_x(p_sig[col8], p_sig2[col8], p_mesh[col8], plx_mesh[col8], prx_mesh[col8], plx_sig[col8], prx_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
     end  
     if effD > 1 then
-      for col6 in p_grid.colors do 
-        --Step1b_sigx_y(p_sig[col7], p_sig2[col8], p_mesh[col3], ply_mesh[col3], pry_mesh[col3], ply_sig[col7], pry_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        Step1b_sigx_y(p_sig[col8], p_sig2[col8], p_mesh[col8], ply_mesh[col8], pry_mesh[col8], ply_sig[col8], pry_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
-      for col6 in p_grid.colors do 
-        --Step1b_sigy_y(p_sig[col7], p_sig2[col8], p_mesh[col3], ply_mesh[col3], pry_mesh[col3], ply_sig[col7], pry_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        Step1b_sigy_y(p_sig[col8], p_sig2[col8], p_mesh[col8], ply_mesh[col8], pry_mesh[col8], ply_sig[col8], pry_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
-      for col6 in p_grid.colors do 
-        --Step1b_sigy_x(p_sig[col7], p_sig2[col8], p_mesh[col3], plx_mesh[col3], prx_mesh[col3], plx_sig[col7], prx_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        Step1b_sigy_x(p_sig[col8], p_sig2[col8], p_mesh[col8], plx_mesh[col8], prx_mesh[col8], plx_sig[col8], prx_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
     end
     if effD > 2 then
-      for col6 in p_grid.colors do 
-        --Step1b_sigz_x(p_sig[col7], p_sig2[col8], p_mesh[col3], plx_mesh[col3], prx_mesh[col3], plx_sig[col7], prx_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        --Step1b_sigz_x(p_sig[col8], p_sig2[col8], p_mesh[col8], plx_mesh[col8], prx_mesh[col8], plx_sig[col8], prx_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
-      for col6 in p_grid.colors do 
-        --Step1b_sigz_y(p_sig[col7], p_sig2[col8], p_mesh[col3], ply_mesh[col3], pry_mesh[col3], ply_sig[col7], pry_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        --Step1b_sigz_y(p_sig[col8], p_sig2[col8], p_mesh[col8], ply_mesh[col8], pry_mesh[col8], ply_sig[col8], pry_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
-      for col6 in p_grid.colors do 
-        --Step1b_sigz_z(p_sig[col7], p_sig2[col8], p_mesh[col3], plz_mesh[col3], prz_mesh[col3], plz_sig[col7], prz_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        --Step1b_sigz_z(p_sig[col8], p_sig2[col8], p_mesh[col8], plz_mesh[col8], prz_mesh[col8], plz_sig[col8], prz_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
-      for col6 in p_grid.colors do 
-        --Step1b_sigx_z(p_sig[col7], p_sig2[col8], p_mesh[col3], plz_mesh[col3], prz_mesh[col3], plz_sig[col7], prz_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        --Step1b_sigx_z(p_sig[col8], p_sig2[col8], p_mesh[col8], plz_mesh[col8], prz_mesh[col8], plz_sig[col8], prz_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
-      for col6 in p_grid.colors do 
-        --Step1b_sigy_z(p_sig[col7], p_sig2[col8], p_mesh[col3], plz_mesh[col3], prz_mesh[col3], plz_sig[col7], prz_sig[col7], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
+      for col8 in p_grid.colors do 
+        --Step1b_sigy_z(p_sig[col8], p_sig2[col8], p_mesh[col8], plz_mesh[col8], prz_mesh[col8], plz_sig[col8], prz_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
     end
     __fence(__execution, __block)

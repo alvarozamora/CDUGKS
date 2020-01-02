@@ -38,6 +38,7 @@ if testproblem == 2:
 
 	for file in files:
 		n = file[9:13]
+		n = file[8:]
 		f = open(file, 'rb')
 
 		X = f.read(num*num*size)
