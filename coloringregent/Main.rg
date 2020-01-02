@@ -675,9 +675,9 @@ do
   
       if s.x == 4 and s.y == 4 then
         rhotest += r_gridbarp[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
-        if v.x == 32 and v.y == 32 then
-          c.printf("Step1a: gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
-        end
+        --if v.x == 32 and v.y == 32 then
+        --  c.printf("Step1a: gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
+        --end
       end
 
       if (isnan(r_gridbarp[e6].g) == 1 or isnan(r_gridbarp[e6].b) == 1) then
@@ -692,8 +692,8 @@ do
     end
   end
   
-  var e3 : int8d = {4,4,0,0,0,0,0,0}
-  c.printf("Step1a : rhotest[4,4] = %f, r_W[4,4].rho = %f\n", rhotest, r_W[e3].rho)
+  --var e3 : int8d = {4,4,0,0,0,0,0,0}
+  --c.printf("Step1a : rhotest[4,4] = %f, r_W[4,4].rho = %f\n", rhotest, r_W[e3].rho)
 end
 
 --Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
@@ -1357,9 +1357,9 @@ do
       r_sig2[e8].b = VanLeer(bsigL, r_sig[e7].b, bsigR, yL, yC, yR)
 
       --if s.x == 32 and v.x == 32 then c.printf("sigx_y[%d].g = %f\n", Dim2, r_sig2[e8].g) end
-      if s.x == 32 and v.x == 32 and v.y == 32 then
-        c.printf("r_sigx_y[{%d, %d}, {%d, %d}]: gsigL = %f, r_sig.g = %f, gsigR = %f\n", s.x, s.y, v.x, v.y, gsigL, r_sig[e7].g, gsigR)
-      end
+      --if s.x == 32 and v.x == 32 and v.y == 32 then
+      --  c.printf("r_sigx_y[{%d, %d}, {%d, %d}]: gsigL = %f, r_sig.g = %f, gsigR = %f\n", s.x, s.y, v.x, v.y, gsigL, r_sig[e7].g, gsigR)
+      --end
     end
   end
 end
@@ -2656,14 +2656,14 @@ do
         end
      
         -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-        r_gridbarpb[e7].g = gb + 0*swap*sC[Dim]/2.0*gsig 
-        r_gridbarpb[e7].b = bb + 0*swap*sC[Dim]/2.0*bsig -- URGENT
+        r_gridbarpb[e7].g = gb + swap*sC[Dim]/2.0*gsig 
+        r_gridbarpb[e7].b = bb + swap*sC[Dim]/2.0*bsig
         --if s.x == 32 and v.x == 32 and v.y == 32 then c.printf("Interpolating Dim = %d g[x = %d, %d; v = %d, %d]: gb = %f, dgb = %f, final = %f}\n", Dim, s.x, s.y, v.x, v.y, gb, swap*sC[Dim]/2.0*gsig, r_gridbarpb[e7].g) end
 
         if s.x == 4 and s.y == 4 and Dim == 0 then
-          if v.x == 32 and v.y == 32 then
-            c.printf("Step 1b_b : gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
-          end
+          --if v.x == 32 and v.y == 32 then
+          --  c.printf("Step 1b_b : gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
+          --end
           rhotest += vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
         end
 
@@ -2680,7 +2680,7 @@ do
       end
     end 
   end
-  c.printf("Step1b rhotest[32] = %f\n", rhotest)
+  --c.printf("Step1b rhotest[32] = %f\n", rhotest)
 end
 
 -- Step 1c: Compute phibar at interface by interpolating w/ phisigma2, x-Xi*dt/2
@@ -2803,7 +2803,7 @@ do
   -- NAN checker
   for e in r_Wb do
     
-    if e.x == 32 then c.printf("r_Wb[%d, %d, Dim = %d] = {%f, {%f, %f}, %f}\n", e.x, e.y, e.w, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhov[1], r_Wb[e].rhoE) end
+    --if e.x == 32 then c.printf("r_Wb[%d, %d, Dim = %d] = {%f, {%f, %f}, %f}\n", e.x, e.y, e.w, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhov[1], r_Wb[e].rhoE) end
     regentlib.assert(not [bool](isnan(r_Wb[e].rho)), "Step 2a rho\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[0])), "Step 2a rhov0\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[1])), "Step 2a rhov1\n")
@@ -3323,8 +3323,7 @@ do
       r_grid[e6].g = geq(c2, r_W[e3].rho, T, R, effD)
       r_grid[e6].b = r_grid[e6].g*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
   
-      --if s.x == r_grid.bounds.lo.x and s.y == r_grid.bounds.lo.y and s.z == 0 then
-      if s.x == 4 and s.y == 4 then -- URGENT
+      if s.x == r_grid.bounds.lo.x and s.y == r_grid.bounds.lo.y and s.z == 0 then
         rhotest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
         Etest += r_grid[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
       end
@@ -3804,7 +3803,7 @@ task toplevel()
   c.printf("Grid Initialized\n")
 
   --Timestep
-  var CFL : double = 0.01 -- Safety Factor
+  var CFL : double = 0.8 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
