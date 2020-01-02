@@ -673,8 +673,11 @@ do
       r_gridbarp[e6].g = (tg - dt/4.)/tg*r_grid[e6].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e6].g
       r_gridbarp[e6].b = (tb - dt/4.)/tb*r_grid[e6].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e6].b
   
-      if s.x == 0 and s.y == 0 then
+      if s.x == 4 and s.y == 4 then
         rhotest += r_gridbarp[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+        if v.x == 32 and v.y == 32 then
+          c.printf("Step1a: gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
+        end
       end
 
       if (isnan(r_gridbarp[e6].g) == 1 or isnan(r_gridbarp[e6].b) == 1) then
@@ -2340,7 +2343,7 @@ do
       var gsig2 : double
       var bsig2 : double
       var swap : double = 1.0
-      if (vzmesh[v.z].v < 0 and Dim == 0) then
+      if (vzmesh[v.z].v < 0 and Dim == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -2422,7 +2425,7 @@ do
       var gsig2 : double
       var bsig2 : double
       var swap : double = 1.0
-      if (vzmesh[v.z].v < 0 and Dim == 0) then
+      if (vzmesh[v.z].v < 0 and Dim == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -2504,7 +2507,7 @@ do
       var gsig2 : double
       var bsig2 : double
       var swap : double = 1.0
-      if (vzmesh[v.z].v < 0 and Dim == 0) then
+      if (vzmesh[v.z].v < 0 and Dim == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -2655,8 +2658,10 @@ do
         r_gridbarpb[e7].b = bb + 0*swap*sC[Dim]/2.0*bsig -- URGENT
         --if s.x == 32 and v.x == 32 and v.y == 32 then c.printf("Interpolating Dim = %d g[x = %d, %d; v = %d, %d]: gb = %f, dgb = %f, final = %f}\n", Dim, s.x, s.y, v.x, v.y, gb, swap*sC[Dim]/2.0*gsig, r_gridbarpb[e7].g) end
 
-        if s.x == 15 and s.y == 15 and Dim == 0 then
-          c.printf("Step1b_b adding to rhotest v = {%d, %d} = %f\n", v.x, v.y, vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g)
+        if s.x == 0 and s.y == 0 and Dim == 0 then
+          if v.x == 32 and v.y == 32 then
+            c.printf("Step 1b_b : gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
+          end
           rhotest += vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
         end
 
