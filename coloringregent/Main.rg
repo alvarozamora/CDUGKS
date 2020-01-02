@@ -616,13 +616,6 @@ where
   reads writes(r_S),
   reads writes(r_gridbarp)
 do
-  var tg : double
-  var tb : double    
-  var c2 : double
-  var u : double
-  var Xi : double[3]
-  var T : double
-
   var rhotest : double = 0
 
   var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
@@ -633,6 +626,12 @@ do
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
   
   for s in s3 do
+    var tg : double
+    var tb : double    
+    var c2 : double
+    var u : double
+    var T : double
+
    
     var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
@@ -660,6 +659,7 @@ do
       r_S[e6].b = 0.
 
       c2 = 0
+      var Xi : double[3]
       Xi[0] = vxmesh[v.x].v
       Xi[1] = vymesh[v.y].v
       Xi[2] = vzmesh[v.z].v     
@@ -691,7 +691,9 @@ do
 
     end
   end
-  c.printf("Step1a : rhotest[0,0] = %f\n", rhotest)
+  
+  var e3 : int8d = {4,4,0,0,0,0,0,0}
+  c.printf("Step1a : rhotest[4,4] = %f, r_W[4,4].rho = %f\n", rhotest, r_W[e3].rho)
 end
 
 --Step 1b: compute gradient of phibar to compute phibar at interface. compute phibar at interface.
@@ -2658,7 +2660,7 @@ do
         r_gridbarpb[e7].b = bb + 0*swap*sC[Dim]/2.0*bsig -- URGENT
         --if s.x == 32 and v.x == 32 and v.y == 32 then c.printf("Interpolating Dim = %d g[x = %d, %d; v = %d, %d]: gb = %f, dgb = %f, final = %f}\n", Dim, s.x, s.y, v.x, v.y, gb, swap*sC[Dim]/2.0*gsig, r_gridbarpb[e7].g) end
 
-        if s.x == 0 and s.y == 0 and Dim == 0 then
+        if s.x == 4 and s.y == 4 and Dim == 0 then
           if v.x == 32 and v.y == 32 then
             c.printf("Step 1b_b : gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
           end
@@ -3288,7 +3290,7 @@ do
   var Etest : double = 0
 
   var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
-  var shi : int3d = {r_grid.bounds.hi.x, r_grid.bounds.lo.y, r_grid.bounds.hi.z}
+  var shi : int3d = {r_grid.bounds.hi.x, r_grid.bounds.hi.y, r_grid.bounds.hi.z}
   var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
   var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
@@ -3321,7 +3323,8 @@ do
       r_grid[e6].g = geq(c2, r_W[e3].rho, T, R, effD)
       r_grid[e6].b = r_grid[e6].g*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
   
-      if s.x == r_grid.bounds.lo.x and s.y == r_grid.bounds.lo.y and s.z == 0 then
+      --if s.x == r_grid.bounds.lo.x and s.y == r_grid.bounds.lo.y and s.z == 0 then
+      if s.x == 4 and s.y == 4 then -- URGENT
         rhotest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
         Etest += r_grid[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
       end
