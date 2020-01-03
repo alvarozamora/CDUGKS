@@ -425,7 +425,7 @@ do
     var P2 : double = 2.0
     
     var vrel : double = 2.0
-    var amp : double = 0.00
+    var amp : double = 0.04
 
     for e in r_W do
       if (0.25 <= r_mesh[e].y) and (r_mesh[e].y <= 0.75) then
@@ -2656,8 +2656,8 @@ do
         end
      
         -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-        r_gridbarpb[e7].g = gb + 0*swap*sC[Dim]/2.0*gsig --URGENT
-        r_gridbarpb[e7].b = bb + 0*swap*sC[Dim]/2.0*bsig
+        r_gridbarpb[e7].g = gb + swap*sC[Dim]/2.0*gsig 
+        r_gridbarpb[e7].b = bb + swap*sC[Dim]/2.0*bsig
         --if s.x == 32 and v.x == 32 and v.y == 32 then c.printf("Interpolating Dim = %d g[x = %d, %d; v = %d, %d]: gb = %f, dgb = %f, final = %f}\n", Dim, s.x, s.y, v.x, v.y, gb, swap*sC[Dim]/2.0*gsig, r_gridbarpb[e7].g) end
 
         if s.x == 4 and s.y == 4 and Dim == 0 then
@@ -2803,7 +2803,7 @@ do
   -- NAN checker
   for e in r_Wb do
     
-    if e.x == 32 then c.printf("r_Wb[%d, %d, Dim = %d] = {%f, {%f, %f}, %f}\n", e.x, e.y, e.w, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhov[1], r_Wb[e].rhoE) end
+    --if e.x == 32 then c.printf("r_Wb[%d, %d, Dim = %d] = {%f, {%f, %f}, %f}\n", e.x, e.y, e.w, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhov[1], r_Wb[e].rhoE) end
     regentlib.assert(not [bool](isnan(r_Wb[e].rho)), "Step 2a rho\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[0])), "Step 2a rhov0\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[1])), "Step 2a rhov1\n")
@@ -3043,14 +3043,14 @@ do
         end
 
         if (v.x == 32 and v.y == 32 and s.x == 32) then
-          c.printf("pre r_F[{%d, %d, Dim = %d}}]= {%f, %f}, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, Dim, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
+          --c.printf("pre r_F[{%d, %d, Dim = %d}}]= {%f, %f}, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, Dim, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
         end
            
         r_F[e6].g = r_F[e6].g + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].g - left*gL)
         r_F[e6].b = r_F[e6].b + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].b - left*bL)
 
         if (v.x == 32 and v.y == 32 and s.x == 32) then
-          c.printf("post r_F[{%d, %d, Dim = %d}}]= {%f, %f}, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, Dim, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
+          --c.printf("post r_F[{%d, %d, Dim = %d}}]= {%f, %f}, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, Dim, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
         end
         regentlib.assert(not [bool](isnan(r_F[e6].g)), "Step 2c\n")
         regentlib.assert(not [bool](isnan(r_F[e6].b)), "Step 2c\n")
@@ -3190,7 +3190,9 @@ do
   
       r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term      
     end
-    c.printf("updated W[{%d, %d}] = {%f, {%f, %f}, %f}, dW = {%f, {%f, %f}, %f}\n", s.x, s.y, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhov[1], r_W[e3].rhoE, drho, drhovx, drhovy, dE)
+    if s.x == 32 then
+      --c.printf("updated W[{%d, %d}] = {%f, {%f, %f}, %f}, dW = {%f, {%f, %f}, %f}\n", s.x, s.y, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhov[1], r_W[e3].rhoE, drho, drhovx, drhovy, dE)
+    end
   end     
 
   -- Second Update Phi at cell center using new tau/W
@@ -3502,6 +3504,7 @@ task toplevel()
   c.printf("BCs = {%d, %d, %d}, Vmin = {%f, %f, %f}, Vmax = {%f, %f, %f}\n", BCs[0], BCs[1], BCs[2], Vmin[0], Vmin[1], Vmin[2], Vmax[0], Vmax[1], Vmax[2])
   c.printf("R = %f, K = %f, g = %f, Cv = %f\n", R, K, g, Cv)
   c.printf("w = %f, ur = %f, Tr = %f, Pr = %f\n", w, ur, Tr, Pr)
+  c.printf("End Time = %f, dtdump %f\n", Tf, dtdump)
 
   -- Create regions for distribution functions and gradients
   var r_grid      = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
@@ -3823,10 +3826,15 @@ task toplevel()
   var iter : int32 = 0
   var dumpiter : int32 = 0
   if testProblem > 0 then 
+    __fence(__execution, __block)
     Dump(r_W, dumpiter) -- Initial Conditions
     __fence(__execution, __block)
     c.printf("Dump %d\n", dumpiter)
   end
+  
+  var Start : double = c.legion_get_current_time_in_nanos()
+  var End : double 
+  
   while Tsim < Tf do --and iter < 10 do
     iter += 1
 
@@ -3978,7 +3986,9 @@ task toplevel()
     if dt < calcdt then
       dumpiter += 1
       Tdump = 0
+      __fence(__execution, __block)
       Dump(r_W, dumpiter)
+      __fence(__execution, __block)
       c.printf("Dump %d\n", dumpiter)
     else
       Tdump += dt
@@ -3986,7 +3996,9 @@ task toplevel()
 
     Tsim += dt
 
-    c.printf("Iteration = %d, Tsim = %f\n", iter, Tsim)
+    __fence(__execution, __block)
+    End = c.legion_get_current_time_in_nanos()
+    c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, (End-Start)*1e-9)
 
   end
 end
