@@ -2656,8 +2656,8 @@ do
         end
      
         -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
-        r_gridbarpb[e7].g = gb + swap*sC[Dim]/2.0*gsig 
-        r_gridbarpb[e7].b = bb + swap*sC[Dim]/2.0*bsig
+        r_gridbarpb[e7].g = gb + 0*swap*sC[Dim]/2.0*gsig --URGENT
+        r_gridbarpb[e7].b = bb + 0*swap*sC[Dim]/2.0*bsig
         --if s.x == 32 and v.x == 32 and v.y == 32 then c.printf("Interpolating Dim = %d g[x = %d, %d; v = %d, %d]: gb = %f, dgb = %f, final = %f}\n", Dim, s.x, s.y, v.x, v.y, gb, swap*sC[Dim]/2.0*gsig, r_gridbarpb[e7].g) end
 
         if s.x == 4 and s.y == 4 and Dim == 0 then
@@ -2803,7 +2803,7 @@ do
   -- NAN checker
   for e in r_Wb do
     
-    --if e.x == 32 then c.printf("r_Wb[%d, %d, Dim = %d] = {%f, {%f, %f}, %f}\n", e.x, e.y, e.w, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhov[1], r_Wb[e].rhoE) end
+    if e.x == 32 then c.printf("r_Wb[%d, %d, Dim = %d] = {%f, {%f, %f}, %f}\n", e.x, e.y, e.w, r_Wb[e].rho, r_Wb[e].rhov[0], r_Wb[e].rhov[1], r_Wb[e].rhoE) end
     regentlib.assert(not [bool](isnan(r_Wb[e].rho)), "Step 2a rho\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[0])), "Step 2a rhov0\n")
     regentlib.assert(not [bool](isnan(r_Wb[e].rhov[1])), "Step 2a rhov1\n")
@@ -2950,10 +2950,10 @@ do
     for Dim = 0, effD do
       var bc : int32[6] =  BC(s.x, s.y, s.z, Dim, BCs, N)
       var IL : int32 = bc[0]
-      var IR : int32 = bc[1]
-      var JL : int32 = bc[2]
-      var JR : int32 = bc[3]
-      var KL : int32 = bc[4]
+      var JL : int32 = bc[1]
+      var KL : int32 = bc[2]
+      var IR : int32 = bc[3]
+      var JK : int32 = bc[4]
       var KR : int32 = bc[5]
 
       -- Periodic Boundary Conditions
@@ -2974,7 +2974,7 @@ do
         right = 0
       end
 
-      -- Neumann Boundary Conditions
+      -- TODO: Neumann Boundary Conditions
       if (Dim == 0 and BCs[0] == 1) then
         if s.x == 0 then 
           left = 0
@@ -3041,12 +3041,16 @@ do
             bL = r_gridbarpb[eL7].b
           end
         end
+
+        if (v.x == 32 and v.y == 32 and s.x == 32) then
+          c.printf("pre r_F[{%d, %d, Dim = %d}}]= {%f, %f}, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, Dim, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
+        end
            
         r_F[e6].g = r_F[e6].g + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].g - left*gL)
         r_F[e6].b = r_F[e6].b + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].b - left*bL)
 
-        if (v.x == 16 and s.x == 16) then
-         -- c.printf("r_F[{%d, %d}}]= {%f, %f|, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
+        if (v.x == 32 and v.y == 32 and s.x == 32) then
+          c.printf("post r_F[{%d, %d, Dim = %d}}]= {%f, %f}, right/left = {%f, %f}, gL/gR = {%f, %f}, bL/bR = {%f, %f}, A[%d] = %f\n", s.x, s.y, Dim, r_F[e6].g, r_F[e6].b, right, left, gL, r_gridbarpb[e7].g, bL, r_gridbarpb[e7].b, Dim, A[Dim])
         end
         regentlib.assert(not [bool](isnan(r_F[e6].g)), "Step 2c\n")
         regentlib.assert(not [bool](isnan(r_F[e6].b)), "Step 2c\n")
@@ -3186,7 +3190,7 @@ do
   
       r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term      
     end
-    --c.printf("updated W[{%d, %d}] = {%f, {%f, %f}, %f}, dW = {%f, {%f, %f}, %f}\n", s.x, s.y, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhov[1], r_W[e3].rhoE, drho, drhovx, drhovy, dE)
+    c.printf("updated W[{%d, %d}] = {%f, {%f, %f}, %f}, dW = {%f, {%f, %f}, %f}\n", s.x, s.y, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhov[1], r_W[e3].rhoE, drho, drhovx, drhovy, dE)
   end     
 
   -- Second Update Phi at cell center using new tau/W
@@ -3198,6 +3202,7 @@ do
     u = 0 
     for d = 0, effD do 
       u += r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho
+      --c.printf("In Computing u**2 at {%d, %d, Dim = %d}, d(u**2) = %f\n", s.x, s.y, d, r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho)
     end
     u = sqrt(u)
     regentlib.assert(bool(u>=0), "u")
@@ -3287,6 +3292,8 @@ do
   var u : double 
 
   var rhotest : double = 0
+  var rhovxtest : double = 0
+  var rhovytest : double = 0
   var Etest : double = 0
 
   var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
@@ -3325,11 +3332,13 @@ do
   
       if s.x == r_grid.bounds.lo.x and s.y == r_grid.bounds.lo.y and s.z == 0 then
         rhotest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+        rhovxtest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[0]
+        rhovytest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[1]
         Etest += r_grid[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
       end
     end
   end
-  c.printf("rhotest = %f, Etest = %f\n", rhotest, Etest)
+  c.printf("rhotest = %f, rhovxtest = %f, rhovytest = %f, Etest = %f\n", rhotest, rhovxtest, rhovytest, Etest)
 end
 
 task InitializeGrid(r_grid  : region(ispace(int8d), grid),
