@@ -2930,7 +2930,6 @@ do
 
   fill(r_F.g, 0)
   fill(r_F.b, 0)
-  __fence(__execution, __block)
 
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
@@ -3161,7 +3160,6 @@ do
 
     end
   end
-  __fence(__execution, __block)
 
 
   for s in s3 do
@@ -3461,13 +3459,9 @@ do
   c.sprintf([&int8](filename), './Data/rho_%04d',iter)
   var g = c.fopen(filename,'wb')
 
-  c.printf("Dumping Now\n")
-  var counter : int32 = 0
   for e in r_W do
-    counter += 1
     dumpdouble(g, r_W[e].rho)
   end
-  c.printf("Dump Count = %d\n", counter)
   __fence(__execution, __block)
   c.fclose(g)
   return 1
@@ -3538,6 +3532,7 @@ task toplevel()
   -- Create partitions for regions
   var f6 : int6d = factorize(config.cpus, effD)  
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
+  c.printf("Partitioning as {%d, %d, %d, %d, %d, %d, %d, %d}\n", f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
   var p_grid = partition(equal, r_grid, p8)
   var p_gridbarp = partition(equal, r_gridbarp, p8)
@@ -3682,7 +3677,7 @@ task toplevel()
     var rvy : rect1d = {vymesh.bounds.lo, vymesh.bounds.hi}
     var rvz : rect1d = {vzmesh.bounds.lo, vzmesh.bounds.hi}
     
-     __fence(__execution, __block)
+    __fence(__execution, __block)
     c.printf("rect8d Done\n")
 
     -- Color in left strips
@@ -3845,14 +3840,14 @@ task toplevel()
 
     var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
 
-    __fence(__execution, __block)
+    --__fence(__execution, __block)
     --c.printf("Starting Step1a\n")
     -- Step 1a
     __demand(__index_launch)
     for col8 in p_grid.colors do 
       Step1a(p_grid[col8], p_gridbarp[col8], p_S[col8], p_W[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
     end
-    __fence(__execution, __block)
+    --__fence(__execution, __block)
     --c.printf("Step1a Complete\n")
 
     -- Step 1b: Compute Gradient Sigma
@@ -3870,7 +3865,7 @@ task toplevel()
         --Step1b_sigz(p_gridbarp[col8], p_sig[col8], p_mesh[col8], plz_mesh[col8], prz_mesh[col8], plz_gridbarp[col8], prz_gridbarp[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
       end  
     end
-    __fence(__execution, __block)
+   --__fence(__execution, __block)
     --c.printf("Sig Complete\n")
 
     -- Step 1b: Compute Gradient of Gradient Sigma, Sigma2
@@ -3905,7 +3900,7 @@ task toplevel()
         --Step1b_sigy_z(p_sig[col8], p_sig2[col8], p_mesh[col8], plz_mesh[col8], prz_mesh[col8], plz_sig[col8], prz_sig[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N)
       end  
     end
-    __fence(__execution, __block)
+   --__fence(__execution, __block)
     --c.printf("Sig2 Complete\n")
 
     --Step1b: Compute Sig at Boundary, Sigb
@@ -3948,7 +3943,7 @@ task toplevel()
     for col8 in p_gridbarpb.colors do
       Step1b_b(p_sig[col8], p_mesh[col8], p_gridbarp[col8], p_gridbarpb[col8], prx_gridbarp[col8], pry_gridbarp[col8], prz_gridbarp[col8], prx_sig[col8], pry_sig[col8], prz_sig[col8], prx_mesh[col8], pry_mesh[col8], prz_mesh[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], BCs, N, effD)
     end
-    __fence(__execution, __block)
+   --__fence(__execution, __block)
     --c.printf("Step1b_b Complete\n")
 
 
@@ -3957,7 +3952,7 @@ task toplevel()
     for col8 in p_grid.colors do
       Step1c(p_gridbarpb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], p_sigb[col8], dt, BCs, N, effD)
     end
-    __fence(__execution, __block)
+   --__fence(__execution, __block)
     --c.printf("Step1c Complete\n")
 
     -- Step 2a
@@ -3986,7 +3981,7 @@ task toplevel()
     for col8 in p_grid.colors do
       Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
     end
-    __fence(__execution, __block)
+   --__fence(__execution, __block)
 
     if dt < calcdt then
       dumpiter += 1
