@@ -3340,7 +3340,7 @@ do
       end
     end
   end
-  c.printf("rhotest = %f, rhovxtest = %f, rhovytest = %f, Etest = %f\n", rhotest, rhovxtest, rhovytest, Etest)
+  --c.printf("rhotest = %f, rhovxtest = %f, rhovytest = %f, Etest = %f\n", rhotest, rhovxtest, rhovytest, Etest)
 end
 
 task InitializeGrid(r_grid  : region(ispace(int8d), grid),
@@ -3445,9 +3445,9 @@ task factorize(parallelism: int, effD : int32)
 end
 
 terra wait_for(x : int) return 1 end
-task block_task(r_image : region(ispace(int1d), particle))
+task block_task(r_W : region(ispace(int8d), W))
 where
-  reads writes(r_image)
+  reads writes(r_W)
 do
   return 1
 end
@@ -3461,10 +3461,15 @@ do
   c.sprintf([&int8](filename), './Data/rho_%04d',iter)
   var g = c.fopen(filename,'wb')
 
+  c.printf("Dumping Now\n")
+  var counter : int32 = 0
   for e in r_W do
+    counter += 1
     dumpdouble(g, r_W[e].rho)
   end
+  c.printf("Dump Count = %d\n", counter)
   __fence(__execution, __block)
+  c.fclose(g)
   return 1
 end
 
@@ -3986,8 +3991,10 @@ task toplevel()
     if dt < calcdt then
       dumpiter += 1
       Tdump = 0
+
       __fence(__execution, __block)
       Dump(r_W, dumpiter)
+
       __fence(__execution, __block)
       c.printf("Dump %d\n", dumpiter)
     else
@@ -3999,8 +4006,12 @@ task toplevel()
     __fence(__execution, __block)
     End = c.legion_get_current_time_in_nanos()
     c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, (End-Start)*1e-9)
-
+    c.fflush(c.stdout)
   end
+
+  __fence(__execution, __block)
+  End = c.legion_get_current_time_in_nanos()
+  c.printf("Finished simulation in %.4f seconds.\n", (End-Start)*1e-9)
 end
 
 regentlib.start(toplevel)

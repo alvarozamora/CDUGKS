@@ -7,10 +7,10 @@ import glob
 
 files = glob.glob('Data/rho*')
 size = 8
-num  = 256
+num  = 64
 type = 'd' #d is double, f is float, i is integer
 
-testproblem = 1
+testproblem = 2
 
 files.sort()
 plt.figure()
@@ -47,6 +47,7 @@ if testproblem == 2:
 		X = X.reshape((N,N))
 
 		plt.imshow(X)
+		plt.clim(1,2)
 		plt.savefig('Check/Rho'+n+'.png')
 		print('Check/Rho'+n+'.png')
 
