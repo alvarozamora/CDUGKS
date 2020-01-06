@@ -4,6 +4,7 @@ local c = regentlib.c
 
 struct Config
 {
+  time : bool,
   testproblem : int32,
   cpus  : int32,
   out : bool
@@ -15,9 +16,10 @@ terra print_usage_and_abort()
   c.printf("Usage: regent edge.rg [OPTIONS]\n")
   c.printf("OPTIONS\n")
   c.printf("  -h            : Print the usage and exit.\n")
-  c.printf("  -t {value}    : Set the threshold to {value}.\n")
-  c.printf("  -p {value}    : Set the number of parallel tasks to {value}.\n")
-  c.printf("  -o {bool}     : Output Boolean")
+  c.printf("  -p {value}    : Test problem. Default is 0 for user-specificed problem..\n")
+  c.printf("  -c {value}    : Set the number of parallel tasks to {value}.\n")
+  c.printf("  -o {bool}     : Boolean: output data at every dtdump.\n")
+  c.printf("  -t {bool}     : Boolean: report time elapsed for every task.\n")
   c.exit(0)
 end
 
@@ -33,8 +35,11 @@ terra Config:initialize_from_command()
       print_usage_and_abort()
     elseif cstring.strcmp(args.argv[i], "-t") == 0 then
       i = i + 1
-      self.testproblem = c.atof(args.argv[i])
+      self.time = [bool](c.atof(args.argv[i]))
     elseif cstring.strcmp(args.argv[i], "-p") == 0 then
+      i = i + 1
+      self.testproblem = c.atof(args.argv[i])
+    elseif cstring.strcmp(args.argv[i], "-c") == 0 then
       i = i + 1
       self.cpus = c.atoi(args.argv[i])
     elseif cstring.strcmp(args.argv[i], "-o") == 0 then

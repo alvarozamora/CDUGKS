@@ -6,8 +6,9 @@ import struct
 import glob
 
 files = glob.glob('Data/rho*')
-size = 16
-num  = 128
+size = 8
+num  = 64
+#num  = 32
 type = 'd' #d is double, f is float, i is integer
 
 testproblem = 2
@@ -32,11 +33,13 @@ if testproblem == 1:
 
 		plt.cla()
 		plt.clf()
+		f.close()
 
 if testproblem == 2:
 
 	for file in files:
 		n = file[9:13]
+		n = file[8:]
 		f = open(file, 'rb')
 
 		X = f.read(num*num*size)
@@ -45,6 +48,7 @@ if testproblem == 2:
 		X = X.reshape((N,N))
 
 		plt.imshow(X)
+		#plt.clim(1,2)
 		plt.savefig('Check/Rho'+n+'.png')
 		print('Check/Rho'+n+'.png')
 

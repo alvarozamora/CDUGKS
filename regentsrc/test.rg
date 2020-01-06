@@ -3,11 +3,14 @@ import "regent"
 local c = regentlib.c
 
 task main()
-  var a : double = 1.0
+  var N : int32[3]
+  N[0] = 16
+  N[1] = 1
+  N[2] = 1
 
-  for i = 0, 10 do
-    c.printf("a = %f\n", a)
-  end
+  
+  var isp = ispace(int3d, {N[0], N[1], N[2]}) 
+
 end
 
 regentlib.start(main)
