@@ -435,7 +435,7 @@ do
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P1/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
 
-        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+        --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       else
 	r_W[e].rho = p2
         r_W[e].rhov[0] = r_W[e].rho*(-vrel/2.0)
@@ -443,7 +443,7 @@ do
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P2/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
         
-        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+        --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       end      
     end
   end
@@ -1111,10 +1111,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1218,10 +1218,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1330,10 +1330,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1436,10 +1436,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1547,10 +1547,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1656,10 +1656,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1762,10 +1762,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1868,10 +1868,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -1974,10 +1974,10 @@ do
   var eL3 : int8d 
   var eR3 : int8d 
 
-  var e6 : int8d 
   var e7 : int8d 
-  var eL6 : int8d 
-  var eR6  : int8d
+  var e8 : int8d 
+  var eL7 : int8d 
+  var eR7  : int8d
 
   -- Left/Right values of g/b
   var gsigL : double
@@ -2062,30 +2062,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dx -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dx -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vxmesh[v.x].v < 0 and Dim == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
@@ -2144,30 +2160,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dx -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dx -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vxmesh[v.x].v < 0 and Dim == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
@@ -2226,30 +2258,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dx -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dx -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vxmesh[v.x].v < 0 and Dim == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
@@ -2308,30 +2356,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dy -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dy -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vymesh[v.y].v < 0 and Dim == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
@@ -2390,30 +2454,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dy -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dy -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vymesh[v.y].v < 0 and Dim == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
@@ -2472,30 +2552,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dy -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dy -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vymesh[v.y].v < 0 and Dim == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
@@ -2554,30 +2650,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dz -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dz -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vzmesh[v.z].v < 0 and Dim == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
@@ -2636,30 +2748,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dz -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dz -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vzmesh[v.z].v < 0 and Dim == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
@@ -2718,30 +2846,46 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var sC : double
+ 
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
+  
+  var e3 : int8d
+  var e7 : int8d
+  var e8 : int8d
+  var eR3 : int8d
+  var eR7 : int8d
+  var eR8 : int8d
+ 
+  var gsig : double
+  var bsig : double
+  var gsig2 : double
+  var bsig2 : double
+  var swap : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
-    var sC : double = r_mesh[e3].dz -- change when copy
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    sC = r_mesh[e3].dz -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
-      var eR8 : int8d = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
-      var gsig : double
-      var bsig : double
-      var gsig2 : double
-      var bsig2 : double
-      var swap : double = 1.0
+      swap = 1.0
       if (vzmesh[v.z].v < 0 and Dim == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
@@ -2803,39 +2947,55 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
-  var rhotest : double = 0
+  var sC : double[3]
+  
+  var bc : int32[6]
+  var IR : int32
+  var JR : int32
+  var KR : int32
 
-  --c.printf("slo = {%d, %d, %d}, shi = {%d, %d, %d}\n", slo.x, slo.y, slo.z, shi.x, shi.y, shi.z)
+  var e3 : int8d
+  var e6 : int8d
+  var e7 : int8d
+  var eR3 : int8d
+  var eR6 : int8d
+  var eR7 : int8d
+
+  var swap : double
+  var gb : double
+  var bb : double
+  var gsig : double
+  var bsig : double
+
   for s in s3 do
 
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
     for Dim = 0, effD do
 
       -- Gathering Right Indices
-      var bc : int32[6] = BC(s.x, s.y, s.z, Dim, BCs, N)
-      var IR : int32 = bc[3]
-      var JR : int32 = bc[4]
-      var KR : int32 = bc[5]
-      var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+      bc = BC(s.x, s.y, s.z, Dim, BCs, N)
+      IR = bc[3]
+      JR = bc[4]
+      KR = bc[5]
+      eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
       for v in v3 do      
 
-        var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
-        var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+        e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
 
         -- Gathering Right Indices 
-        var eR6 : int8d = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
-        var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+        eR6 = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
+        eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
 
         -- Dot Product is just a single product when using rectangular mesh
-        var swap : double = 1.0
-        var gb : double = r_gridbarp[e6].g
-        var bb : double = r_gridbarp[e6].b
-        var gsig : double = r_sig[e7].g
-        var bsig : double = r_sig[e7].b
+        swap = 1.0
+        gb = r_gridbarp[e6].g
+        bb = r_gridbarp[e6].b
+        gsig = r_sig[e7].g
+        bsig = r_sig[e7].b
       
-        var sC : double[3] 
         sC[0] = r_mesh[e3].dx
         sC[1] = r_mesh[e3].dy
         sC[2] = r_mesh[e3].dz
@@ -2843,7 +3003,6 @@ do
         if (vxmesh[v.x].v < 0 and Dim == 0) then
           swap = -1
           if s.x == r_mesh.bounds.hi.x then
-            --c.printf("eR7 = {%d, %d, %d, %d, %d, %d, %d}\n", s.x, eR7.y, eR7.z, eR7.w, eR7.v, eR7.u, eR7.t)
             gsig = prx_sig[eR7].g
             bsig = prx_sig[eR7].b
             gb = prx_gridbarp[eR6].g
@@ -2888,17 +3047,8 @@ do
           end
         end
      
-        -- TODO need to change sC to sR when swap, doesnt currently matter for sod/KHI/RTI bc dx_i = dx_0
         r_gridbarpb[e7].g = gb + swap*sC[Dim]/2.0*gsig 
         r_gridbarpb[e7].b = bb + swap*sC[Dim]/2.0*bsig
-        --if s.x == 32 and v.x == 32 and v.y == 32 then c.printf("Interpolating Dim = %d g[x = %d, %d; v = %d, %d]: gb = %f, dgb = %f, final = %f}\n", Dim, s.x, s.y, v.x, v.y, gb, swap*sC[Dim]/2.0*gsig, r_gridbarpb[e7].g) end
-
-        if s.x == 4 and s.y == 4 and Dim == 0 then
-          --if v.x == 32 and v.y == 32 then
-          --  c.printf("Step 1b_b : gb(0,0,32,32) = {%f, %f}\n", r_gridbarp[e6].g, r_gridbarp[e6].b)
-          --end
-          rhotest += vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
-        end
 
         -- NAN checker
         if (isnan(r_gridbarpb[e7].g) == 1 or isnan(r_gridbarpb[e7].b) == 1) then
@@ -2937,23 +3087,25 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
-  --var rhotest : double = 0
+  var e7 : int8d
+  var e8 : int8d
+
   for v in v3 do
     Xi[0] = vxmesh[v.x].v
     Xi[1] = vymesh[v.y].v
     Xi[2] = vzmesh[v.z].v
+
     for s in s3 do
       for Dim = 0, effD do
         for Dim2 = 0, effD do
+
           -- Gather Indices
-          var e8 : int8d = {s.x, s.y, s.z, Dim2, Dim, v.x, v.y, v.z}
-          var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z} -- URGENT trying Dim2 instead of Dim
+          e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+          e8 = {s.x, s.y, s.z, Dim2, Dim, v.x, v.y, v.z}
 
-          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim2]*r_sigb[e8].g -- URGENT trying Dim2 instead of Dim
+          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim2]*r_sigb[e8].g
           r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim2]*r_sigb[e8].b
-
     
-          --if s.x == 129 then rhotest += r_gridbarpb[e7].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w end
           regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 1c\n")
           regentlib.assert(not [bool](isnan(r_gridbarpb[e7].b)), "Step 1c\n")
         
@@ -2961,7 +3113,6 @@ do
       end 
     end
   end 
-  --c.printf("Step1c rhotest[129] = %f\n", rhotest)
 end
 
 --Step 2: Microflux
@@ -2983,17 +3134,17 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
-  -- Reset field space
-  --fill(r_Wb.rho, 0)
+  var e4 : int8d
+  var e7 : int8d
 
   -- First do density at boundary, density is needed for others.
   for s in s3 do
     for Dim = 0, effD do
-      var e4 : int8d = {s.x, s.y, s.z, Dim, 0, 0, 0, 0}
+      e4 = {s.x, s.y, s.z, Dim, 0, 0, 0, 0}
       r_Wb[e4].rho = 0
 
       for v in v3 do
-        var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+        e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
         r_Wb[e4].rho = r_Wb[e4].rho + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
       end
     end
@@ -3005,7 +3156,7 @@ do
   for s in s3 do
     for Dim = 0, effD do
 
-      var e4 : int8d = {s.x, s.y, s.z, Dim, 0, 0, 0, 0}  
+      e4 = {s.x, s.y, s.z, Dim, 0, 0, 0, 0}  
       for d = 0, effD do
         r_Wb[e4].rhov[d] = dt/2.0*r_Wb[e4].rho*0 -- TODO: In future, replace 0 with acceleration field 
       end
@@ -3018,16 +3169,12 @@ do
         U[2] = vzmesh[v.z].v
  
 
-        var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}    
+        e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}    
 
         for d = 0, effD do
           r_Wb[e4].rhov[d] = r_Wb[e4].rhov[d] + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*U[d]*r_gridbarpb[e7].g 
         end
 
-        for d = effD, 3 do
-          --r_Wb[e4].rhov[d] = 0 -- Bug Preventer
-        end
-          
         r_Wb[e4].rhoE = r_Wb[e4].rhoE + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].b
       end
     end
@@ -3067,19 +3214,26 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
   
+  var tg : double
+  var tb : double
+  var u : double
+  var T : double
+  var Xi : double[3]
+  var c2 : double
+  var g_eq : double
+  var b_eq : double
+
+  var e3 : int8d
+  var e4 : int8d
+  var e7 : int8d
 
   for s in s3 do
 
-    var tg : double
-    var tb : double
-    var u : double
-    var T : double
-    var Xi : double[3]
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
     for Dim = 0, effD do
 
-      var e4 : int8d = {s.x, s.y, s.z, Dim, 0, 0, 0, 0}
+      e4 = {s.x, s.y, s.z, Dim, 0, 0, 0, 0}
 
       u = 0 
       for d = 0, effD do
@@ -3099,10 +3253,8 @@ do
 
       for v in v3 do
 
-        var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-        var c2 : double = 0
-        var g_eq : double
-        var b_eq : double
+        e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+        c2 = 0
 
         Xi[0] = vxmesh[v.x].v
         Xi[1] = vymesh[v.y].v
@@ -3171,8 +3323,28 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var e3 : int8d
+
+  var bc : int32[6]
+  var IL : int32
+  var JL : int32
+  var KL : int32
+  var IR : int32
+  var JK : int32
+  var KR : int32
+
+  var right : double = 1.0 
+  var left : double = 1.0
+
+  var e7 : int8d 
+  var e6 : int8d 
+  var eL7 : int8d
+
+  var gL : double
+  var bL : double
+
   for s in s3 do
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
     A[0] = r_mesh[e3].dy*r_mesh[e3].dz
     A[1] = r_mesh[e3].dx*r_mesh[e3].dz
@@ -3180,17 +3352,17 @@ do
 
 
     for Dim = 0, effD do
-      var bc : int32[6] =  BC(s.x, s.y, s.z, Dim, BCs, N)
-      var IL : int32 = bc[0]
-      var JL : int32 = bc[1]
-      var KL : int32 = bc[2]
-      var IR : int32 = bc[3]
-      var JK : int32 = bc[4]
-      var KR : int32 = bc[5]
+      bc = BC(s.x, s.y, s.z, Dim, BCs, N)
+      IL = bc[0]
+      JL = bc[1]
+      KL = bc[2]
+      IR = bc[3]
+      JK = bc[4]
+      KR = bc[5]
 
       -- Periodic Boundary Conditions
-      var right : double = 1.0 
-      var left : double = 1.0
+      right = 1.0 
+      left = 1.0
 
       -- Dirichlet Boundary Conditions
       if (Dim == 0 and BCs[0] == 1 and (s.x == 0 or s.x == N[0] - 1)) then
@@ -3229,21 +3401,16 @@ do
         end
       end
 
-      var eL3 : int3d = {IL, JL, KL}
-      
       for v in v3 do 
         -- Gather Left Indices
-        var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-        var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
-        var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+        e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+        eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
 
         Xi[0] = vxmesh[v.x].v
         Xi[1] = vymesh[v.y].v
         Xi[2] = vzmesh[v.z].v
   
-        var gL : double
-        var bL : double
-
         if Dim == 0 then
           if s.x == s3.bounds.lo.x then
             gL = plx_gridbarpb[eL7].g
@@ -3335,10 +3502,15 @@ do
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
   
+  var e3 : int8d 
+  var e6 : int8d 
+  var i : int32
+  var j : int32
+  var k : int32
 
   for s in s3 do
 
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     
     V = r_mesh[e3].dx*r_mesh[e3].dy*r_mesh[e3].dz
 
@@ -3362,7 +3534,7 @@ do
       Xi[0] = vxmesh[v.x].v
       Xi[1] = vymesh[v.y].v
       Xi[2] = vzmesh[v.z].v
-      var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
 
       -- Compute old eq's
       c2 = 0
@@ -3373,9 +3545,9 @@ do
       b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*To)/2
 
       -- First Update phi
-      var i : int32 = s.x
-      var j : int32 = s.y
-      var k : int32 = s.z
+      i = s.x
+      j = s.y
+      k = s.z
 
       -- Update First Step (terms involving oldW)
       if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
@@ -3396,24 +3568,15 @@ do
 
 
   for s in s3 do
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     
-    var drho : double = 0
-    var drhovx : double = 0
-    var drhovy : double = 0
-    var dE : double = 0
-
     for v in v3 do 
       Xi[0] = vxmesh[v.x].v
       Xi[1] = vymesh[v.y].v
       Xi[2] = vzmesh[v.z].v
 
-      var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
       -- Step 4: Update W at cell center
-      drho  += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
-      drhovx += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[0]
-      drhovy += -dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[1]
-      dE    += -dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
       r_W[e3].rho = r_W[e3].rho - dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term.
       for d = 0, effD do
         r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term
@@ -3421,21 +3584,17 @@ do
   
       r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term      
     end
-    if s.x == 32 then
-      --c.printf("updated W[{%d, %d}] = {%f, {%f, %f}, %f}, dW = {%f, {%f, %f}, %f}\n", s.x, s.y, r_W[e3].rho, r_W[e3].rhov[0], r_W[e3].rhov[1], r_W[e3].rhoE, drho, drhovx, drhovy, dE)
-    end
   end     
 
   -- Second Update Phi at cell center using new tau/W
   -- Compute flow velocity u
 
   for s in s3 do
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
     u = 0 
     for d = 0, effD do 
       u += r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho
-      --c.printf("In Computing u**2 at {%d, %d, Dim = %d}, d(u**2) = %f\n", s.x, s.y, d, r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho)
     end
     u = sqrt(u)
     regentlib.assert(bool(u>=0), "u")
@@ -3467,10 +3626,10 @@ do
 
 
       -- Second Update phi
-      var i : int32 = s.x
-      var j : int32 = s.y
-      var k : int32 = s.z
-      var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
+      i = s.x
+      j = s.y
+      k = s.z
+      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
 
       if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
           (BCs[1] == 1 and j == 0 and effD > 1) or (BCs[1] == 1 and j == N[1] - 1 and effD > 1) or
@@ -3487,12 +3646,6 @@ do
         --r_grid[e6].b = r_grid[e6].b/(1+dt/2.0/tb)
       end
 
-      --if v.x == 128 then 
-      --  gnew[s.x] = r_grid[e6].g
-      --  bnew[s.x] = r_grid[e6].b
-        --c.printf("phi old/mid/new[%d]: g = {%f, %f, %f}, b = {%f, %f, %f}, phieq = {%f, %f}\n", s.x, gold[s.x], gmid[s.x], gnew[s.x], bold[s.x], bmid[s.x], bnew[s.x], g_eq, b_eq)
-      --end
-
       if isnan(r_grid[e6].g) == 1 then
         c.printf("Step4and5: g_eq = %f, tg = %f, tgo = %f, r_F[e6].g = %f\n", g_eq, tg, tgo, r_F[e6].g)
       end 
@@ -3502,7 +3655,7 @@ do
       regentlib.assert(not [bool](isnan(r_grid[e6].g)), "Step4and5\n")
       regentlib.assert(not [bool](isnan(r_grid[e6].b)), "Step4and5\n")
     end
-  end --TODO Indentation
+  end
   --c.printf("Step4and5 Complete\n")
 end
 
