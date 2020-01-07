@@ -753,6 +753,7 @@ do
   var eL6 : int8d 
   var eR6  : int8d
 
+  -- Left/Right values of g/b
   var gbpL : double
   var gbpR : double
   var bbpL : double
@@ -783,7 +784,6 @@ do
       eR6 = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
 
       -- Computing phisigma, at cell 
-
       if r_gridbarp.bounds.lo.x == s.x then -- change when copy
         gbpL = plx_gridbarp[eL6].g 
         bbpL = plx_gridbarp[eL6].b 
@@ -873,6 +873,7 @@ do
   var eL6 : int8d 
   var eR6  : int8d
 
+  -- Left/Right values of g/b
   var gbpL : double
   var gbpR : double
   var bbpL : double
@@ -974,37 +975,55 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gbpL : double
+  var gbpR : double
+  var bbpL : double
+  var bbpR : double
   
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     zC = r_mesh[e3].z -- change when copy
   
     --Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3] 
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3] 
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
       
-      var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var eL6 : int8d = {IL, JL, KL, 0, 0, v.x, v.y, v.z}
-      var eR6  : int8d = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
+      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      eL6 = {IL, JL, KL, 0, 0, v.x, v.y, v.z}
+      eR6 = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
 
       -- Computing phisigma, at cell 
-      var gbpL : double
-      var gbpR : double
-      var bbpL : double
-      var bbpR : double
-
       if r_gridbarp.bounds.lo.z == s.z then -- change when copy
         gbpL = plz_gridbarp[eL6].g 
         bbpL = plz_gridbarp[eL6].b 
@@ -1079,35 +1098,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     xC = r_mesh[e3].x -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.x == s.x then
         gsigL = plx_sig[eL7].g 
         bsigL = plx_sig[eL7].b 
@@ -1167,35 +1205,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     xC = r_mesh[e3].x -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.x == s.x then
         gsigL = plx_sig[eL7].g 
         bsigL = plx_sig[eL7].b 
@@ -1260,35 +1317,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     xC = r_mesh[e3].x -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.x == s.x then
         gsigL = plx_sig[eL7].g 
         bsigL = plx_sig[eL7].b 
@@ -1347,35 +1423,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     yC = r_mesh[e3].y -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3  = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3  = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.y == s.y then
         gsigL = ply_sig[eL7].g 
         bsigL = ply_sig[eL7].b 
@@ -1439,35 +1534,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     yC = r_mesh[e3].y -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.y == s.y then
         gsigL = ply_sig[eL7].g 
         bsigL = ply_sig[eL7].b 
@@ -1529,35 +1643,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     yC = r_mesh[e3].y -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.y == s.y then
         gsigL = ply_sig[eL7].g 
         bsigL = ply_sig[eL7].b 
@@ -1616,35 +1749,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     zC = r_mesh[e3].z -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.z == s.z then
         gsigL = plz_sig[eL7].g 
         bsigL = plz_sig[eL7].b 
@@ -1703,35 +1855,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     zC = r_mesh[e3].z -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.z == s.z then
         gsigL = plz_sig[eL7].g 
         bsigL = plz_sig[eL7].b 
@@ -1790,35 +1961,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  -- Left/Right values of g/b
+  var gsigL : double
+  var gsigR : double
+  var bsigL : double
+  var bsigR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     zC = r_mesh[e3].z -- change when copy
 
     -- Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim2, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3]
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim2, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3]
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
 
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var e8 : int8d = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
-      var eL7 : int8d = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
-      var eR7 : int8d = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
+      eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+      eR7 = {IR, JR, KR, Dim, 0, v.x, v.y, v.z}
      
-      var gsigL : double
-      var gsigR : double
-      var bsigL : double
-      var bsigR : double
-
       if r_sig.bounds.lo.z == s.z then
         gsigL = plz_sig[eL7].g 
         bsigL = plz_sig[eL7].b 

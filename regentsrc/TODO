@@ -1,4 +1,8 @@
 IO
+Done
+	Binary
+Need
+	HDF5
 
 Potential Optimizations: Combine steps that use interpidx. I think I can get rid of an entire 7d grid worth of memory.
 
@@ -10,19 +14,24 @@ repartition to allow for parallelism across dimensions (gradients and gradients 
 
 
 
-need to 8d-ify tasks
-Done:
-  InitializeMesh
-  InitializeW
-  InitializeGrid: MaxwellInitialization
-  Step1a
-  Step1b_sigx
-  Step1b_sigx_x
-  Step1b_sigx_x2
-  Step1b_b
-  Step1c
-  Step2a
-  Step2b
-  Step2c
-  Step4and5
+
+Garbage Collection, Allocation 
+	Step1a
+
+	Step1b_sigx
+	Step1b_sigy
+	Step1b_sigz
+
+	Step1b_sigx_x
+	Step1b_sigy_x
+	Step1b_sigz_x
+
+	Step1b_sigx_y
+	Step1b_sigy_y
+	Step1b_sigz_y
+
+	Step1b_sigx_z
+	Step1b_sigy_z
+	Step1b_sigz_z
+
 
