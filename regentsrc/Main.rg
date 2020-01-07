@@ -624,16 +624,24 @@ do
   var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var tg : double
+  var tb : double    
+  var c2 : double
+  var u : double
+  var T : double
+  var Xi : double[3]
+
+  var e3 : int8d
+  var e6 : int8d 
+
+  var g_eq : double 
+  var b_eq : double
   
   for s in s3 do
-    var tg : double
-    var tb : double    
-    var c2 : double
-    var u : double
-    var T : double
 
    
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
     u = 0
     for d = 0, effD do
@@ -652,14 +660,13 @@ do
     tb = tg/Pr
 
     for v in v3 do
-      var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
 
       -- For Now...
       r_S[e6].g = 0.
       r_S[e6].b = 0.
 
       c2 = 0
-      var Xi : double[3]
       Xi[0] = vxmesh[v.x].v
       Xi[1] = vymesh[v.y].v
       Xi[2] = vzmesh[v.z].v     
@@ -667,8 +674,8 @@ do
         c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
       end
 
-      var g_eq : double = geq(c2, r_W[e3].rho, T, R, effD)
-      var b_eq : double = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+      b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+      g_eq = geq(c2, r_W[e3].rho, T, R, effD)
 
       r_gridbarp[e6].g = (tg - dt/4.)/tg*r_grid[e6].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e6].g
       r_gridbarp[e6].b = (tb - dt/4.)/tb*r_grid[e6].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e6].b
@@ -720,6 +727,7 @@ do
   var xL : double
   var xR : double
 
+  -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
   var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
@@ -727,36 +735,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
   
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  var gbpL : double
+  var gbpR : double
+  var bbpL : double
+  var bbpR : double
+
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     xC = r_mesh[e3].x -- change when copy
   
     --Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3] 
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3] 
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
       
-      var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var eL6 : int8d = {IL, JL, KL, 0, 0, v.x, v.y, v.z}
-      var eR6  : int8d = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
+      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      eL6 = {IL, JL, KL, 0, 0, v.x, v.y, v.z}
+      eR6 = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
 
       -- Computing phisigma, at cell 
-      var gbpL : double
-      var gbpR : double
-      var bbpL : double
-      var bbpR : double
 
       if r_gridbarp.bounds.lo.x == s.x then -- change when copy
         gbpL = plx_gridbarp[eL6].g 
@@ -829,37 +855,54 @@ do
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  -- Indices
+  var bc : int32[6]
+  var IL : int32 
+  var JL : int32 
+  var KL : int32 
+  var IR : int32 
+  var JR : int32 
+  var KR : int32 
+  
+  var e3 : int8d 
+  var eL3 : int8d 
+  var eR3 : int8d 
+
+  var e6 : int8d 
+  var e7 : int8d 
+  var eL6 : int8d 
+  var eR6  : int8d
+
+  var gbpL : double
+  var gbpR : double
+  var bbpL : double
+  var bbpR : double
   
   for s in s3 do
     
-    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     yC = r_mesh[e3].y -- change when copy
   
     --Gather Left and Right Indices
-    var bc : int32[6] = BC(s.x, s.y, s.z, Dim, BCs, N)
-    var IL : int32 = bc[0]
-    var JL : int32 = bc[1]
-    var KL : int32 = bc[2]
-    var IR : int32 = bc[3] 
-    var JR : int32 = bc[4]
-    var KR : int32 = bc[5]
+    bc = BC(s.x, s.y, s.z, Dim, BCs, N)
+    IL = bc[0]
+    JL = bc[1]
+    KL = bc[2]
+    IR = bc[3] 
+    JR = bc[4]
+    KR = bc[5]
 
-    var eL3 : int8d = {IL, JL, KL, 0, 0, 0, 0, 0}
-    var eR3 : int8d = {IR, JR, KR, 0, 0, 0, 0, 0}
+    eL3 = {IL, JL, KL, 0, 0, 0, 0, 0}
+    eR3 = {IR, JR, KR, 0, 0, 0, 0, 0}
 
     for v in v3 do
       
-      var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
-      var e7 : int8d = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-      var eL6 : int8d = {IL, JL, KL, 0, 0, v.x, v.y, v.z}
-      var eR6  : int8d = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
+      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+      e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+      eL6 = {IL, JL, KL, 0, 0, v.x, v.y, v.z}
+      eR6 = {IR, JR, KR, 0, 0, v.x, v.y, v.z}
 
       -- Computing phisigma, at cell 
-      var gbpL : double
-      var gbpR : double
-      var bbpL : double
-      var bbpR : double
-
       if r_gridbarp.bounds.lo.y == s.y then -- change when copy
         gbpL = ply_gridbarp[eL6].g 
         bbpL = ply_gridbarp[eL6].b 
