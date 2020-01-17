@@ -37,6 +37,23 @@ if testproblem == 1:
 
 if testproblem == 2:
 
+	rhomin = 1.5
+	rhomax = 1.5
+	for file in files:
+		n = file[9:13]
+		n = file[8:]
+		f = open(file, 'rb')
+
+		X = f.read(num*num*size)
+		X = np.array(struct.unpack(type*num*num, X))
+		N = int(np.round(np.sqrt(len(X))))
+		X = X.reshape((N,N))
+
+		rhomin = np.minimum(X.min(),rhomin)
+		rhomax = np.maximum(X.max(),rhomax)
+
+	print(f'Max and Min density are {rhomax:.3f} and {rhomin:.3f}')
+
 	for file in files:
 		n = file[9:13]
 		n = file[8:]
@@ -48,7 +65,8 @@ if testproblem == 2:
 		X = X.reshape((N,N))
 
 		plt.imshow(X)
-		#plt.clim(1,2)
+		plt.clim(rhomin,rhomax)
+		plt.colorbar()
 		plt.savefig('Check/Rho'+n+'.png')
 		print('Check/Rho'+n+'.png')
 

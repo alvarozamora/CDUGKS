@@ -30,7 +30,7 @@ sort_nicely(file_names)
 import pdb
 pdb.set_trace()
 
-problem = 1
+problem = 2
 
 if problem == 1:
 	dur = 1/30.
