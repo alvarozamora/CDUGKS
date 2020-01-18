@@ -183,6 +183,56 @@ do
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
 		-- Simulation Parameters
+		r_params[e].Tf = 1.6					-- Stop Time
+		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
+
+        -- Uniform Density Shear
+        elseif testProblem == 3 then 
+
+                --Dimensionality
+                r_params[e].effD = 2
+
+		var num : int32 = 64
+                --Spatial Resolution
+                r_params[e].N[0]  = num
+		r_params[e].N[1]  = num
+ 		r_params[e].N[2]  = 1
+                
+		--Velocity Resolution
+		r_params[e].NV[0] = num
+		r_params[e].NV[1] = num
+		r_params[e].NV[2] = 1
+                
+		r_params[e].Vmin[0] = -10
+		r_params[e].Vmin[1] = -10
+		r_params[e].Vmin[2] = 0
+                
+		r_params[e].Vmax[0] = 10
+		r_params[e].Vmax[1] = 10
+		r_params[e].Vmax[2] = 0
+                
+		-- Number of Cells
+		r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+                r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+
+                -- Boundary Conditions
+                r_params[e].BCs[0] = 0
+		r_params[e].BCs[1] = 0
+		r_params[e].BCs[2] = 0
+
+
+                -- Physical Parameters
+                r_params[e].R   = 0.5          				-- Gas Constant
+                r_params[e].K   = 2.0           			-- Internal DOF
+                r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+                r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
+                r_params[e].w   = 0.8           			-- Viscosity exponent
+                r_params[e].ur  = 1e-6          			-- Reference Visc
+                r_params[e].Tr  = 1.0           			-- Reference Temp
+                r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
+
+		-- Simulation Parameters
 		r_params[e].Tf = 1.2					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/200			-- Time Between Dumps
 	end
@@ -418,8 +468,8 @@ do
     end
   elseif testProblem == 2 then
     
-    var p1 : double = 2.0
-    var p2 : double = 1.0
+    var rho1 : double = 2.0
+    var rho2 : double = 1.0
     
     var P1 : double = 2.0
     var P2 : double = 2.0
@@ -429,7 +479,7 @@ do
 
     for e in r_W do
       if (0.25 <= r_mesh[e].y) and (r_mesh[e].y <= 0.75) then
-        r_W[e].rho = p1
+        r_W[e].rho = rho1
        	r_W[e].rhov[0] = r_W[e].rho*(vrel/2.0)
        	r_W[e].rhov[1] = amp*cmath.sin(2*PI*r_mesh[e].x)*r_W[e].rho
         r_W[e].rhov[2] = 0
@@ -437,7 +487,7 @@ do
 
         --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       else
-	r_W[e].rho = p2
+	r_W[e].rho = rho2
         r_W[e].rhov[0] = r_W[e].rho*(-vrel/2.0)
         r_W[e].rhov[1] = amp*cmath.sin(2*PI*r_mesh[e].x)*r_W[e].rho
         r_W[e].rhov[2] = 0
@@ -446,7 +496,28 @@ do
         --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
       end      
     end
+  elseif testProblem == 3 then
+    
+    var rho : double = 2.0
+    
+    var P : double = 2.0
+    
+    var v : double = 0.0
+    var amp : double = 1.0
+
+    for e in r_W do
+        r_W[e].rho = rho
+       	r_W[e].rhov[0] = r_W[e].rho*(v + amp*cmath.sin(2*PI*r_mesh[e].x))
+       	r_W[e].rhov[1] = 0
+        r_W[e].rhov[2] = 0
+        r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+        
+        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+    end
   end
+
+
+
 end
 
 terra Temperature(E : double, u : double, g : double, R : double)
