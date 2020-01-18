@@ -142,7 +142,7 @@ do
                 --Dimensionality
                 r_params[e].effD = 2
 
-		var num : int32 = 64
+		var num : int32 = 128
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = num
@@ -234,7 +234,7 @@ do
 
 		-- Simulation Parameters
 		r_params[e].Tf = 1.2					-- Stop Time
-		r_params[e].dtdump = r_params[e].Tf/200			-- Time Between Dumps
+		r_params[e].dtdump = r_params[e].Tf/300			-- Time Between Dumps
 	end
   end
 end
@@ -498,21 +498,21 @@ do
     end
   elseif testProblem == 3 then
     
-    var rho : double = 2.0
+    var rho : double = 1.0
     
-    var P : double = 2.0
+    var P : double = rho/1.4 -- gamma = 1.4 for c=1
     
     var v : double = 0.0
-    var amp : double = 1.0
+    var amp : double = 0.5
 
     for e in r_W do
         r_W[e].rho = rho
-       	r_W[e].rhov[0] = r_W[e].rho*(v + amp*cmath.sin(2*PI*r_mesh[e].x))
+       	r_W[e].rhov[0] = r_W[e].rho*(v + amp*cmath.cos(2*PI*r_mesh[e].y))
        	r_W[e].rhov[1] = 0
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
         
-        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+        --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
     end
   end
 
@@ -3815,7 +3815,7 @@ do
   if testProblem == 0 then
     -- TODO : User Defined
   elseif testProblem > 0 or testProblem == -1 then
-    c.printf("Maxwellian Initialization\n")
+    --c.printf("Maxwellian Initialization\n")
     MaxwellianInitialization(r_grid, r_mesh, r_W, vxmesh, vymesh, vzmesh, testProblem, R, K, Cv, g, w, ur, Tr, Pr, N, NV, effD)
   end
 end
