@@ -128,9 +128,9 @@ do
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
                 r_params[e].w   = 0.5           			-- Viscosity exponent
-                r_params[e].ur  = 1e-4            			-- Reference Visc
+                r_params[e].ur  = 1e-6            			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
-                r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
+                r_params[e].Pr  = 1.0 -- URGENT 2.0/3.0          			-- Prandtl Number
 
 		-- Simulation Parameters
 		r_params[e].Tf = 0.15					-- Stop Time
@@ -178,7 +178,7 @@ do
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
                 r_params[e].w   = 0.8           			-- Viscosity exponent
-                r_params[e].ur  = 1e-4          			-- Reference Visc
+                r_params[e].ur  = 1e-6          			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
@@ -194,7 +194,7 @@ do
 
 		var num : int32 = 64
                 --Spatial Resolution
-                r_params[e].N[0]  = num
+                r_params[e].N[0]  = 2
 		r_params[e].N[1]  = num
  		r_params[e].N[2]  = 1
                 
@@ -227,14 +227,14 @@ do
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.8           			-- Viscosity exponent
-                r_params[e].ur  = 1e-6          			-- Reference Visc
+                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
 		-- Simulation Parameters
-		r_params[e].Tf = 1.2					-- Stop Time
-		r_params[e].dtdump = r_params[e].Tf/300			-- Time Between Dumps
+		r_params[e].Tf = 4.0					-- Stop Time
+		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
 	end
   end
 end
@@ -745,8 +745,8 @@ do
         c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
       end
 
-      b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
       g_eq = geq(c2, r_W[e3].rho, T, R, effD)
+      b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
 
       r_gridbarp[e6].g = (tg - dt/4.)/tg*r_grid[e6].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e6].g
       r_gridbarp[e6].b = (tb - dt/4.)/tb*r_grid[e6].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e6].b
@@ -3137,7 +3137,7 @@ do
   --c.printf("Step1b rhotest[32] = %f\n", rhotest)
 end
 
--- Step 1c: Compute phibar at interface by interpolating w/ phisigma2, x-Xi*dt/2
+-- Step 1c: Compute phibar at interface in velocity dependent past, x-Xi*dt/2
 task Step1c(r_gridbarpb : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),        
             vymesh : region(ispace(int1d), vmesh),        
@@ -3171,11 +3171,11 @@ do
         for Dim2 = 0, effD do
 
           -- Gather Indices
-          e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-          e8 = {s.x, s.y, s.z, Dim2, Dim, v.x, v.y, v.z}
+          e7 = {s.x, s.y, s.z, Dim2, 0, v.x, v.y, v.z}
+          e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
 
-          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim2]*r_sigb[e8].g
-          r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim2]*r_sigb[e8].b
+          r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim]*r_sigb[e8].g
+          r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim]*r_sigb[e8].b
     
           regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 1c\n")
           regentlib.assert(not [bool](isnan(r_gridbarpb[e7].b)), "Step 1c\n")
@@ -3748,10 +3748,10 @@ do
   var T : double
   var u : double 
 
-  var rhotest : double = 0
-  var rhovxtest : double = 0
-  var rhovytest : double = 0
-  var Etest : double = 0
+  --var rhotest : double = 0
+  --var rhovxtest : double = 0
+  --var rhovytest : double = 0
+  --var Etest : double = 0
 
   var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
   var shi : int3d = {r_grid.bounds.hi.x, r_grid.bounds.hi.y, r_grid.bounds.hi.z}
@@ -3787,12 +3787,12 @@ do
       r_grid[e6].g = geq(c2, r_W[e3].rho, T, R, effD)
       r_grid[e6].b = r_grid[e6].g*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
   
-      if s.x == r_grid.bounds.lo.x and s.y == r_grid.bounds.lo.y and s.z == 0 then
-        rhotest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
-        rhovxtest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[0]
-        rhovytest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[1]
-        Etest += r_grid[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
-      end
+      --if s.x == r_grid.bounds.lo.x and s.y == r_grid.bounds.lo.y and s.z == 0 then
+        --rhotest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+        --rhovxtest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[0]
+        --rhovytest += r_grid[e6].g*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*Xi[1]
+        --Etest += r_grid[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+      --end
     end
   end
   --c.printf("rhotest = %f, rhovxtest = %f, rhovytest = %f, Etest = %f\n", rhotest, rhovxtest, rhovytest, Etest)
@@ -3912,15 +3912,52 @@ task Dump(r_W : region(ispace(int8d), W), iter : int32)
 where
   reads (r_W)
 do
-  var filename : int8[1000]
-  c.sprintf([&int8](filename), './Data/rho_%04d',iter)
-  var g = c.fopen(filename,'wb')
+  var rhofile : int8[1000]
+  c.sprintf([&int8](rhofile), './Data/rho_%04d',iter)
+  var rho = c.fopen(rhofile,'wb')
+
+  var rhovxfile : int8[1000]
+  c.sprintf([&int8](rhovxfile), './Data/rhovx_%04d',iter)
+  var rhovx = c.fopen(rhovxfile,'wb')
+
+  var rhovyfile : int8[1000]
+  c.sprintf([&int8](rhovyfile), './Data/rhovy_%04d',iter)
+  var rhovy = c.fopen(rhovyfile,'wb')
+
+  var rhovzfile : int8[1000]
+  c.sprintf([&int8](rhovzfile), './Data/rhovz_%04d',iter)
+  var rhovz = c.fopen(rhovzfile,'wb')
+
+  var rhoEfile : int8[1000]
+  c.sprintf([&int8](rhoEfile), './Data/rhoE_%04d',iter)
+  var rhoE = c.fopen(rhoEfile,'wb')
+
 
   for e in r_W do
-    dumpdouble(g, r_W[e].rho)
+    dumpdouble(rho, r_W[e].rho)
   end
+  c.fclose(rho)
+
+  for e in r_W do
+    dumpdouble(rhovx, r_W[e].rhov[0])
+  end
+  c.fclose(rhovx)
+
+  for e in r_W do
+    dumpdouble(rhovy, r_W[e].rhov[1])
+  end
+  c.fclose(rhovy)
+
+  for e in r_W do
+    dumpdouble(rhovz, r_W[e].rhov[2])
+  end
+  c.fclose(rhovz)
+
+  for e in r_W do
+    dumpdouble(rhoE, r_W[e].rhoE)
+  end
+  c.fclose(rhoE)
   __fence(__execution, __block)
-  c.fclose(g)
   return 1
 end
 
