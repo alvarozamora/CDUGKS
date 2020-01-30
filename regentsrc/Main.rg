@@ -130,7 +130,7 @@ do
                 r_params[e].w   = 0.5           			-- Viscosity exponent
                 r_params[e].ur  = 1e-6            			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
-                r_params[e].Pr  = 1.0 -- URGENT 2.0/3.0          			-- Prandtl Number
+                r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
 		-- Simulation Parameters
 		r_params[e].Tf = 0.15					-- Stop Time
@@ -142,7 +142,7 @@ do
                 --Dimensionality
                 r_params[e].effD = 2
 
-		var num : int32 = 128
+		var num : int32 = 100
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = num
@@ -177,9 +177,9 @@ do
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.8           			-- Viscosity exponent
-                r_params[e].ur  = 1e-6          			-- Reference Visc
-                r_params[e].Tr  = 1.0           			-- Reference Temp
+                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].ur  = 1e-4          			-- Reference Visc
+                r_params[e].Tr  = 1.0	          			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
 		-- Simulation Parameters
@@ -228,12 +228,62 @@ do
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
                 r_params[e].w   = 0.81           			-- Viscosity exponent
-                r_params[e].ur  = 1e-4          			-- Reference Visc
+                r_params[e].ur  = 1e-6          			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
 		-- Simulation Parameters
 		r_params[e].Tf = 4.0					-- Stop Time
+		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
+
+        -- Ramped Kelvin-Helmholtz
+        elseif testProblem == 4 then 
+
+                --Dimensionality
+                r_params[e].effD = 2
+
+		var num : int32 = 256
+                --Spatial Resolution
+                r_params[e].N[0]  = num
+		r_params[e].N[1]  = num
+ 		r_params[e].N[2]  = 1
+                
+		--Velocity Resolution
+		r_params[e].NV[0] = num
+		r_params[e].NV[1] = num
+		r_params[e].NV[2] = 1
+                
+		r_params[e].Vmin[0] = -10
+		r_params[e].Vmin[1] = -10
+		r_params[e].Vmin[2] = 0
+                
+		r_params[e].Vmax[0] = 10
+		r_params[e].Vmax[1] = 10
+		r_params[e].Vmax[2] = 0
+                
+		-- Number of Cells
+		r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+                r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+
+                -- Boundary Conditions
+                r_params[e].BCs[0] = 0
+		r_params[e].BCs[1] = 0
+		r_params[e].BCs[2] = 0
+
+
+                -- Physical Parameters
+                r_params[e].R   = 0.5          				-- Gas Constant
+                r_params[e].K   = 2.0           			-- Internal DOF
+                r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+                r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
+                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].ur  = 1e-5          			-- Reference Visc
+                r_params[e].Tr  = 1.0	          			-- Reference Temp
+                r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
+
+		-- Simulation Parameters
+		r_params[e].Tf = 2.0					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
 	end
   end
@@ -514,10 +564,34 @@ do
         
         --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
     end
+  elseif testProblem == 4 then
+    
+    var rho1 : double = 2.0
+    var rho2 : double = 1.0
+    
+    var P1 : double = 2.0
+    var P2 : double = 2.0
+    
+    var vrel : double = 2.0
+    var amp : double = 0.04
+    var vb : double = 0
+
+    var delta : double = 0.05
+
+    for e in r_W do
+      var R : double = 1/(1 + cmath.exp(2*(r_mesh[e].y - 0.25)/delta)) * 1/(1 + cmath.exp(2*(0.75 - r_mesh[e].y)/delta))
+      var vx : double = vb + vrel/2 + R*(-vrel)
+      var rho : double = rho1 + R*(rho2 - rho1) 
+      var vy : double = amp*cmath.sin(2*PI*r_mesh[e].x)
+
+      r_W[e].rho = rho
+      r_W[e].rhov[0] = r_W[e].rho*vx
+      r_W[e].rhov[1] = r_W[e].rho*vy
+      r_W[e].rhov[2] = 0
+      r_W[e].rhoE = Cv*P1/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+
+    end
   end
-
-
-
 end
 
 terra Temperature(E : double, u : double, g : double, R : double)
@@ -4340,7 +4414,7 @@ task toplevel()
   end
 
   --Timestep
-  var CFL : double = 0.8 -- Safety Factor
+  var CFL : double = 0.9 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
