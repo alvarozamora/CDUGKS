@@ -242,7 +242,7 @@ do
                 --Dimensionality
                 r_params[e].effD = 2
 
-		var num : int32 = 256
+		var num : int32 = 100
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = num
@@ -278,7 +278,7 @@ do
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
                 r_params[e].w   = 0.81           			-- Viscosity exponent
-                r_params[e].ur  = 1e-5          			-- Reference Visc
+                r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0	          			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
@@ -569,27 +569,26 @@ do
     var rho1 : double = 2.0
     var rho2 : double = 1.0
     
-    var P1 : double = 2.0
-    var P2 : double = 2.0
-    
+    var P : double = 2.0
     var vrel : double = 2.0
     var amp : double = 0.04
-    var vb : double = 0
+    var vb : double = 0.0
 
     var delta : double = 0.05
 
     for e in r_W do
-      var R : double = 1/(1 + cmath.exp(2*(r_mesh[e].y - 0.25)/delta)) * 1/(1 + cmath.exp(2*(0.75 - r_mesh[e].y)/delta))
-      var vx : double = vb + vrel/2 + R*(-vrel)
-      var rho : double = rho1 + R*(rho2 - rho1) 
+      var Ramp : double = 1/(1 + cmath.exp(-2*(r_mesh[e].y - 0.25)/delta)) * 1/(1 + cmath.exp(-2*(0.75 - r_mesh[e].y)/delta))
+      var vx : double = vb - vrel/2 + Ramp*(vrel)
+      var rho : double = rho2 + Ramp*(rho1 - rho2) 
       var vy : double = amp*cmath.sin(2*PI*r_mesh[e].x)
 
       r_W[e].rho = rho
-      r_W[e].rhov[0] = r_W[e].rho*vx
-      r_W[e].rhov[1] = r_W[e].rho*vy
+      r_W[e].rhov[0] = rho*vx
+      r_W[e].rhov[1] = rho*vy
       r_W[e].rhov[2] = 0
-      r_W[e].rhoE = Cv*P1/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+      r_W[e].rhoE = Cv*P/Ramp + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
 
+      c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
     end
   end
 end
