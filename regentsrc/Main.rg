@@ -4446,6 +4446,9 @@ task toplevel()
 
     --__fence(__execution, __block)
     Dump(r_W, dumpiter) -- Initial Conditions
+    if config.phase == true then
+      DumpPhase(r_grid, dumpiter)
+    end
 
     --__fence(__execution, __block)
     c.printf("Dump %d\n", dumpiter)
@@ -4717,6 +4720,9 @@ task toplevel()
 
       --__fence(__execution, __block)
       Dump(r_W, dumpiter)
+      if config.phase == true then
+        DumpPhase(r_grid, dumpiter)
+      end
 
       --__fence(__execution, __block)
       c.printf("Dump %d\n", dumpiter)
@@ -4732,6 +4738,7 @@ task toplevel()
     c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, (End-Start)*1e-9)
     c.fflush(c.stdout)
   end
+
 
   __fence(__execution, __block)
   End = c.legion_get_current_time_in_nanos()

@@ -8,7 +8,8 @@ struct Config
   testproblem : int32,
   cpus  : int32,
   out : bool,
-  debug : bool
+  debug : bool,
+  phase : bool
 }
 
 local cstring = terralib.includec("string.h")
@@ -30,6 +31,7 @@ terra Config:initialize_from_command()
   self.cpus = 1 
   self.out = true
   self.debug = false
+  self.phase = false
 
   var args = c.legion_runtime_get_input_args()
   var i = 1
@@ -51,6 +53,10 @@ terra Config:initialize_from_command()
     elseif cstring.strcmp(args.argv[i], "-d") == 0 then
       i = i + 1
       self.debug = [bool](c.atoi(args.argv[i]))
+    end
+    elseif cstring.strcmp(args.argv[i], "-f") == 0 then
+      i = i + 1
+      self.phase = [bool](c.atoi(args.argv[i]))
     end
     i = i + 1
   end
