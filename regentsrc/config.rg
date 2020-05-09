@@ -7,7 +7,7 @@ struct Config
   time : bool,
   testproblem : int32,
   cpus  : int32,
-  out : bool
+  out : bool,
   debug : bool
 }
 
