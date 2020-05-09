@@ -4034,6 +4034,23 @@ do
   return 1
 end
 
+task DumpPhase(r_grid : region(ispace(int8d), phi), iter : int32)
+where
+  reads (r_grid)
+do
+  var phasefile : int8[1000]
+  c.sprintf([&int8](phasefile), './Data/phase_%04d',iter)
+  var phase = c.fopen(phasefile,'wb')
+
+  for e in r_grid do
+    dumpdouble(phase, r_grid[e].g)
+  end
+  c.fclose(phase)
+
+  __fence(__execution, __block)
+  return 1
+end
+
 
 
 task toplevel()
