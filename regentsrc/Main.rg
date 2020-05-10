@@ -698,7 +698,7 @@ do
     var amp : double = 0.5
 
     for e in r_W do
-        var Temp : double = amp*c.math.cos(2*PI*r_mesh[e].x)
+        var Temp : double = amp*cmath.cos(2*PI*r_mesh[e].x)
         r_W[e].rho = P/Temp
        	r_W[e].rhov[0] = r_W[e].rho*(v + amp*cmath.cos(2*PI*r_mesh[e].y))
        	r_W[e].rhov[1] = 0
