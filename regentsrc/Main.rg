@@ -292,7 +292,7 @@ do
                 --Dimensionality
                 r_params[e].effD = 2
 
-		var num : int32 = 100
+		var num : int32 = 64
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = num
@@ -342,7 +342,7 @@ do
                 --Dimensionality
                 r_params[e].effD = 1
 
-		var num : int32 = 1000
+		var num : int32 = 128
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = 1
@@ -367,9 +367,9 @@ do
 
 
                 -- Boundary Conditions
-                r_params[e].BCs[0] = 0
-		r_params[e].BCs[1] = 0
-		r_params[e].BCs[2] = 0
+                r_params[e].BCs[0] = 1
+		r_params[e].BCs[1] = 1
+		r_params[e].BCs[2] = 1
 
 
                 -- Physical Parameters
@@ -383,7 +383,7 @@ do
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
 
 		-- Simulation Parameters
-		r_params[e].Tf = 4.0					-- Stop Time
+		r_params[e].Tf = 2.0					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
 	end
   end
@@ -709,20 +709,24 @@ do
     end
   elseif testProblem == 6 then
     
-    var rho : double = 1.0
-    var P : double = 1.0
-    
-    var amp : double = 1.0
+    var T : double = 0.5
+    var a : double = 0.2
+    var n : double = 5
 
     for e in r_W do
 
-        r_W[e].rho = rho
-       	r_W[e].rhov[0] = amp*cmath.cos(2*PI*r_mesh[e].x)
+        r_W[e].rho = a + (1-a)*cmath.pow(cmath.cos(2*PI*r_mesh[e].x - PI/2), 2*n)
+       	--r_W[e].rhov[0] = 4*cmath.pow(cmath.cos(2*PI*r_mesh[e].x - PI/2), 2*n+1)
+       	--r_W[e].rhov[0] = 1 - 2*r_mesh[e].x
+       	--r_W[e].rhov[0] = cmath.tanh(-50*(r_mesh[e].x-1/2))
+       	r_W[e].rhov[0] = 2*r_W[e].rho*(2/(1 + cmath.exp(100*(r_mesh[e].x-1.0/2))) -1)
        	r_W[e].rhov[1] = 0
         r_W[e].rhov[2] = 0
+
+        var P : double = R*r_W[e].rho*T
         r_W[e].rhoE = Cv*P/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
         
-        --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+        c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
     end
   end
 end
@@ -4564,7 +4568,7 @@ task toplevel()
   end
 
   --Timestep
-  var CFL : double = 0.9 -- Safety Factor
+  var CFL : double = 0.5 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))

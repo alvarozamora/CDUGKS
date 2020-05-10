@@ -6,14 +6,22 @@ import matplotlib.pyplot as plt
 import struct
 import glob
 import argparse
-
+import pdb
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-p', type=int, default=1)
+parser.add_argument('-p', type=int, default=0)
 parser.add_argument('-n', type=int, default=64)
 args = parser.parse_args()
 
-files = glob.glob('Data/rho_*')
+rhofiles = glob.glob('Data/rho_*')
+vxfiles = glob.glob('Data/rhovx_*')
+vyfiles = glob.glob('Data/rhovy_*')
+vzfiles = glob.glob('Data/rhovz_*')
+Efiles = glob.glob('Data/rhoE_*')
+
+phasefiles = glob.glob('Data/phase_*')
+
+
 size = 8
 num  = args.n
 
@@ -21,8 +29,19 @@ type = 'd' #d is double, f is float, i is integer
 
 testproblem = args.p
 
-files.sort()
-files.reverse()
+rhofiles.sort()
+rhofiles.reverse()
+vxfiles.sort()
+vxfiles.reverse()
+vyfiles.sort()
+vyfiles.reverse()
+vzfiles.sort()
+vzfiles.reverse()
+Efiles.sort()
+Efiles.reverse()
+phasefiles.sort()
+#phasefiles.reverse()
+
 plt.figure()
 if testproblem == 1:
 
@@ -115,3 +134,84 @@ if testproblem == 3:
 
                 plt.cla()
                 plt.clf()
+
+if testproblem == 6:
+	from matplotlib.ticker import NullFormatter
+	for file in phasefiles:
+		pass
+		'''
+		n = file[-5:]
+		f = open(file, 'rb')
+
+		F = f.read(num*num*size)
+		F = np.array(struct.unpack(type*num*num,F))
+
+
+		F = F.reshape((num,num))
+		plt.imshow(F,origin='lower')
+		plt.savefig("Check/phase"+n+".png")
+		plt.figure()
+		avg1 = F.mean(axis=0)
+		avg2 = F.mean(axis=1)
+
+		v = np.linspace(-10,10,num)
+		plt.plot(v, avg2)
+		plt.savefig('Check/phaseavg'+n+'.png')
+		print(f"Problem 6: Finished {n[1:]}")
+		'''
+	for file in phasefiles:
+		n = file[-5:]
+		f = open(file, 'rb')
+
+		F = f.read(num*num*size)
+		F = np.array(struct.unpack(type*num*num,F))
+
+		x = np.linspace(0, 1,num)
+		v = np.linspace(-10,10,num)
+
+		F = F.reshape((num,num))
+
+
+		nullfmt = NullFormatter()         # no labels
+
+		# definitions for the axes
+		left, width = 0.15, 0.6
+		bottom, height = 0.15, 0.6
+		bottom_h = left_h = left + width + 0.05
+
+		rect_Phase = [left, bottom, width, height]
+		rect_avgx = [left, bottom_h, width, 0.15]
+		rect_avgy = [left_h, bottom, 0.15, height]
+
+		# start with a rectangular Figure
+		plt.figure(1, figsize=(8, 8))
+		plt.clf()
+
+		print(rect_Phase)
+		axPhase = plt.axes(rect_Phase)
+		axavgx = plt.axes(rect_avgx)
+		axavgy = plt.axes(rect_avgy)
+
+		# no labels
+		axavgx.xaxis.set_major_formatter(nullfmt)
+		axavgy.yaxis.set_major_formatter(nullfmt)
+
+		# the Phase plot:
+		axPhase.imshow(F, extent=[0,1,-10,10],aspect='auto')#,aspect=1/20)
+		axPhase.set_ylabel('Velocity')
+		axPhase.set_xlabel('Position')
+		axPhase.set_ylim((-10, 10))
+		axPhase.set_xlim((0,1))
+
+		#pdb.set_trace()
+		axavgx.plot(x, F.mean(axis=0))
+		axavgy.plot(F.mean(axis=1), v)#, orientation='horizontal')
+
+		axavgx.set_xlim(axPhase.get_xlim())
+		#axavgx.set_ylim(0,0.1)
+
+		#axavgy.set_xlim(0,1.5)
+		axavgy.set_ylim(axPhase.get_ylim())
+
+		plt.savefig("Check/phase"+n+'.png')
+		print(f"Problem 6: Finished {n[1:]}")
