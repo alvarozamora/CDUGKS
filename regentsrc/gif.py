@@ -23,29 +23,27 @@ def sort_nicely(l):
 
 print("Making Gif")
 file_names = glob.glob("Check/Rho*.png")
+phase_names = glob.glob("Check/phase_*.png")
 sort_nicely(file_names)
+sort_nicely(phase_names)
 #print(file_names)
 #making animation
 
 import pdb
 pdb.set_trace()
 
-problem = 2
-
-if problem == 1:
+if problem != 2:
 	dur = 1/30.
 elif problem == 2:
 	dur = 1/30.
 	file_names2 = glob.glob("Check2/*.png")
 	sort_nicely(file_names2)
-else:
-	dur = 1/60.
 
-with io.get_writer('cdugks.gif', duration=dur) as writer:
-    for filename in file_names:
-        image = io.imread(filename)
-        writer.append_data(image)
-writer.close()
+#with io.get_writer('cdugks.gif', duration=dur) as writer:
+#    for filename in file_names:
+#        image = io.imread(filename)
+#        writer.append_data(image)
+#    writer.close()
 
 
 if problem == 2:
@@ -54,4 +52,17 @@ if problem == 2:
 			image = io.imread(filename)
 			writer.append_data(image)
 		writer.close()
+if problem == 6:
+	with io.get_writer('cdugks6.gif', duration=dur) as writer:
+		for filename in phase_names:
+			image = io.imread(filename)
+			writer.append_data(image)
+		writer.close()
+	print("GIF Complete")
+	with io.get_writer('cdugks6.mp4', duration=dur) as writer:
+		for filename in phase_names:
+			image = io.imread(filename)
+			writer.append_data(image)
+		writer.close()
+	print("MP4 Complete")
 
