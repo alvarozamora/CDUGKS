@@ -695,10 +695,10 @@ do
     var P : double = 2.0
     
     var v : double = 0.0
-    var amp : double = 0.5
+    var amp : double = 0.25
 
     for e in r_W do
-        var Temp : double = amp*cmath.cos(2*PI*r_mesh[e].x)
+        var Temp : double = 1 + amp*cmath.cos(2*PI*r_mesh[e].x)
         r_W[e].rho = P/Temp
        	r_W[e].rhov[0] = r_W[e].rho*(v + amp*cmath.cos(2*PI*r_mesh[e].y))
        	r_W[e].rhov[1] = 0
@@ -4568,7 +4568,7 @@ task toplevel()
   end
 
   --Timestep
-  var CFL : double = 0.5 -- Safety Factor
+  var CFL : double = 0.9 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
