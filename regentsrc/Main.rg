@@ -385,6 +385,55 @@ do
 		-- Simulation Parameters
 		r_params[e].Tf = 2.0					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
+        -- Blob Test
+        elseif testProblem == 7 then 
+
+                --Dimensionality
+                r_params[e].effD = 2
+
+		var num : int32 = 128
+                --Spatial Resolution
+                r_params[e].N[0]  = num
+		r_params[e].N[1]  = num
+ 		r_params[e].N[2]  = 1
+                
+		--Velocity Resolution
+		r_params[e].NV[0] = num
+		r_params[e].NV[1] = num
+		r_params[e].NV[2] = 1
+                
+		r_params[e].Vmin[0] = -20
+		r_params[e].Vmin[1] = 0
+		r_params[e].Vmin[2] = 0
+                
+		r_params[e].Vmax[0] = 20
+		r_params[e].Vmax[1] = 0
+		r_params[e].Vmax[2] = 0
+                
+		-- Number of Cells
+		r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+                r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+
+                -- Boundary Conditions
+                r_params[e].BCs[0] = 0
+		r_params[e].BCs[1] = 0
+		r_params[e].BCs[2] = 0
+
+
+                -- Physical Parameters
+                r_params[e].R   = 1.0          				-- Gas Constant
+                r_params[e].K   = 0.0           			-- Internal DOF
+                r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+                r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
+                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].ur  = 1e-6          			-- Reference Visc
+                r_params[e].Tr  = 1.0	          			-- Reference Temp
+                r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
+
+		-- Simulation Parameters
+		r_params[e].Tf = 2.0					-- Stop Time
+		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
 	end
   end
 end
