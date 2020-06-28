@@ -4631,7 +4631,7 @@ task toplevel()
   --Initialize r_W
   __demand(__index_launch)
   for col8 in p_W.colors do
-    InitializeW(p_W[col8], p_mesh[col8], N, NV, testProblem, R, Cv)
+    InitializeW(p_W[col8], p_mesh[col8], N, NV, testProblem, R, Cv, g)
   end
   if config.debug == true then
     __fence(__execution, __block)
