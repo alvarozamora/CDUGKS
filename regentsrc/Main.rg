@@ -637,7 +637,7 @@ end
 
 task InitializeW(r_W : region(ispace(int8d), W), 
                  r_mesh : region(ispace(int8d), mesh),
-                 N : int32[3], NV : int32[3], testProblem : int32, R : double, Cv : double)
+                 N : int32[3], NV : int32[3], testProblem : int32, R : double, Cv : double, g : double)
 where
   reads writes(r_W),
   reads(r_mesh)
@@ -776,6 +776,38 @@ do
         r_W[e].rhoE = Cv*P/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
         
         c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+    end
+  elseif testProblem == 7 then
+    
+    -- Blob Parameters
+    var rhoB : double = 10.0
+    var PB : double = 1.0
+    var r : double = 1/10.
+
+    -- Surrounding Medium Parameters
+    var rhoS : double = 1.0 
+    var PS : double = 1.0
+    var cS : double = cmath.sqrt(g*PS/rhoS)
+    var vS : double = 2.7*cS
+
+    for e in r_W do
+      var x : double = r_mesh[e].x - 1/2
+      var y : double = r_mesh[e].y - 1/2
+
+      if (x*x + y*y) < r*r then
+        r_W[e].rho = rhoB
+        r_W[e].rhov[0] = 0
+        r_W[e].rhov[1] = 0
+        r_W[e].rhov[2] = 0        
+        r_W[e].rhoE = Cv*PB/R
+      else
+        r_W[e].rho = rhoS
+        r_W[e].rhov[0] = r_W[e].rho*vS
+        r_W[e].rhov[1] = 0
+        r_W[e].rhov[2] = 0        
+        r_W[e].rhoE = Cv*PS/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
+      end 
+
     end
   end
 end
@@ -4617,7 +4649,7 @@ task toplevel()
   end
 
   --Timestep
-  var CFL : double = 0.9 -- Safety Factor
+  var CFL : double = 0.8 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
