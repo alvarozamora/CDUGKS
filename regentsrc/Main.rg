@@ -177,7 +177,7 @@ do
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].w   = 0.5           			-- Viscosity exponent
                 r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0	          			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
@@ -194,13 +194,13 @@ do
 
 		var num : int32 = 64
                 --Spatial Resolution
-                r_params[e].N[0]  = 2
+                r_params[e].N[0]  = 1
 		r_params[e].N[1]  = num
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num
-		r_params[e].NV[1] = num
+		r_params[e].NV[0] = num+1
+		r_params[e].NV[1] = num+1
 		r_params[e].NV[2] = 1
                 
 		r_params[e].Vmin[0] = -10
@@ -227,13 +227,13 @@ do
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.81           			-- Viscosity exponent
-                r_params[e].ur  = 1e-6          			-- Reference Visc
+                r_params[e].w   = 0.5           			-- Viscosity exponent
+                r_params[e].ur  = 1e5           			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
-                r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
+                r_params[e].Pr  = 1.0           			-- Prandtl Number
 
 		-- Simulation Parameters
-		r_params[e].Tf = 4.0					-- Stop Time
+		r_params[e].Tf = 1.0					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
 
         -- Ramped Kelvin-Helmholtz
@@ -277,7 +277,7 @@ do
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].w   = 0.5           			-- Viscosity exponent
                 r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0	          			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
@@ -294,7 +294,7 @@ do
 
 		var num : int32 = 64
                 --Spatial Resolution
-                r_params[e].N[0]  = num
+                r_params[e].N[0]  = 2
 		r_params[e].N[1]  = num
  		r_params[e].N[2]  = 1
                 
@@ -323,11 +323,11 @@ do
 
 
                 -- Physical Parameters
-                r_params[e].R   = 0.5          				-- Gas Constant
+                r_params[e].R   = 1.0          				-- Gas Constant
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].w   = 0.5           			-- Viscosity exponent
                 r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0	          			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
@@ -377,7 +377,7 @@ do
                 r_params[e].K   = 0.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].w   = 0.5           			-- Viscosity exponent
                 r_params[e].ur  = 1e-4          			-- Reference Visc
                 r_params[e].Tr  = 1.0	          			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
@@ -391,7 +391,7 @@ do
                 --Dimensionality
                 r_params[e].effD = 2
 
-		var num : int32 = 128
+		var num : int32 = 100
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = num
@@ -403,11 +403,11 @@ do
 		r_params[e].NV[2] = 1
                 
 		r_params[e].Vmin[0] = -20
-		r_params[e].Vmin[1] = 0
+		r_params[e].Vmin[1] = -20
 		r_params[e].Vmin[2] = 0
                 
 		r_params[e].Vmax[0] = 20
-		r_params[e].Vmax[1] = 0
+		r_params[e].Vmax[1] = 20
 		r_params[e].Vmax[2] = 0
                 
 		-- Number of Cells
@@ -423,10 +423,10 @@ do
 
                 -- Physical Parameters
                 r_params[e].R   = 1.0          				-- Gas Constant
-                r_params[e].K   = 0.0           			-- Internal DOF
+                r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.81           			-- Viscosity exponent
+                r_params[e].w   = 0.5           			-- Viscosity exponent
                 r_params[e].ur  = 1e-6          			-- Reference Visc
                 r_params[e].Tr  = 1.0	          			-- Reference Temp
                 r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
@@ -3634,8 +3634,8 @@ do
 
           c.printf("c2 = %f, r_Wb[e4].rho = %f, T = %f, R = %f, effD = %d\n", c2, r_Wb[e4].rho, T, R, effD) 
       
-          regentlib.assert(not  [bool](isnan(g_eq)), "Step 2b\n")
-          regentlib.assert(not  [bool](isnan(b_eq)), "Step 2b\n")
+          regentlib.assert(not  [bool](isnan(g_eq)), "Step 2b: g_eq\n")
+          regentlib.assert(not  [bool](isnan(b_eq)), "Step 2b: b_eq\n")
     
         end
 
@@ -3647,8 +3647,8 @@ do
 
           c.printf("gbar = %.10f, bbar = %.10f, g_eq = %.10f, tg = %.10f, tb = %.10f\n", r_gridbarpb[e7].g, r_gridbarpb[e7].b, g_eq, tg, tb)
       
-          regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 2b\n")
-          regentlib.assert(not [bool](isnan(r_gridbarpb[e7].b)), "Step 2b\n")
+          regentlib.assert(not [bool](isnan(r_gridbarpb[e7].g)), "Step 2b: gridbarpb_g\n")
+          regentlib.assert(not [bool](isnan(r_gridbarpb[e7].b)), "Step 2b: gridbarpb_b\n")
     
         end
 
@@ -4333,7 +4333,8 @@ task toplevel()
 
 
   -- Create partitions for regions
-  var f6 : int6d = factorize(config.cpus, effD)  
+  --var f6 : int6d = factorize(config.cpus, effD)  
+  var f6 : int6d = {1, config.cpus, 1, 1, 1, 1, 1, 1}
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   c.printf("Partitioning as {%d, %d, %d, %d, %d, %d, %d, %d}\n", f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
@@ -4651,7 +4652,7 @@ task toplevel()
   --Timestep
   var CFL : double = 0.8 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
-  var umax : double  = 4.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
+  var umax : double  = 5.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
   
   var Tsim : double = 0.0  -- Sim time
