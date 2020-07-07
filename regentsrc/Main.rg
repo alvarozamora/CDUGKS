@@ -4334,7 +4334,7 @@ task toplevel()
 
   -- Create partitions for regions
   --var f6 : int6d = factorize(config.cpus, effD)  
-  var f6 : int6d = {1, config.cpus, 1, 1, 1, 1, 1, 1}
+  var f6 : int6d = {1, config.cpus, 1, 1, 1, 1, 1, 1} -- URGENT: REMOVE
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   c.printf("Partitioning as {%d, %d, %d, %d, %d, %d, %d, %d}\n", f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
