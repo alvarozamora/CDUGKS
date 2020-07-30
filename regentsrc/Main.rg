@@ -4380,7 +4380,22 @@ do
   return 1
 end
 
+task DumpBoundaryPhase(r_grid : region(ispace(int8d), grid), iter : int32)
+where
+  reads (r_grid)
+do
+  var phasefile : int8[1000]
+  c.sprintf([&int8](phasefile), './Data/boundaryphase_%04d',iter)
+  var phase = c.fopen(phasefile,'wb')
 
+  for e in r_grid do
+    dumpdouble(phase, r_grid[e].g)
+  end
+  c.fclose(phase)
+
+  __fence(__execution, __block)
+  return 1
+end
 
 task toplevel()
   var config : Config
@@ -4443,8 +4458,7 @@ task toplevel()
 
 
   -- Create partitions for regions
-  --var f6 : int6d = factorize(config.cpus, effD)  
-  var f6 : int6d = {1, config.cpus, 1, 1, 1, 1, 1, 1} -- URGENT: REMOVE
+  var f6 : int6d = factorize(config.cpus, effD)  
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   c.printf("Partitioning as {%d, %d, %d, %d, %d, %d, %d, %d}\n", f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
