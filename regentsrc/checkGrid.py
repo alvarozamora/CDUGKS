@@ -7,6 +7,8 @@ import struct
 import glob
 import argparse
 import pdb
+import matplotlib.gridspec as gridspec
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', type=int, default=0)
@@ -19,7 +21,7 @@ vyfiles = glob.glob('Data/rhovy_*')
 vzfiles = glob.glob('Data/rhovz_*')
 Efiles = glob.glob('Data/rhoE_*')
 
-phasefiles = glob.glob('Data/phase_*')
+#phasefiles = glob.glob('Data/phase_*')
 
 
 size = 8
@@ -30,22 +32,22 @@ type = 'd' #d is double, f is float, i is integer
 testproblem = args.p
 
 rhofiles.sort()
-rhofiles.reverse()
+#rhofiles.reverse()
 vxfiles.sort()
-vxfiles.reverse()
+#vxfiles.reverse()
 vyfiles.sort()
 vyfiles.reverse()
 vzfiles.sort()
 vzfiles.reverse()
 Efiles.sort()
 Efiles.reverse()
-phasefiles.sort()
+#phasefiles.sort()
 #phasefiles.reverse()
 
 plt.figure()
 if testproblem == 1:
 
-	for file in files:
+	for file in rhofiles[-2:]:
 		n = file[9:13]
 		f = open(file, 'rb')
 
@@ -54,7 +56,7 @@ if testproblem == 1:
 
 		plt.xlim(0,1)
 		plt.ylim(0,1.2)
-		plt.plot(np.linspace(0.5/len(X),1-0.5/len(X), len(X)), X, 'o-')
+		plt.plot(np.linspace(0.5/len(X),1-0.5/len(X), len(X)), X)#, 'o-')
 		plt.grid()
 		plt.savefig('Check/Rho'+n+'.png')
 		print('Check/Rho'+n+'.png')
@@ -96,7 +98,7 @@ if testproblem == 2:
 
 		grid = np.linspace(1/2/N, 1 - 1/2/N, N)
 		xx, yy = np.meshgrid(grid, grid)
-		plt.imshow(X, extent = (0,1,0,1))
+		plt.imshow(X, origin='lower',extent = (0,1,0,1))
 		#plt.contourf(xx, yy, X, levels = np.linspace(rhomin,rhomax,300))
 		plt.clim(0.5,2.5)
 		plt.colorbar(ticks = [0.5, 1.0, 1.5, 2.0, 2.5])
@@ -106,34 +108,110 @@ if testproblem == 2:
 		plt.cla()
 		plt.clf()
 
-if testproblem == 3:
+#if testproblem == 3:
+if testproblem == 5:
+	#visc = np.array([1e-2, 1e-4, 1e-6])*(10/7)**0.81
+	visc = 1e-2
+	times = np.linspace(0,4,401)
+
+	matplotlib.rc('xtick', labelsize=10)
+	matplotlib.rc('ytick', labelsize=10)
+	'''
         for file in vxfiles:
-                n = file[9:13]
-                n = file[8:]
+                n = file[11:15]
+                n = file[11:]
                 f = open(file, 'rb')
 
-                X = f.read(num*2*size)
-                X = np.array(struct.unpack(type*num*2, X))
+                X = f.read(num*num*size)
+                X = np.array(struct.unpack(type*num*num, X))
+                N = int(np.round(np.sqrt(len(X))))
+                X = X.reshape((N,N))
 
-                X = X.reshape((args.n, 2))
+                rhomin = np.minimum(X.min(),rhomin)
+                rhomax = np.maximum(X.max(),rhomax)
 
-                plt.imshow(X)
-                plt.savefig('Check/VXmap'+n+'.png')
-                print('Check/VXmap'+n+'.png')
+        print(f'Max and Min density are {rhomax:.3f} and {rhomin:.3f}')
+        '''
 
-                plt.cla()
-                plt.clf()
+	gs = gridspec.GridSpec(
+        nrows=1, ncols=2, left=0.1, bottom=0.1, right=0.95, top=0.9,
+        wspace=0.25, hspace=0., width_ratios=[1, 1])
 
-                VX = X[:,0]
+	for i in range(len(rhofiles)):
+
+                plt.figure(1)
+               	file = vxfiles[i]
+                rhofile = rhofiles[i]
+
+                n = file[8:]
+                f = open(file, 'rb')
+                rhof = open(rhofile, 'rb')
+
+                X = f.read(num*num*size)
+                X = np.array(struct.unpack(type*num*num, X))
+                X = X.reshape((args.n, num))
+
+                Y = rhof.read(num*num*size)
+                Y = np.array(struct.unpack(type*num*num, Y))
+                Y = Y.reshape((num,num))
+
+                f.close()
+                rhof.close()
+
+                #plt.imshow(X)
+                #plt.savefig('Check/VXmap'+n+'.png')
+                #print('Check/VXmap'+n+'.png')
+
+                #plt.cla()
+                #plt.clf()
+
+                #expected = np.cos(2*np.pi*np.linspace(0,1,1000).reshape(1000,1))/2*np.exp(-4*np.pi**2*visc*times[i])
+
+                VX = X[:,0]/Y[:,0]
                 y = np.linspace(1/2/len(VX), 1 - 1/2/len(VX), len(VX))
-                plt.plot(y, VX)
-                plt.ylim(-0.5, 0.5)
-                plt.grid(alpha=0.2)
-                plt.savefig('Check/VXprof'+n+'.png')
+                ax1= plt.subplot(gs[0])
+                #plt.plot(y, VX, 'k.--',label='1e-4')
+                plt.imshow(X/Y,origin='lower',extent=(0,1,0,1))#,aspect='auto')
+                #plt.legend(title='$\mu_r$')
+                #plt.plot(np.linspace(0,1,1000), expected[:,0],'k')
+                #plt.plot(np.linspace(0,1,1000), expected[:,1],'g')
+                #plt.plot(np.linspace(0,1,1000), expected[:,2],'r')
+                plt.xlabel('Position')
+                #plt.ylabel('Momentum Density')
+                plt.ylabel('Position')
+                #plt.ylabel('Velocity')
+                #plt.ylim(-0.5, 0.5)
+                plt.title(f'Velocity (t = {times[i]:.2f}), '+r'$\mu_r =$ '+f'1e-4')
+                plt.xticks([0,0.25,0.5,0.75,1])
+                plt.yticks([0,0.25,0.5,0.75,1])
+                divider = make_axes_locatable(plt.gca())
+                cax = divider.append_axes("right", size="5%", pad=0.05)
+                plt.colorbar(cax=cax,ticks=[-1/2,0,1/2])
+                plt.clim(-0.5, 0.5)
+                #plt.grid(alpha=0.2)
+
+                #pdb.set_trace()
+                plt.gcf().add_subplot(gs[1])#, sharey=ax1)
+                #plt.subplot(gs[1])
+                #plt.plot(y,Y[:,0],'k,--')
+                plt.imshow(Y,origin='lower',extent=(0,1,0,1))#,aspect='auto')
+                plt.xlabel('Position')
+                plt.xticks([0,0.25,0.5,0.75,1])
+                plt.yticks([0,0.25,0.5,0.75,1], ['','','','',''])
+                plt.title(f'Density (t = {times[i]:.2f})')
+                divider = make_axes_locatable(plt.gca())
+                cax = divider.append_axes("right", size="5%", pad=0.05)
+                plt.colorbar(cax=cax,ticks=[1,2,3])
+                plt.clim(1,3)
+                #plt.ylim(0,3)
+                #plt.grid(alpha=0.2)
+
+                plt.tight_layout()
+                plt.savefig('Check/VXprof'+n+'.png', dpi=230, bbox_inches = 'tight', pad_inches = 1/10)
                 print('Check/VXprof'+n+'.png')
 
-                plt.cla()
                 plt.clf()
+
 
 if testproblem == 6:
 	from matplotlib.ticker import NullFormatter
@@ -152,7 +230,7 @@ if testproblem == 6:
 		plt.savefig("Check/phase"+n+".png")
 		plt.figure()
 		avg1 = F.mean(axis=0)
-		avg2 = F.mean(axis=1)
+		avgnum = F.mean(axis=1)
 
 		v = np.linspace(-10,10,num)
 		plt.plot(v, avg2)

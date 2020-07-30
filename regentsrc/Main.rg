@@ -117,20 +117,20 @@ do
                 r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
 
                 -- Boundary Conditions
-                r_params[e].BCs[0] = 0 
-		r_params[e].BCs[1] = 0
-		r_params[e].BCs[2] = 0
+                r_params[e].BCs[0] = 1 
+		r_params[e].BCs[1] = 1
+		r_params[e].BCs[2] = 1
 
 
                 -- Physical Parameters
                 r_params[e].R   = 0.5           			-- Gas Constant
-                r_params[e].K   = 2.0          				-- Internal DOF
+                r_params[e].K   = 1.0          				-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.5           			-- Viscosity exponent
+                r_params[e].w   = 0.0             			-- Viscosity exponent
                 r_params[e].ur  = 1e-6            			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
-                r_params[e].Pr  = 2.0/3.0          			-- Prandtl Number
+                r_params[e].Pr  = 1.0           			-- Prandtl Number
 
 		-- Simulation Parameters
 		r_params[e].Tf = 0.15					-- Stop Time
@@ -223,17 +223,18 @@ do
 
 
                 -- Physical Parameters
-                r_params[e].R   = 0.5          				-- Gas Constant
+                r_params[e].R   = 1.0          				-- Gas Constant
                 r_params[e].K   = 2.0           			-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.5           			-- Viscosity exponent
-                r_params[e].ur  = 1e5           			-- Reference Visc
+                r_params[e].w   = 0.0           			-- Viscosity exponent
+                --r_params[e].ur  = 0.351152           			-- Reference Visc
+                r_params[e].ur  = 1e2           			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 1.0           			-- Prandtl Number
 
 		-- Simulation Parameters
-		r_params[e].Tf = 1.0					-- Stop Time
+		r_params[e].Tf = 4.0					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
 
         -- Ramped Kelvin-Helmholtz
@@ -990,10 +991,12 @@ do
 
   var tg : double
   var tb : double    
+  var tgb : double
   var c2 : double
   var u : double
   var T : double
   var Xi : double[3]
+  var Z : double
 
   var e3 : int8d
   var e6 : int8d 
@@ -1021,6 +1024,11 @@ do
 
     tg = visc(T, ur, Tr, w)/r_W[e3].rho/R/T
     tb = tg/Pr
+    if (Pr == 1) then
+      tgb = 0
+    else
+      tgb = tb*tg/(tg-tb)
+    end
 
     for v in v3 do
       e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
@@ -1039,6 +1047,19 @@ do
 
       g_eq = geq(c2, r_W[e3].rho, T, R, effD)
       b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+
+      Z = 0
+      for d = 0, effD do
+        Z += Xi[d]*r_W[e3].rhov[d]/r_W[e3].rho
+      end 
+      Z += -u*u/2
+
+      r_S[e6].g = -0 -- -a dot grad_xi g 
+      if (Pr == 1) then
+        r_S[e6].b = 0 + 0 --a dot grad stuff
+      else 
+        r_S[e6].b = Z/tgb*(r_grid[e6].g - g_eq) + 0 --a dot grad stuff
+      end
 
       r_gridbarp[e6].g = (tg - dt/4.)/tg*r_grid[e6].g + dt/(4.*tg)*g_eq + dt/4.*r_S[e6].g
       r_gridbarp[e6].b = (tb - dt/4.)/tb*r_grid[e6].b + dt/(4.*tb)*b_eq + dt/4.*r_S[e6].b
@@ -3823,7 +3844,95 @@ end
 
 --Step 3: Source Terms
 task Step3()
-  --TODO
+--task Step3(r_S : region(ispace(int8d), grid),
+--           r_W : region(ispace(int8d), W),
+--           r_grid : region(ispace(int8d), grid),
+--           --r_sig : region(ispace(int8d), grid), 
+--           vxmesh : region(ispace(int1d), vmesh),
+--           vymesh : region(ispace(int1d), vmesh),
+--           vzmesh : region(ispace(int1d), vmesh),
+--           R : double, K : double, Cv : double, N : int32[3],
+--           g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
+--where
+--  reads (r_grid),--, r_sig), 
+--  writes (r_S)
+--do
+--  var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
+--  var shi : int3d = {r_grid.bounds.hi.x, r_grid.bounds.hi.y, r_grid.bounds.hi.z}
+--  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
+--  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+--  var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
+--  var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+--  var tg : double
+--  var tb : double    
+--  var tgb : double    
+--  var c2 : double
+--  var u : double
+--  var T : double
+--  var Xi : double[3]
+--  var Z : double
+--
+--  var e3 : int8d
+--  var e6 : int8d 
+
+--  var g_eq : double 
+--  var b_eq : double
+  
+--  for s in s3 do
+
+   
+--    e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+
+--    u = 0
+--    for d = 0, effD do
+--      u += r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho
+--      --c.printf("u2 = %f, du2 = %f\n", u, r_W[e3].rhov[d]/r_W[e3].rho*r_W[e3].rhov[d]/r_W[e3].rho) 
+--    end
+--    u = sqrt(u)
+
+--    T = Temperature(r_W[e3].rhoE/r_W[e3].rho, u, g, R)
+--    if T < 0 then
+--      c.printf("T < 0, r_W[e3].rhoE = %f, r_W[e3].rho = %f, u = %f, g = %f, R = %f\n", r_W[e3].rhoE, r_W[e3].rho, u, g, R)
+--      regentlib.assert(T >= 0, "Negative Temperature\n")
+--    end
+
+--    tg = visc(T, ur, Tr, w)/r_W[e3].rho/R/T
+--    tb = tg/Pr
+--    if (Pr == 1) then
+--      tbg = 0
+--    else
+--      tbg = tb*tg/(tg-tb)
+--    end
+
+--    for v in v3 do
+--      e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+
+--      c2 = 0
+--      Xi[0] = vxmesh[v.x].v
+--      Xi[1] = vymesh[v.y].v
+--      Xi[2] = vzmesh[v.z].v     
+--      for d = 0, effD do
+--        c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
+--      end
+
+--      g_eq = geq(c2, r_W[e3].rho, T, R, effD)
+--      b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+
+--      Z = 0
+--      for d = 0, effD do
+--        Z += Xi[d]*r_W[e3].rhov[d]/r_W[e3].rho
+--      end 
+--      Z += -u*u/2
+
+--      r_S[e6].g = -0 -- -a dot grad_xi g 
+--      if (Pr == 1) then
+--        r_S[e6].b = 0 + 0 --a dot grad stuff
+--      else 
+--        r_S[e6].b = Z/tbg*(r_grid[e6].g - g_eq) + 0 --a dot grad stuff
+--      end
+--    end
+--  end
 end
 
 --Step 4: Update Conservative Variables W at cell center at next timestep
@@ -3832,13 +3941,14 @@ task Step4and5(r_grid : region(ispace(int8d), grid),
                r_W    : region(ispace(int8d), W),
                r_mesh : region(ispace(int8d), mesh),
                r_F    : region(ispace(int8d), grid),
+               r_S    : region(ispace(int8d), grid),
                vxmesh : region(ispace(int1d), vmesh),
                vymesh : region(ispace(int1d), vmesh),
                vzmesh : region(ispace(int1d), vmesh),
                dt : double, BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
                g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
-  reads(vxmesh, vymesh, vzmesh, r_mesh, r_F),
+  reads(vxmesh, vymesh, vzmesh, r_mesh, r_F, r_S),
   reads writes(r_W, r_grid)
 do
   var V : double      -- Volume of Cell
@@ -3922,8 +4032,8 @@ do
 
         --c.printf("Not updating : s = {%d, %d, %d}\n", s.x, s.y, s.z)
       else
-        r_grid[e6].g = r_grid[e6].g + dt/2.0*(g_eqo-r_grid[e6].g)/tgo - dt/V*r_F[e6].g + dt*0 -- TODO replace 0 with source term
-        r_grid[e6].b = r_grid[e6].b + dt/2.0*(b_eqo-r_grid[e6].b)/tbo - dt/V*r_F[e6].b + dt*0 -- TODO replace 0 with source term
+        r_grid[e6].g = r_grid[e6].g + dt/2.0*(g_eqo-r_grid[e6].g)/tgo - dt/V*r_F[e6].g + dt*r_S[e6].g -- TODO replace 0 with source term; progress: ensure not bugged
+        r_grid[e6].b = r_grid[e6].b + dt/2.0*(b_eqo-r_grid[e6].b)/tbo - dt/V*r_F[e6].b + dt*r_S[e6].b -- TODO replace 0 with source term; progress: ensure not bugged
       end
 
     end
@@ -3940,12 +4050,12 @@ do
 
       e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
       -- Step 4: Update W at cell center
-      r_W[e3].rho = r_W[e3].rho - dt*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term.
+      r_W[e3].rho = r_W[e3].rho - dt*(r_F[e6].g/V - r_S[e6].g)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term; progress: ensure not bugged
       for d = 0, effD do
-        r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term
+        r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - r_S[e6].g)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term; progress: ensure not bugged
       end
   
-      r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - 0)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term      
+      r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - r_S[e6].b)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term; progress: ensure not bugged      
     end
   end     
 
@@ -4650,7 +4760,7 @@ task toplevel()
   end
 
   --Timestep
-  var CFL : double = 0.8 -- Safety Factor
+  var CFL : double = 0.5 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 5.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
@@ -4913,8 +5023,12 @@ task toplevel()
     end
 
     -- Step 3
-    Step3() -- TODO
-  
+    Step3()
+    --__demand(__index_launch)
+    --for col8 in p_gridbarp.colors do
+    --  Step3(p_S[col8], p_W[col8], p_grid[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], R, K, Cv, N, g, w, ur, Tr, Pr, effD) -- TODO: vsig
+    --end
+
     -- Step 4 and 5
     if config.debug == true then
       __fence(__execution, __block)
@@ -4923,7 +5037,7 @@ task toplevel()
     end
     __demand(__index_launch)
     for col8 in p_grid.colors do
-      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], p_S[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
     end
     if config.debug == true then
       __fence(__execution, __block)
