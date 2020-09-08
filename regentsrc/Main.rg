@@ -4150,6 +4150,104 @@ do
       regentlib.assert(not [bool](isnan(r_grid[e6].b)), "Step4and5\n")
     end
   end
+
+  -- Outflow
+  var Nout : int8 = 0
+  if (BCs[0] == 2) or (BCs[3] == 2) then Nout += 1 end
+  if (BCs[1] == 2) or (BCs[4] == 2) then Nout += 1 end
+  if (BCs[2] == 2) or (BCs[5] == 2) then Nout += 1 end
+  if Nout > 1 then Nout = 2 end
+  for iter = 0, Nout do -- this is to get the corners right, the lazy way
+  for s in s3 do
+
+    if (BCs[0] == 2 and s.x == 0) then
+      var e3R : int8d = {1, s.y, s.z, 0, 0, 0, 0, 0}
+      r_W[s].rho = r_W[e3R].rho
+      for d = 0, effD do
+        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+      end
+      r_W[s].rhoE = r_W[e3R].rhoE
+
+      for v in v3 do
+        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+	r_grid[e6].g = r_grid[eR6].g
+	r_grid[e6].b = r_grid[eR6].b
+      end        
+    end
+
+    if (BCs[3] == 2 and s.x == N[0] - 1) then
+      var e3R : int8d = {s.x - 1, s.y, s.z, 0, 0, 0, 0, 0}
+      r_W[s].rho = r_W[e3R].rho
+      for d = 0, effD do
+        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+      end
+      r_W[s].rhoE = r_W[e3R].rhoE
+
+      for v in v3 do
+        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+	r_grid[e6].g = r_grid[eR6].g
+	r_grid[e6].b = r_grid[eR6].b
+      end        
+    end
+
+
+    if (BCs[1] == 2 and s.y == 0) then
+      var e3R : int8d = {s.x, 1, s.z, 0, 0, 0, 0, 0}
+      r_W[s].rho = r_W[e3R].rho
+      for d = 0, effD do
+        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+      end
+      r_W[s].rhoE = r_W[e3R].rhoE
+
+      for v in v3 do
+        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+	r_grid[e6].g = r_grid[eR6].g
+	r_grid[e6].b = r_grid[eR6].b
+      end        
+    end
+    if (BCs[4] == 2 and s.y == N[1] - 1) then
+      var e3R : int8d = {s.x, s.y - 1, s.z, 0, 0, 0, 0, 0}
+      r_W[s].rho = r_W[e3R].rho
+      for d = 0, effD do
+        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+      end
+      r_W[s].rhoE = r_W[e3R].rhoE
+
+      for v in v3 do
+        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+	r_grid[e6].g = r_grid[eR6].g
+	r_grid[e6].b = r_grid[eR6].b
+      end        
+    end
+
+    if (BCs[2] == 2 and s.z == 0) then
+      var e3R : int8d = {s.x, s.y, 1, 0, 0, 0, 0, 0}
+      r_W[s].rho = r_W[e3R].rho
+      for d = 0, effD do
+        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+      end
+      r_W[s].rhoE = r_W[e3R].rhoE
+      for v in v3 do
+        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+	r_grid[e6].g = r_grid[eR6].g
+	r_grid[e6].b = r_grid[eR6].b
+      end        
+    end
+    if (BCs[5] == 2 and s.z == N[2] - 1) then
+      var e3R : int8d = {s.x, s.y, s.z - 1, 0, 0, 0, 0, 0}
+      r_W[s].rho = r_W[e3R].rho
+      for d = 0, effD do
+        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+      end
+      r_W[s].rhoE = r_W[e3R].rhoE
+
+      for v in v3 do
+        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+	r_grid[e6].g = r_grid[eR6].g
+	r_grid[e6].b = r_grid[eR6].b
+      end        
+    end
+
   --c.printf("Step4and5 Complete\n")
 end
 
@@ -4219,6 +4317,7 @@ do
     end
   end
   --c.printf("rhotest = %f, rhovxtest = %f, rhovytest = %f, Etest = %f\n", rhotest, rhovxtest, rhovytest, Etest)
+
 end
 
 task InitializeGrid(r_grid  : region(ispace(int8d), grid),
@@ -4439,7 +4538,7 @@ task toplevel()
   var Tr : double = r_params[0].Tr
   var Pr : double = r_params[0].Pr
   var effD : int32 = r_params[0].effD
-  var BCs : int32[3] = r_params[0].BCs
+  var BCs : int32[6] = r_params[0].BCs
   var Vmin : double[3] = r_params[0].Vmin
   var Vmax : double[3] = r_params[0].Vmax
   var Tf : double = r_params[0].Tf
