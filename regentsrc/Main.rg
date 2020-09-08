@@ -4044,9 +4044,9 @@ do
       k = s.z
 
       -- Update First Step (terms involving oldW)
-      if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
-          (BCs[1] == 1 and j == 0 and effD > 1) or (BCs[1] == 1 and j == N[1] - 1 and effD > 1) or
-          (BCs[2] == 1 and k == 0 and effD > 2) or (BCs[2] == 1 and k == N[2] - 1 and effD > 2)) then
+      if ((BCs[0] == 1 and i == 0) or (BCs[3] == 1 and i == N[0] - 1) or
+          (BCs[1] == 1 and j == 0 and effD > 1) or (BCs[4] == 1 and j == N[1] - 1 and effD > 1) or
+          (BCs[2] == 1 and k == 0 and effD > 2) or (BCs[5] == 1 and k == N[2] - 1 and effD > 2)) then
        
         r_grid[e6].g = r_grid[e6].g
         r_grid[e6].b = r_grid[e6].b
@@ -4125,9 +4125,9 @@ do
       k = s.z
       e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
 
-      if ((BCs[0] == 1 and i == 0) or (BCs[0] == 1 and i == N[0] - 1) or
-          (BCs[1] == 1 and j == 0 and effD > 1) or (BCs[1] == 1 and j == N[1] - 1 and effD > 1) or
-          (BCs[2] == 1 and k == 0 and effD > 2) or (BCs[2] == 1 and k == N[2] - 1 and effD > 2)) then
+      if ((BCs[0] == 1 and i == 0) or (BCs[3] == 1 and i == N[0] - 1) or
+          (BCs[1] == 1 and j == 0 and effD > 1) or (BCs[4] == 1 and j == N[1] - 1 and effD > 1) or
+          (BCs[2] == 1 and k == 0 and effD > 2) or (BCs[5] == 1 and k == N[2] - 1 and effD > 2)) then
                 
         r_grid[e6].g = r_grid[e6].g
         r_grid[e6].b = r_grid[e6].b
