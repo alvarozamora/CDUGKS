@@ -120,6 +120,9 @@ do
                 r_params[e].BCs[0] = 1 
 		r_params[e].BCs[1] = 1
 		r_params[e].BCs[2] = 1
+                r_params[e].BCs[3] = 1 
+		r_params[e].BCs[4] = 1
+		r_params[e].BCs[5] = 1
 
 
                 -- Physical Parameters
@@ -170,6 +173,9 @@ do
                 r_params[e].BCs[0] = 0
 		r_params[e].BCs[1] = 0
 		r_params[e].BCs[2] = 0
+                r_params[e].BCs[3] = 0
+		r_params[e].BCs[4] = 0
+		r_params[e].BCs[5] = 0
 
 
                 -- Physical Parameters
@@ -220,6 +226,9 @@ do
                 r_params[e].BCs[0] = 0
 		r_params[e].BCs[1] = 0
 		r_params[e].BCs[2] = 0
+                r_params[e].BCs[3] = 0
+		r_params[e].BCs[4] = 0
+		r_params[e].BCs[5] = 0
 
 
                 -- Physical Parameters
@@ -271,6 +280,9 @@ do
                 r_params[e].BCs[0] = 0
 		r_params[e].BCs[1] = 0
 		r_params[e].BCs[2] = 0
+                r_params[e].BCs[3] = 0
+		r_params[e].BCs[4] = 0
+		r_params[e].BCs[5] = 0
 
 
                 -- Physical Parameters
@@ -321,6 +333,9 @@ do
                 r_params[e].BCs[0] = 0
 		r_params[e].BCs[1] = 0
 		r_params[e].BCs[2] = 0
+                r_params[e].BCs[3] = 0
+		r_params[e].BCs[4] = 0
+		r_params[e].BCs[5] = 0
 
 
                 -- Physical Parameters
@@ -371,6 +386,9 @@ do
                 r_params[e].BCs[0] = 1
 		r_params[e].BCs[1] = 1
 		r_params[e].BCs[2] = 1
+                r_params[e].BCs[3] = 1
+		r_params[e].BCs[4] = 1
+		r_params[e].BCs[5] = 1
 
 
                 -- Physical Parameters
@@ -420,6 +438,9 @@ do
                 r_params[e].BCs[0] = 0
 		r_params[e].BCs[1] = 0
 		r_params[e].BCs[2] = 0
+                r_params[e].BCs[3] = 0
+		r_params[e].BCs[4] = 0
+		r_params[e].BCs[5] = 0
 
 
                 -- Physical Parameters
@@ -914,7 +935,7 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32
     KR = k + 1
     if KL <  0 then KL = 0 end
     if KR == N[2] then KR = N[2] - 1 end
-  -- Neumann Boundary Conditions
+  -- Neumann Boundary Conditions (Outflow)
   elseif (Dim == 0 and BCs[0] == 2) then
     IL = i - 1
     IR = i + 1
