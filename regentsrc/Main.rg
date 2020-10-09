@@ -29,7 +29,7 @@ fspace params{
   Tr : double,
   Pr : double,
   effD : int32,
-  BCs : int32[3],
+  BCs : int32[6],
   Vmin : double[3],
   Vmax : double[3],
   Tf : double,
@@ -117,26 +117,26 @@ do
                 r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
 
                 -- Boundary Conditions
-                r_params[e].BCs[0] = 1 
-		r_params[e].BCs[1] = 1
-		r_params[e].BCs[2] = 1
-                r_params[e].BCs[3] = 1 
-		r_params[e].BCs[4] = 1
-		r_params[e].BCs[5] = 1
+                r_params[e].BCs[0] = 2 
+		r_params[e].BCs[1] = 0
+		r_params[e].BCs[2] = 0
+                r_params[e].BCs[3] = 2 
+		r_params[e].BCs[4] = 0
+		r_params[e].BCs[5] = 0
 
 
                 -- Physical Parameters
                 r_params[e].R   = 0.5           			-- Gas Constant
-                r_params[e].K   = 1.0          				-- Internal DOF
+                r_params[e].K   = 2.0          				-- Internal DOF
                 r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
                 r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
-                r_params[e].w   = 0.0             			-- Viscosity exponent
+                r_params[e].w   = 0.5             			-- Viscosity exponent
                 r_params[e].ur  = 1e-6            			-- Reference Visc
                 r_params[e].Tr  = 1.0           			-- Reference Temp
                 r_params[e].Pr  = 1.0           			-- Prandtl Number
 
 		-- Simulation Parameters
-		r_params[e].Tf = 0.15					-- Stop Time
+		r_params[e].Tf = 1.0					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/200			-- Time Between Dumps
  
         -- Kelvin-Helmholtz
@@ -876,7 +876,7 @@ terra VanLeer(L : double, C : double, R : double, xL : double, xC : double, xR :
 end
 
 
-terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[3], N : int32[3])
+terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32[3])
 
   var IL : int32
   var JL : int32
@@ -1119,7 +1119,7 @@ task Step1b_sigx(r_gridbarp : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),            
             vymesh : region(ispace(int1d), vmesh),            
             vzmesh : region(ispace(int1d), vmesh),            
-            BCs : int32[3], N : int32[3], effD : int32)
+            BCs : int32[6], N : int32[3], effD : int32)
 where 
   reads(r_gridbarp, r_mesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
   --reads(vxmesh, vymesh, vzmesh) TODO: Trying to not read vxmesh, only use bounds in this task
@@ -1241,7 +1241,7 @@ task Step1b_sigy(r_gridbarp : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),            
             vymesh : region(ispace(int1d), vmesh),            
             vzmesh : region(ispace(int1d), vmesh),            
-            BCs : int32[3], N : int32[3], effD : int32)
+            BCs : int32[6], N : int32[3], effD : int32)
 where 
   reads(r_gridbarp, r_mesh, ply_mesh, pry_mesh, ply_gridbarp, pry_gridbarp),
   reads writes(r_sig)
@@ -1361,7 +1361,7 @@ task Step1b_sigz(r_gridbarp : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),            
             vymesh : region(ispace(int1d), vmesh),            
             vzmesh : region(ispace(int1d), vmesh),            
-            BCs : int32[3], N : int32[3], effD : int32)
+            BCs : int32[6], N : int32[3], effD : int32)
 where 
   reads(r_gridbarp, r_mesh, plz_mesh, prz_mesh, plz_gridbarp, prz_gridbarp),
   reads writes(r_sig)
@@ -1481,7 +1481,7 @@ task Step1b_sigx_x(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
   reads writes(r_sig2)
@@ -1588,7 +1588,7 @@ task Step1b_sigy_x(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
   reads writes(r_sig2)
@@ -1700,7 +1700,7 @@ task Step1b_sigz_x(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
   reads writes(r_sig2)
@@ -1806,7 +1806,7 @@ task Step1b_sigx_y(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
   reads writes(r_sig2)
@@ -1917,7 +1917,7 @@ task Step1b_sigy_y(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
   reads writes(r_sig2)
@@ -2026,7 +2026,7 @@ task Step1b_sigz_y(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
   reads writes(r_sig2)
@@ -2132,7 +2132,7 @@ task Step1b_sigx_z(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
   reads writes(r_sig2)
@@ -2238,7 +2238,7 @@ task Step1b_sigy_z(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
   reads writes(r_sig2)
@@ -2344,7 +2344,7 @@ task Step1b_sigz_z(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
   reads writes(r_sig2)
@@ -2450,7 +2450,7 @@ task Step1b_sigx_x2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prx_mesh, prx_sig, prx_sig2),
   reads writes(r_sigb)
@@ -2507,7 +2507,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vxmesh[v.x].v < 0 and Dim == 0) then
+      if (vxmesh[v.x].v < 0 and Dim2 == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
           bsig = prx_sig[eR7].b
@@ -2548,7 +2548,7 @@ task Step1b_sigy_x2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prx_mesh, prx_sig, prx_sig2),
   reads writes(r_sigb)
@@ -2605,7 +2605,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vxmesh[v.x].v < 0 and Dim == 0) then
+      if (vxmesh[v.x].v < 0 and Dim2 == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
           bsig = prx_sig[eR7].b
@@ -2646,7 +2646,7 @@ task Step1b_sigz_x2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prx_mesh, prx_sig, prx_sig2),
   reads writes(r_sigb)
@@ -2703,7 +2703,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vxmesh[v.x].v < 0 and Dim == 0) then
+      if (vxmesh[v.x].v < 0 and Dim2 == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
           bsig = prx_sig[eR7].b
@@ -2744,7 +2744,7 @@ task Step1b_sigx_y2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, pry_mesh, pry_sig, pry_sig2),
   reads writes(r_sigb)
@@ -2801,7 +2801,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vymesh[v.y].v < 0 and Dim == 1) then
+      if (vymesh[v.y].v < 0 and Dim2 == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -2842,7 +2842,7 @@ task Step1b_sigy_y2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, pry_mesh, pry_sig, pry_sig2),
   reads writes(r_sigb)
@@ -2899,7 +2899,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vymesh[v.y].v < 0 and Dim == 1) then
+      if (vymesh[v.y].v < 0 and Dim2 == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -2940,7 +2940,7 @@ task Step1b_sigz_y2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, pry_mesh, pry_sig, pry_sig2),
   reads writes(r_sigb)
@@ -2997,7 +2997,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vymesh[v.y].v < 0 and Dim == 1) then
+      if (vymesh[v.y].v < 0 and Dim2 == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -3038,7 +3038,7 @@ task Step1b_sigx_z2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prz_mesh, prz_sig, prz_sig2),
   reads writes(r_sigb)
@@ -3095,7 +3095,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vzmesh[v.z].v < 0 and Dim == 2) then
+      if (vzmesh[v.z].v < 0 and Dim2 == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -3136,7 +3136,7 @@ task Step1b_sigy_z2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prz_mesh, prz_sig, prz_sig2),
   reads writes(r_sigb)
@@ -3193,7 +3193,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vzmesh[v.z].v < 0 and Dim == 2) then
+      if (vzmesh[v.z].v < 0 and Dim2 == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -3234,7 +3234,7 @@ task Step1b_sigz_z2(r_sig : region(ispace(int8d), grid),
             vxmesh : region(ispace(int1d), vmesh),
             vymesh : region(ispace(int1d), vmesh),
             vzmesh : region(ispace(int1d), vmesh),
-            BCs : int32[3], N : int32[3])
+            BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prz_mesh, prz_sig, prz_sig2),
   reads writes(r_sigb)
@@ -3291,7 +3291,7 @@ do
       eR8 = {IR, JR, KR, Dim, Dim2, v.x, v.y, v.z}
   
       swap = 1.0
-      if (vzmesh[v.z].v < 0 and Dim == 2) then
+      if (vzmesh[v.z].v < 0 and Dim2 == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -3338,7 +3338,7 @@ task Step1b_b(r_sig : region(ispace(int8d), grid),
               vxmesh : region(ispace(int1d), vmesh),
               vymesh : region(ispace(int1d), vmesh),
               vzmesh : region(ispace(int1d), vmesh),
-              BCs : int32[3], N : int32[3], effD : int32)
+              BCs : int32[6], N : int32[3], effD : int32)
 where
   reads writes(r_gridbarpb),
   reads(r_sig, r_gridbarp, r_mesh.{dx,dy,dz}, vxmesh, vymesh, vzmesh),
@@ -3477,7 +3477,7 @@ task Step1c(r_gridbarpb : region(ispace(int8d), grid),
             vymesh : region(ispace(int1d), vmesh),        
             vzmesh : region(ispace(int1d), vmesh),        
             r_sigb : region(ispace(int8d), grid),
-            dt : double, BCs : int32[3],  N : int32[3], effD : int32)
+            dt : double, BCs : int32[6],  N : int32[3], effD : int32)
 where
   reads(vxmesh, vymesh, vzmesh, r_sigb), 
   reads writes(r_gridbarpb)
@@ -3709,7 +3709,7 @@ task Step2c(r_gridbarpb : region(ispace(int8d), grid),
             plx_gridbarpb : region(ispace(int8d), grid),
             ply_gridbarpb : region(ispace(int8d), grid),
             plz_gridbarpb : region(ispace(int8d), grid),
-            BCs : int32[3], R : double, K : double, Cv : double, g : double,
+            BCs : int32[6], R : double, K : double, Cv : double, g : double,
             w : double, Tr : double, Pr : double, effD : int32, N : int32[3])
 where
   reads(r_gridbarpb, vxmesh, vymesh, vzmesh, r_mesh, plx_gridbarpb, ply_gridbarpb, plz_gridbarpb),
@@ -3966,7 +3966,7 @@ task Step4and5(r_grid : region(ispace(int8d), grid),
                vxmesh : region(ispace(int1d), vmesh),
                vymesh : region(ispace(int1d), vmesh),
                vzmesh : region(ispace(int1d), vmesh),
-               dt : double, BCs : int32[3], R : double, K : double, Cv : double, N : int32[3],
+               dt : double, BCs : int32[6], R : double, K : double, Cv : double, N : int32[3],
                g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
 where
   reads(vxmesh, vymesh, vzmesh, r_mesh, r_F, r_S),
@@ -4063,6 +4063,12 @@ do
 
   for s in s3 do
     e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
+      if ((BCs[0] == 1 and i == 0) or (BCs[3] == 1 and i == N[0] - 1) or
+          (BCs[1] == 1 and j == 0 and effD > 1) or (BCs[4] == 1 and j == N[1] - 1 and effD > 1) or
+          (BCs[2] == 1 and k == 0 and effD > 2) or (BCs[5] == 1 and k == N[2] - 1 and effD > 2)) then
+     r_W[e3].rho = r_W[e3].rho
+
+     else   
     
     for v in v3 do 
       Xi[0] = vxmesh[v.x].v
@@ -4077,6 +4083,7 @@ do
       end
   
       r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - r_S[e6].b)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w -- TODO replace 0 with source term; progress: ensure not bugged      
+    end
     end
   end     
 
@@ -4157,97 +4164,175 @@ do
   if (BCs[1] == 2) or (BCs[4] == 2) then Nout += 1 end
   if (BCs[2] == 2) or (BCs[5] == 2) then Nout += 1 end
   if Nout > 1 then Nout = 2 end
-  for iter = 0, Nout do -- this is to get the corners right, the lazy way
+  for iter = 0, 1 do -- Nout do -- this is to get the corners right, the lazy way
   for s in s3 do
-
+    var e3 : int8d = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
     if (BCs[0] == 2 and s.x == 0) then
       var e3R : int8d = {1, s.y, s.z, 0, 0, 0, 0, 0}
-      r_W[s].rho = r_W[e3R].rho
+      var e3R2 : int8d = {2, s.y, s.z, 0, 0, 0, 0, 0}
+      r_W[e3].rho = r_W[e3R].rho -- copy
+      --r_W[e3].rho = (r_W[e3].rho + r_W[e3R].rho)/2 -- avg
+      --r_W[e3].rho = 2*r_W[e3R].rho - r_W[e3R2].rho -- interp
       for d = 0, effD do
-        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+        r_W[e3].rhov[d] = r_W[e3R].rhov[d]
+        --r_W[e3].rhov[d] = (r_W[e3].rhov[d] + r_W[e3R].rhov[d])/2
+        --r_W[e3].rhov[d] = 2*r_W[e3R].rhov[d]-r_W[e3R2].rhov[d]
       end
-      r_W[s].rhoE = r_W[e3R].rhoE
+      r_W[e3].rhoE = r_W[e3R].rhoE
+      --r_W[e3].rhoE = (r_W[e3].rhoE + r_W[e3R].rhoE)/2
+      --r_W[e3].rhoE = 2*r_W[e3R].rhoE-r_W[e3R2].rhoE -- interp
 
       for v in v3 do
-        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
+        var eR6 : int8d = {e3R.x, e3R.y, e3R.z, 0, 0, v.x, v.y, v.z}
+        var eR62 : int8d = {e3R2.x, e3R2.y, e3R2.z, 0, 0, v.x, v.y, v.z}
 	r_grid[e6].g = r_grid[eR6].g
 	r_grid[e6].b = r_grid[eR6].b
+	--r_grid[e6].g = (r_grid[e6].g + r_grid[eR6].g)/2
+	--r_grid[e6].b = (r_grid[e6].b + r_grid[eR6].b)/2
+	--r_grid[e6].g = 2*r_grid[eR6].g - r_grid[eR62].g
+	--r_grid[e6].b = 2*r_grid[eR6].b - r_grid[eR62].b
       end        
     end
-
     if (BCs[3] == 2 and s.x == N[0] - 1) then
       var e3R : int8d = {s.x - 1, s.y, s.z, 0, 0, 0, 0, 0}
-      r_W[s].rho = r_W[e3R].rho
+      var e3R2 : int8d = {s.x - 2, s.y, s.z, 0, 0, 0, 0, 0}
+      r_W[e3].rho = r_W[e3R].rho
+      --r_W[e3].rho = (r_W[e3].rho + r_W[e3R].rho)/2
+      --r_W[e3].rho = 2*r_W[e3R].rho - r_W[e3R2].rho
       for d = 0, effD do
-        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+        r_W[e3].rhov[d] = r_W[e3R].rhov[d]
+        --r_W[e3].rhov[d] = (r_W[e3].rhov[d] + r_W[e3R].rhov[d])/2
+        --r_W[e3].rhov[d] = 2*r_W[e3R].rhov[d] - r_W[e3R2].rhov[d]
       end
-      r_W[s].rhoE = r_W[e3R].rhoE
+      r_W[e3].rhoE = r_W[e3R].rhoE
+      --r_W[e3].rhoE = (r_W[e3].rhoE + r_W[e3R].rhoE)/2
+      --r_W[e3].rhoE = 2*r_W[e3R].rhoE - r_W[e3R2].rhoE
 
       for v in v3 do
-        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
+        var eR6 : int8d = {e3R.x, e3R.y, e3R.z, 0, 0, v.x, v.y, v.z}
+        var eR62 : int8d = {e3R2.x, e3R2.y, e3R2.z, 0, 0, v.x, v.y, v.z}
 	r_grid[e6].g = r_grid[eR6].g
 	r_grid[e6].b = r_grid[eR6].b
+	--r_grid[e6].g = (r_grid[e6].g + r_grid[eR6].g)/2
+	--r_grid[e6].b = (r_grid[e6].b + r_grid[eR6].b)/2
+	--r_grid[e6].g = 2*r_grid[eR6].g - r_grid[eR62].g
+	--r_grid[e6].b = 2*r_grid[eR6].b - r_grid[eR62].b
       end        
     end
 
 
     if (BCs[1] == 2 and s.y == 0) then
       var e3R : int8d = {s.x, 1, s.z, 0, 0, 0, 0, 0}
-      r_W[s].rho = r_W[e3R].rho
+      var e3R2 : int8d = {s.x, 2, s.z, 0, 0, 0, 0, 0}
+      r_W[e3].rho = r_W[e3R].rho
+      --r_W[e3].rho = (r_W[e3].rho + r_W[e3R].rho)/2
+      --r_W[e3].rho = 2*r_W[e3R].rho - r_W[e3R2].rho
       for d = 0, effD do
-        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+        r_W[e3].rhov[d] = r_W[e3R].rhov[d]
+        --r_W[e3].rhov[d] = (r_W[e3].rhov[d] + r_W[e3R].rhov[d])/2
+        --r_W[e3].rhov[d] = 2*r_W[e3R].rhov[d] - r_W[e3R2].rhov[d]
       end
-      r_W[s].rhoE = r_W[e3R].rhoE
+      r_W[e3].rhoE = r_W[e3R].rhoE
+      --r_W[e3].rhoE = (r_W[e3].rhoE + r_W[e3R].rhoE)/2
+      --r_W[e3].rhoE = 2*r_W[e3R].rhoE - r_W[e3R2].rhoE
 
       for v in v3 do
-        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
+        var eR6 : int8d = {e3R.x, e3R.y, e3R.z, 0, 0, v.x, v.y, v.z}
+        var eR62 : int8d = {e3R2.x, e3R2.y, e3R2.z, 0, 0, v.x, v.y, v.z}
 	r_grid[e6].g = r_grid[eR6].g
 	r_grid[e6].b = r_grid[eR6].b
+	--r_grid[e6].g = (r_grid[e6].g + r_grid[eR6].g)/2
+	--r_grid[e6].b = (r_grid[e6].b + r_grid[eR6].b)/2
+	--r_grid[e6].g = 2*r_grid[eR6].g - r_grid[eR62].g
+	--r_grid[e6].b = 2*r_grid[eR6].b - r_grid[eR62].b
       end        
     end
     if (BCs[4] == 2 and s.y == N[1] - 1) then
       var e3R : int8d = {s.x, s.y - 1, s.z, 0, 0, 0, 0, 0}
-      r_W[s].rho = r_W[e3R].rho
+      var e3R2 : int8d = {s.x, s.y - 2, s.z, 0, 0, 0, 0, 0}
+      r_W[e3].rho = r_W[e3R].rho
+      --r_W[e3].rho = (r_W[e3].rho + r_W[e3R].rho)/2
+      --r_W[e3].rho = 2*r_W[e3R].rho - r_W[e3R2].rho
       for d = 0, effD do
-        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+        r_W[e3].rhov[d] = r_W[e3R].rhov[d]
+        --r_W[e3].rhov[d] = (r_W[e3].rhov[d] + r_W[e3R].rhov[d])/2
+        --r_W[e3].rhov[d] = 2*r_W[e3R].rhov[d] - r_W[e3R2].rhov[d]
       end
-      r_W[s].rhoE = r_W[e3R].rhoE
+      r_W[e3].rhoE = r_W[e3R].rhoE
+      --r_W[e3].rhoE = (r_W[e3].rhoE + r_W[e3R].rhoE)/2
+      --r_W[e3].rhoE = 2*r_W[e3R].rhoE - r_W[e3R2].rhoE
 
       for v in v3 do
-        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
+        var eR6 : int8d = {e3R.x, e3R.y, e3R.z, 0, 0, v.x, v.y, v.z}
+        var eR62 : int8d = {e3R2.x, e3R2.y, e3R2.z, 0, 0, v.x, v.y, v.z}
 	r_grid[e6].g = r_grid[eR6].g
 	r_grid[e6].b = r_grid[eR6].b
+	--r_grid[e6].g = (r_grid[e6].g + r_grid[eR6].g)/2
+	--r_grid[e6].b = (r_grid[e6].b + r_grid[eR6].b)/2
+	--r_grid[e6].g = 2*r_grid[eR6].g - r_grid[eR62].g
+	--r_grid[e6].b = 2*r_grid[eR6].b - r_grid[eR62].b
       end        
     end
 
     if (BCs[2] == 2 and s.z == 0) then
       var e3R : int8d = {s.x, s.y, 1, 0, 0, 0, 0, 0}
-      r_W[s].rho = r_W[e3R].rho
+      var e3R2 : int8d = {s.x, s.y, 2, 0, 0, 0, 0, 0}
+      r_W[e3].rho = r_W[e3R].rho
+      --r_W[e3].rho = (r_W[e3].rho + r_W[e3R].rho)/2
+      --r_W[e3].rho = 2*r_W[e3R].rho - r_W[e3R2].rho
       for d = 0, effD do
-        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+        r_W[e3].rhov[d] = r_W[e3R].rhov[d]
+        --r_W[e3].rhov[d] = (r_W[e3].rhov[d] + r_W[e3R].rhov[d])/2
+        --r_W[e3].rhov[d] = 2*r_W[e3R].rhov[d] - r_W[e3R2].rhov[d]
       end
-      r_W[s].rhoE = r_W[e3R].rhoE
+      r_W[e3].rhoE = r_W[e3R].rhoE
+      --r_W[e3].rhoE = (r_W[e3].rhoE + r_W[e3R].rhoE)/2
+      --r_W[e3].rhoE = 2*r_W[e3R].rhoE - r_W[e3R2].rhoE
       for v in v3 do
-        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
+        var eR6 : int8d = {e3R.x, e3R.y, e3R.z, 0, 0, v.x, v.y, v.z}
+        var eR62 : int8d = {e3R2.x, e3R2.y, e3R2.z, 0, 0, v.x, v.y, v.z}
 	r_grid[e6].g = r_grid[eR6].g
 	r_grid[e6].b = r_grid[eR6].b
+	--r_grid[e6].g = (r_grid[e6].g + r_grid[eR6].g)/2
+	--r_grid[e6].b = (r_grid[e6].b + r_grid[eR6].b)/2
+	--r_grid[e6].g = 2*r_grid[eR6].g - r_grid[eR62].g
+	--r_grid[e6].b = 2*r_grid[eR6].b - r_grid[eR62].b
       end        
     end
     if (BCs[5] == 2 and s.z == N[2] - 1) then
       var e3R : int8d = {s.x, s.y, s.z - 1, 0, 0, 0, 0, 0}
-      r_W[s].rho = r_W[e3R].rho
+      var e3R2 : int8d = {s.x, s.y, s.z - 2, 0, 0, 0, 0, 0}
+      r_W[e3].rho = r_W[e3R].rho
+      --r_W[e3].rho = (r_W[e3].rho + r_W[e3R].rho)/2
+      --r_W[e3].rho = 2*r_W[e3R].rho - r_W[e3R2].rho
       for d = 0, effD do
-        r_W[s].rhov[d] = r_W[e3R].rhov[d]
+        r_W[e3].rhov[d] = r_W[e3R].rhov[d]
+        --r_W[e3].rhov[d] = (r_W[e3].rhov[d] + r_W[e3R].rhov[d])/2
+        --r_W[e3].rhov[d] = 2*r_W[e3R].rhov[d] - r_W[e3R2].rhov[d]
       end
-      r_W[s].rhoE = r_W[e3R].rhoE
+      r_W[e3].rhoE = r_W[e3R].rhoE
+      --r_W[e3].rhoE = (r_W[e3].rhoE + r_W[e3R].rhoE)/2
+      --r_W[e3].rhoE = 2*r_W[e3R].rhoE - r_W[e3R2].rhoE
 
       for v in v3 do
-        eR6 = {e3R.x, e3R.y, e3y.z, 0, 0, v.x, v.y, v.z}
+        e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z} 
+        var eR6 : int8d = {e3R.x, e3R.y, e3R.z, 0, 0, v.x, v.y, v.z}
+        var eR62 : int8d = {e3R2.x, e3R2.y, e3R2.z, 0, 0, v.x, v.y, v.z}
 	r_grid[e6].g = r_grid[eR6].g
 	r_grid[e6].b = r_grid[eR6].b
+	--r_grid[e6].g = (r_grid[e6].g + r_grid[eR6].g)/2
+	--r_grid[e6].b = (r_grid[e6].b + r_grid[eR6].b)/2
+	--r_grid[e6].g = 2*r_grid[eR6].g - r_grid[eR62].g
+	--r_grid[e6].b = 2*r_grid[eR6].b - r_grid[eR62].b
       end        
     end
-
+  end
+  end
   --c.printf("Step4and5 Complete\n")
 end
 
@@ -4896,7 +4981,7 @@ task toplevel()
   --Timestep
   var CFL : double = 0.5 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
-  var umax : double  = 5.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
+  var umax : double  = 2.5 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
   
   var Tsim : double = 0.0  -- Sim time
