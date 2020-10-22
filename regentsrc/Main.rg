@@ -456,6 +456,55 @@ do
 		-- Simulation Parameters
 		r_params[e].Tf = 2.0					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/400			-- Time Between Dumps
+        -- Thermoacoustic
+        elseif testProblem == 8 then
+
+                --Dimensionality
+                r_params[e].effD = 1
+
+                var num : int32 = 512
+                --Spatial Resolution
+                r_params[e].N[0]  = num
+                r_params[e].N[1]  = 1
+                r_params[e].N[2]  = 1
+
+                --Velocity Resolution
+                r_params[e].NV[0] = num+1
+                r_params[e].NV[1] = 1
+                r_params[e].NV[2] = 1
+
+                r_params[e].Vmin[0] = -10
+                r_params[e].Vmin[1] = 0
+                r_params[e].Vmin[2] = 0
+
+                r_params[e].Vmax[0] = 10
+                r_params[e].Vmax[1] = 0
+                r_params[e].Vmax[2] = 0
+
+                -- Number of Cells
+                r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+                r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+
+                -- Boundary Conditions
+                r_params[e].BCs[0] = 0
+                r_params[e].BCs[1] = 0
+                r_params[e].BCs[2] = 0
+
+
+                -- Physical Parameters
+                r_params[e].R   = 0.5                                   -- Gas Constant
+                r_params[e].K   = 2.0                                   -- Internal DOF
+                r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+                r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
+                r_params[e].w   = 0.5                                   -- Viscosity exponent
+                r_params[e].ur  = 1e-3                                  -- Reference Visc
+                r_params[e].Tr  = 1.0                                   -- Reference Temp
+                r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+
+                -- Simulation Parameters
+                r_params[e].Tf = 4.0                                    -- Stop Time
+                r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
 	end
   end
 end
@@ -830,6 +879,25 @@ do
         r_W[e].rhoE = Cv*PS/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
       end 
 
+    end
+    -- Thermoacoustic Wave
+    elseif testProblem == 8 then
+
+    -- Sound wave
+    var rho : double = 1
+    var dv : double = 0.05
+    var c : double = 1.0
+
+    for e in r_W do
+      var v : double = dv*cmath.sin(4*PI*r_mesh[e].x)
+
+      r_W[e].rho = rho * (1 - v/c)
+      var P : double = 1.0
+
+      r_W[e].rhov[0] = 0 --r_W[e].rho*v
+      r_W[e].rhov[1] = 0
+      r_W[e].rhov[2] = 0
+      r_W[e].rhoE = Cv*P/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
     end
   end
 end
