@@ -505,6 +505,56 @@ do
                 -- Simulation Parameters
                 r_params[e].Tf = 4.0                                    -- Stop Time
                 r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
+        -- Gresho
+        elseif testProblem == 9 then
+
+                --Dimensionality
+                r_params[e].effD = 2
+
+                var num : int32 = 100
+                --Spatial Resolution
+                r_params[e].N[0]  = num
+                r_params[e].N[1]  = num
+                r_params[e].N[2]  = 1
+
+                --Velocity Resolution
+                r_params[e].NV[0] = num+1
+                r_params[e].NV[1] = num+1
+                r_params[e].NV[2] = 1
+
+                var dv : double = 9/(2*PI/5)
+                r_params[e].Vmin[0] = -10 + dv
+                r_params[e].Vmin[1] = -10 + dv
+                r_params[e].Vmin[2] = 0
+
+                r_params[e].Vmax[0] = 10 + dv
+                r_params[e].Vmax[1] = 10 + dv
+                r_params[e].Vmax[2] = 0
+
+                -- Number of Cells
+                r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+                r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+
+                -- Boundary Conditions
+                r_params[e].BCs[0] = 0
+                r_params[e].BCs[1] = 0
+                r_params[e].BCs[2] = 0
+
+
+                -- Physical Parameters
+                r_params[e].R   = 0.5                                   -- Gas Constant
+                r_params[e].K   = 2.0                                   -- Internal DOF
+                r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+                r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- gamma -- variable name taken
+                r_params[e].w   = 0.5                                   -- Viscosity exponent
+                r_params[e].ur  = 1e-6                                  -- Reference Visc
+                r_params[e].Tr  = 1.0                                   -- Reference Temp
+                r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+
+                -- Simulation Parameters
+               	r_params[e].Tf = 2.0*PI/5.0                       	-- Stop Time
+               	r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
 	end
   end
 end
@@ -898,6 +948,43 @@ do
       r_W[e].rhov[1] = 0
       r_W[e].rhov[2] = 0
       r_W[e].rhoE = Cv*P/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
+    end
+
+    -- Gresho
+    elseif testProblem == 9 then
+
+    var rho0 : float = 1
+    var M : float = 6.0/3.0
+    var P0 : float = rho0/g/M/M
+
+    var uphi : float
+    var P : float
+
+    var dv : double = 9/(2*PI/5)
+
+    for e in r_W do
+      var x : float = r_mesh[e].x - 0.5
+      var y : float = r_mesh[e].y - 0.5
+
+      var r : float = cmath.sqrt(x*x + y*y)
+      var phi : float = cmath.atan2(y, x)
+
+      if r < 0.2 then
+        P = P0 + 25.0/2.0*r*r
+        uphi = 5*r
+      elseif ((0.2 <= r) and (r < 0.4)) then
+        P = P0 + 25.0/2.0*r*r + 4*(1 - 5*r - cmath.log(0.2) + cmath.log(r))
+        uphi = 2.0 - 5.0*r
+      elseif r >= 0.4 then
+        P = P0 - 2.0 + 4.0*cmath.log(2)
+        uphi = 0
+      end
+
+      r_W[e].rho = rho0
+      r_W[e].rhov[0] = rho0 * (-cmath.sin(phi) * uphi + dv)
+      r_W[e].rhov[1] = rho0 * ( cmath.cos(phi) * uphi + dv)
+      r_W[e].rhov[2] = 0
+      r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
     end
   end
 end
