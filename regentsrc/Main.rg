@@ -587,10 +587,10 @@ do
 
   for kx = 0, n do
 
-    --vxmesh[4*kx].w   = 14.0
-    --vxmesh[4*kx+1].w = 32.0
-    --vxmesh[4*kx+2].w = 12.0
-    --vxmesh[4*kx+3].w = 32.0
+    vxmesh[4*kx].w   = 14.0
+    vxmesh[4*kx+1].w = 32.0
+    vxmesh[4*kx+2].w = 12.0
+    vxmesh[4*kx+3].w = 32.0
 
     --printf("Changing %d\n", 4*kx)
     --printf("Changing %d\n", 4*kx+1)
@@ -598,22 +598,22 @@ do
     --printf("Changing %d\n", 4*kx+3)
 
     -- TODO Trying Lower Order Integration
-    vxmesh[4*kx].w   = 1.0
-    vxmesh[4*kx+1].w = 1.0
-    vxmesh[4*kx+2].w = 1.0
-    vxmesh[4*kx+3].w = 1.0
+    -- vxmesh[4*kx].w   = 1.0
+    -- vxmesh[4*kx+1].w = 1.0
+    -- vxmesh[4*kx+2].w = 1.0
+    -- vxmesh[4*kx+3].w = 1.0
 
   end
-  
-  --vxmesh[0].w = 7.0
-  --vxmesh[NV[0]-1].w = 7.0
+
+  vxmesh[0].w = 7.0
+  vxmesh[NV[0]-1].w = 7.0
 
 
-   
+
   for kx = 0, NV[0] do
-    vxmesh[kx].w = vxmesh[kx].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
+    --vxmesh[kx].w = vxmesh[kx].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
+    vxmesh[kx].w = vxmesh[kx].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
   end
-
 
   -- Check Weights
   --for kx = 0, NV[0] do
@@ -636,26 +636,28 @@ do
       vymesh[ky].v = Vmin[1] + ky*dh/4
     end 
 
-    for ky = 0, n do
+for ky = 0, n do
 
-      --vymesh[4*ky].w   = 14.0
-      --vymesh[4*ky+1].w = 32.0
-      --vymesh[4*ky+2].w = 12.0
-      --vymesh[4*ky+3].w = 32.0
+      vymesh[4*ky].w   = 14.0
+      vymesh[4*ky+1].w = 32.0
+      vymesh[4*ky+2].w = 12.0
+      vymesh[4*ky+3].w = 32.0
 
       -- TODO Trying Lower Order Integration
-      vymesh[4*ky].w   = 1.0
-      vymesh[4*ky+1].w = 1.0
-      vymesh[4*ky+2].w = 1.0
-      vymesh[4*ky+3].w = 1.0
+      --vymesh[4*ky].w   = 1.0
+      --vymesh[4*ky+1].w = 1.0
+      --vymesh[4*ky+2].w = 1.0
+      --vymesh[4*ky+3].w = 1.0
     end
-  
-    --vymesh[0].w = 7.0
-    --vymesh[NV[1]-1].w = 7.0
+
+    vymesh[0].w = 7.0
+    vymesh[NV[1]-1].w = 7.0
 
     for ky = 0, NV[1] do
-      vymesh[ky].w = vymesh[ky].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
-    end
+      --vymesh[ky].w = vymesh[ky].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
+      vymesh[ky].w = vymesh[ky].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
+    end 
+
   elseif NV[1] == 1 then
     vymesh[0].v = 0
     vymesh[0].w = 1
@@ -684,24 +686,25 @@ do
     end 
 
     for kz = 0, n do
-      --vzmesh[4*kz].w   = 14.0
-      --vzmesh[4*kz+1].w = 32.0
-      --vzmesh[4*kz+2].w = 12.0
-      --vzmesh[4*kz+3].w = 32.0
+      vzmesh[4*kz].w   = 14.0
+      vzmesh[4*kz+1].w = 32.0
+      vzmesh[4*kz+2].w = 12.0
+      vzmesh[4*kz+3].w = 32.0
 
       -- TODO Trying Lower Order Integration
-      vzmesh[4*kz].w   = 1.0
-      vzmesh[4*kz+1].w = 1.0
-      vzmesh[4*kz+2].w = 1.0
-      vzmesh[4*kz+3].w = 1.0
+      --vzmesh[4*kz].w   = 1.0
+      --vzmesh[4*kz+1].w = 1.0
+      --vzmesh[4*kz+2].w = 1.0
+      --vzmesh[4*kz+3].w = 1.0
     end
 
-    --vzmesh[0].w = 7.0
-    --vzmesh[NV[2]-1].w = 7.0
+    vzmesh[0].w = 7.0
+    vzmesh[NV[2]-1].w = 7.0
 
 
     for kz = 0, NV[2] do
-      vzmesh[kz].w = vzmesh[kz].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
+      --vzmesh[kz].w = vzmesh[kz].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
+      vzmesh[kz].w = vzmesh[kz].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
     end
   elseif NV[2] == 1 then
     vzmesh[0].v = 0
@@ -4644,18 +4647,30 @@ task factorize3d(parallelism : int) : int3d
   return int3d { size_x, size_y, size_z }
 end
 
-task factorize(parallelism: int, effD : int32)
+task factorize(parallelism: int, fdims : int32[3])
+
+  var d : int32 = 0
+  if fdims[0] == 1 then d += 1 end
+  if fdims[1] == 1 then d += 1 end
+  if fdims[2] == 1 then d += 1 end
 
   var f6 : int6d = {1, 1, 1, 1, 1, 1}
-  if effD == 1 then
+  if d == 1 then
     var f3 = factorize1d(parallelism)
-    f6.x, f6.y, f6.z = f3.x, f3.y, f3.z    
-  elseif effD == 2 then
+    if fdims[0] == 1 then f6.x = f3.x
+    elseif fdims[1] == 1 then f6.y = f3.x
+    elseif fdims[2] == 1 then f6.z = f3.x end
+  elseif d == 2 then
     var f3 = factorize2d(parallelism)
-    f6.x, f6.y, f6.z = f3.x, f3.y, f3.z    
-  elseif effD == 3 then
+    if fdims[0] == 1 then
+      f6.x = f3.x
+      if fdims[1] == 1 then f6.y = f3.y elseif fdims[2] == 1 then f6.z = f3.y end
+    else
+      f6.y, f6.z = f6.x, f6.y
+    end
+  elseif d == 3 then
     var f3 = factorize3d(parallelism)
-    f6.x, f6.y, f6.z = f3.x, f3.y, f3.z    
+    f6.x, f6.y, f6.z = f3.x, f3.y, f3.z
   end
 
   return f6
@@ -4816,9 +4831,14 @@ task toplevel()
   var r_S = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
   var r_F = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
 
+  -- Check Dimensions for Factorization
+  var fdims : int32[3]
+  if N[0] > 4 then fdims[0] = 1 else fdims[0] = 0 end
+  if N[1] > 4 then fdims[1] = 1 else fdims[1] = 0 end
+  if N[2] > 4 then fdims[2] = 1 else fdims[2] = 0 end
 
   -- Create partitions for regions
-  var f6 : int6d = factorize(config.cpus, effD)  
+  var f6 : int6d = factorize(config.cpus, fdims)  
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   c.printf("Partitioning as {%d, %d, %d, %d, %d, %d, %d, %d}\n", f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
