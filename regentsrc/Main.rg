@@ -136,7 +136,7 @@ do
                 r_params[e].Pr  = 1.0           			-- Prandtl Number
 
 		-- Simulation Parameters
-		r_params[e].Tf = 1.0					-- Stop Time
+		r_params[e].Tf = 0.15					-- Stop Time
 		r_params[e].dtdump = r_params[e].Tf/200			-- Time Between Dumps
  
         -- Kelvin-Helmholtz
@@ -4895,8 +4895,8 @@ task toplevel()
   var cvymesh = coloring.create()
   var cvzmesh = coloring.create()
   -- Create Rects for colorings for partitions
-  for col8 in p_gridbarpb.colors do
-    var bounds = p_gridbarpb[col8].bounds
+  for col8 in p_sig2.colors do
+    var bounds = p_sig2[col8].bounds
     
     -- Leftmost and Rightmost indices
     var il : int32 = bounds.lo.x
