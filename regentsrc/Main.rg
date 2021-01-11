@@ -3876,9 +3876,6 @@ do
   var A : double[3]
   var Xi : double[3]
 
-  fill(r_F.g, 0)
-  fill(r_F.b, 0)
-
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
   var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
@@ -5164,7 +5161,7 @@ task toplevel()
   
   var iter : int32 = 0
   var dumpiter : int32 = 0
-  if testProblem > 0 then 
+  if testProblem > 0 and config.out == true then 
     --__fence(__execution, __block)
     --c.printf("Dumping %d\n", dumpiter)
 
@@ -5184,7 +5181,11 @@ task toplevel()
   while Tsim < Tf do --and iter < 10 do
     iter += 1
 
-    var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
+    if config.out == true then
+      var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
+    else 
+      var dt = TimeStep(calcdt, 10*calcdt, Tf-Tsim)
+    end  
 
     if config.debug == true then
       __fence(__execution, __block)
@@ -5406,6 +5407,8 @@ task toplevel()
       c.printf("Computing Microflux\n")
       c.fflush(c.stdout)
     end
+    fill(r_F.g, 0)
+    fill(r_F.b, 0)
     __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
       Step2c(p_gridbarpb[col8], p_F[col8], p_mesh[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], plx_gridbarpb[col8], ply_gridbarpb[col8], plz_gridbarpb[col8], BCs, R, K, Cv, g, w, Tr, Pr, effD, N)
@@ -5438,7 +5441,7 @@ task toplevel()
       c.printf("Updated W and Phi\n")
       c.fflush(c.stdout)
     end
-    if dt < calcdt then
+    if dt < calcdt and config.out == true then
       dumpiter += 1
       Tdump = 0
 
