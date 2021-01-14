@@ -5153,13 +5153,14 @@ task toplevel()
   var Start : double = c.legion_get_current_time_in_nanos()
   var End : double 
   
+  var dt : double = 0
   while Tsim < Tf do --and iter < 10 do
     iter += 1
 
     if config.out == true then
-      var dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
+      dt = TimeStep(calcdt, dtdump-Tdump, Tf-Tsim)
     else 
-      var dt = TimeStep(calcdt, 10*calcdt, Tf-Tsim)
+      dt = TimeStep(calcdt, 10*calcdt, Tf-Tsim)
     end  
 
     if config.debug == true then
