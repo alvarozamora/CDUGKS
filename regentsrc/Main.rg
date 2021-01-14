@@ -1043,85 +1043,60 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32
   var JR : int32
   var KR : int32
 
-  -- Periodic Boundary Conditions
-  if (Dim == 0 and BCs[0] == 0) then
-    IL = (i - 1 + N[0])%N[0]
-    IR = (i + 1)%N[0]
-    JL = j
-    JR = j
-    KL = k
-    KR = k
-  elseif (Dim == 1 and BCs[1] == 0) then
-    IL = i
-    IR = i
-    JL = (j - 1 + N[1])%N[1]
-    JR = (j + 1)%N[1]
-    KL = k
-    KR = k
-  elseif (Dim == 2 and BCs[2] == 0) then
-    IL = i
-    IR = i
-    JL = j
-    JR = j
-    KL = (k - 1 + N[2])%N[2]
-    KR = (k + 1)%N[2]
-  -- Dirichlet Boundary Conditions
-  elseif (Dim == 0 and BCs[0] == 1) then
+  if Dim == 0 then
     IL = i - 1
     IR = i + 1
-    if IL <  0 then IL = 0 end
-    if IR == N[0] then IR = N[0] - 1 end
     JL = j
     JR = j
     KL = k
     KR = k
-  elseif (Dim == 1 and BCs[1] == 1) then
+  end
+
+  if Dim == 1 then
     IL = i
     IR = i
     JL = j - 1
     JR = j + 1
-    if JL <  0 then JL = 0 end
-    if JR == N[1] then JR = N[1] - 1 end
     KL = k
     KR = k
-  elseif (Dim == 2 and BCs[2] == 1) then
-    IL = i
-    IR = i
-    JL = j
-    JR = j
-    KL = k - 1
-    KR = k + 1
-    if KL <  0 then KL = 0 end
-    if KR == N[2] then KR = N[2] - 1 end
-  -- Neumann Boundary Conditions (Outflow)
-  elseif (Dim == 0 and BCs[0] == 2) then
+  end
+
+  if Dim == 2 then
     IL = i - 1
     IR = i + 1
-    if IL <  0 then IL = 0 end
-    if IR == N[0] then IR = N[0] - 1 end
-    JL = j
-    JR = j
-    KL = k
-    KR = k
-  elseif (Dim == 1 and BCs[1] == 2) then
-    IL = i
-    IR = i
-    JL = j - 1
-    JR = j + 1
-    if JL <  0 then JL = 0 end
-    if JR == N[1] then JR = N[1] - 1 end
-    KL = k
-    KR = k
-  elseif (Dim == 2 and BCs[2] == 2) then
-    IL = i
-    IR = i
     JL = j
     JR = j
     KL = k - 1
     KR = k + 1
-    if KL <  0 then KL = 0 end
-    if KR == N[2] then KR = N[2] - 1 end
-  end 
+  end
+
+    -- Periodic Boundary Conditions (Left and right must both be periodic -- only one if)
+  if Dim == 0 and BCs[0] == 0
+      IL = (IL + N[0])%N[0]
+      IR = IR % N[0]
+  elseif Dim == 1 and BCs[1] == 0
+      JL = (JL + N[1])%N[1]
+      JR =  JR % N[1]
+  elseif Dim == 2 and BCs[0] == 0
+      KL = (KL + N[2])%N[2]
+      KR =  KR % N[2]
+  
+
+  -- Dirichlet or Outflow Boundary Conditions
+  elseif (Dim == 0 and i == 0 and (BCs[0] == 1 or BCs[0] == 2)) then
+    IL = 0
+  elseif (Dim == 0 and i == N[0]-1 and (BCs[3] == 1 or BCs[3] == 2)) then
+    IR = i
+  elseif (Dim == 1 and j == 0 and (BCs[1] == 1 or BCs[1] == 2)) then
+    JL = 0
+  elseif (Dim == 1 and j == N[1]-1 and (BCs[4] == 1 or BCs[4] == 2)) then
+    JR = j
+  elseif (Dim == 2 and k == 0 and (BCs[2] == 1 or BCs[2] == 2)) then
+    KL = 0
+  elseif (Dim == 2 and k == N[2]-1 and (BCs[5] == 1 or BCs[5] == 2)) then
+    KR = k
+  end
+ 
   
   var LR : int32[6] 
   LR[0] = IL
