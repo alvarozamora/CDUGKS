@@ -1071,13 +1071,13 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32
   end
 
     -- Periodic Boundary Conditions (Left and right must both be periodic -- only one if)
-  if Dim == 0 and BCs[0] == 0
+  if Dim == 0 and BCs[0] == 0 then
       IL = (IL + N[0])%N[0]
       IR = IR % N[0]
-  elseif Dim == 1 and BCs[1] == 0
+  elseif Dim == 1 and BCs[1] == 0 then
       JL = (JL + N[1])%N[1]
       JR =  JR % N[1]
-  elseif Dim == 2 and BCs[0] == 0
+  elseif Dim == 2 and BCs[0] == 0 then
       KL = (KL + N[2])%N[2]
       KR =  KR % N[2]
   
