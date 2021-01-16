@@ -100,7 +100,7 @@ do
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num
+		r_params[e].NV[0] = num+1
 		r_params[e].NV[1] = 1
 		r_params[e].NV[2] = 1
                 
@@ -152,8 +152,8 @@ do
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num
-		r_params[e].NV[1] = num
+		r_params[e].NV[0] = num+1
+		r_params[e].NV[1] = num+1
 		r_params[e].NV[2] = 1
                 
 		r_params[e].Vmin[0] = -10
@@ -252,15 +252,15 @@ do
                 --Dimensionality
                 r_params[e].effD = 2
 
-		var num : int32 = 100
+		var num : int32 = 128
                 --Spatial Resolution
                 r_params[e].N[0]  = num
 		r_params[e].N[1]  = num
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num
-		r_params[e].NV[1] = num
+		r_params[e].NV[0] = num+1
+		r_params[e].NV[1] = num+1
 		r_params[e].NV[2] = 1
                 
 		r_params[e].Vmin[0] = -10
@@ -312,8 +312,8 @@ do
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num
-		r_params[e].NV[1] = num
+		r_params[e].NV[0] = num+1
+		r_params[e].NV[1] = num+1
 		r_params[e].NV[2] = 1
                 
 		r_params[e].Vmin[0] = -10
@@ -365,7 +365,7 @@ do
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num
+		r_params[e].NV[0] = num+1
 		r_params[e].NV[1] = 1
 		r_params[e].NV[2] = 1
                 
@@ -417,8 +417,8 @@ do
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num
-		r_params[e].NV[1] = num
+		r_params[e].NV[0] = num+1
+		r_params[e].NV[1] = num+1
 		r_params[e].NV[2] = 1
                 
 		r_params[e].Vmin[0] = -20
