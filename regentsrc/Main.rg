@@ -259,8 +259,8 @@ do
  		r_params[e].N[2]  = 1
                 
 		--Velocity Resolution
-		r_params[e].NV[0] = num+1
-		r_params[e].NV[1] = num+1
+		r_params[e].NV[0] = 128+1
+		r_params[e].NV[1] = 128+1
 		r_params[e].NV[2] = 1
                 
 		r_params[e].Vmin[0] = -10
