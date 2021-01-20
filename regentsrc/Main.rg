@@ -4775,7 +4775,7 @@ task toplevel()
   c.printf("Simulation Parameters\n")
   if testProblem > 0 then c.printf("testProblem = %d\n", testProblem) end
   c.printf("N = {%d, %d, %d}, NV = {%d, %d, %d}, effD = %d\n", N[0], N[1], N[2], NV[0], NV[1], NV[2], effD)
-  c.printf("BCs = {%d, %d, %d}, Vmin = {%f, %f, %f}, Vmax = {%f, %f, %f}\n", BCs[0], BCs[1], BCs[2], Vmin[0], Vmin[1], Vmin[2], Vmax[0], Vmax[1], Vmax[2])
+  c.printf("BCs = {{%d, %d, %d}, {%d, %d, %d}}, Vmin = {%f, %f, %f}, Vmax = {%f, %f, %f}\n", BCs[0], BCs[1], BCs[2], BCs[3], BCs[4], BCs[5], Vmin[0], Vmin[1], Vmin[2], Vmax[0], Vmax[1], Vmax[2])
   c.printf("R = %f, K = %f, g = %f, Cv = %f\n", R, K, g, Cv)
   c.printf("w = %f, ur = %f, Tr = %f, Pr = %f\n", w, ur, Tr, Pr)
   c.printf("End Time = %f, dtdump %f\n", Tf, dtdump)
