@@ -572,14 +572,14 @@ do
   var a : double
   var dh : double
 
-  --c.assert(NV[0]%4 == 0 and (NV[1]%4 == 0 or NV[1] == 1) and (NV[2]%4 == 0 or NV[2] == 1)) -- Using np = 4 Newton Cotes
+  regentlib.assert(NV[0]%4 == 1 and NV[1]%1 == 1 and NV[2]%4 == 1), "4th Order Newton-Cotes weights require 4n+1 grid cells\n")
 
 
   -- First Dimension
   a = Vmin[0]
   b = Vmax[0]
-  n = (NV[0])/4  -- no longer subtracting 1
-  dh = (b-a)/(NV[0]-1)*4 -- mine (Al)
+  n = (NV[0])/4  
+  dh = (b-a)/(NV[0]-1)*4 
 
   for kx = 0, NV[0] do
     vxmesh[kx].v = Vmin[0] + kx*dh/4
@@ -592,17 +592,6 @@ do
     vxmesh[4*kx+2].w = 12.0
     vxmesh[4*kx+3].w = 32.0
 
-    --printf("Changing %d\n", 4*kx)
-    --printf("Changing %d\n", 4*kx+1)
-    --printf("Changing %d\n", 4*kx+2)
-    --printf("Changing %d\n", 4*kx+3)
-
-    -- TODO Trying Lower Order Integration
-    -- vxmesh[4*kx].w   = 1.0
-    -- vxmesh[4*kx+1].w = 1.0
-    -- vxmesh[4*kx+2].w = 1.0
-    -- vxmesh[4*kx+3].w = 1.0
-
   end
 
   vxmesh[0].w = 7.0
@@ -611,7 +600,6 @@ do
 
 
   for kx = 0, NV[0] do
-    --vxmesh[kx].w = vxmesh[kx].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
     vxmesh[kx].w = vxmesh[kx].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
   end
 
@@ -625,42 +613,38 @@ do
   
 
   -- Second Dimension
-  if NV[1] >= 4 then
+  if NV[1] >= 5 then
     a = Vmin[1]
     b = Vmax[1]
-    n = (NV[1])/4  -- no longer subtracting 1
-    -- dh=(b-a)/n -- old from dugks
-    dh = (b-a)/(NV[1]-1)*4 -- mine (Al)
+    n = (NV[1])/4  
+    dh = (b-a)/(NV[1]-1)*4 
 
     for ky = 0, NV[1] do
       vymesh[ky].v = Vmin[1] + ky*dh/4
     end 
 
-for ky = 0, n do
+    for ky = 0, n do
 
       vymesh[4*ky].w   = 14.0
       vymesh[4*ky+1].w = 32.0
       vymesh[4*ky+2].w = 12.0
       vymesh[4*ky+3].w = 32.0
 
-      -- TODO Trying Lower Order Integration
-      --vymesh[4*ky].w   = 1.0
-      --vymesh[4*ky+1].w = 1.0
-      --vymesh[4*ky+2].w = 1.0
-      --vymesh[4*ky+3].w = 1.0
     end
 
     vymesh[0].w = 7.0
     vymesh[NV[1]-1].w = 7.0
 
     for ky = 0, NV[1] do
-      --vymesh[ky].w = vymesh[ky].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
       vymesh[ky].w = vymesh[ky].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
     end 
 
   elseif NV[1] == 1 then
+
+    -- i.e. if 1-Dimensional Problem
     vymesh[0].v = 0
     vymesh[0].w = 1
+
   else
     c.printf("Error with Newton Cotes (number of vy points)\n")
   end 
@@ -674,12 +658,11 @@ for ky = 0, n do
   --end
 
   -- Third Dimension
-  if NV[2] >= 4 then
+  if NV[2] >= 5 then
     a = Vmin[2]
     b = Vmax[2]
-    n = (NV[2])/4  -- no longer subtracting 1
-    -- dh=(b-a)/n -- old from dugks
-    dh = (b-a)/(NV[2]-1)*4 -- mine (Al)
+    n = (NV[2])/4
+    dh = (b-a)/(NV[2]-1)*4 
 
     for kz = 0, NV[2] do
       vzmesh[kz].v = Vmin[2] + k*dh/4
@@ -691,11 +674,6 @@ for ky = 0, n do
       vzmesh[4*kz+2].w = 12.0
       vzmesh[4*kz+3].w = 32.0
 
-      -- TODO Trying Lower Order Integration
-      --vzmesh[4*kz].w   = 1.0
-      --vzmesh[4*kz+1].w = 1.0
-      --vzmesh[4*kz+2].w = 1.0
-      --vzmesh[4*kz+3].w = 1.0
     end
 
     vzmesh[0].w = 7.0
@@ -703,12 +681,14 @@ for ky = 0, n do
 
 
     for kz = 0, NV[2] do
-      --vzmesh[kz].w = vzmesh[kz].w*dh/4. -- TODO Trying Lower Order Integration old factor was /90.}
       vzmesh[kz].w = vzmesh[kz].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
     end
   elseif NV[2] == 1 then
+
+    -- i.e. if 2-Dimensional Problem
     vzmesh[0].v = 0
     vzmesh[0].w = 1
+
   else
     c.printf("Error with Newton Cotes (number of vz points)\n")
   end 
