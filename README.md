@@ -5,7 +5,7 @@ Welcome to the MP-CDUGKS github repository. MP-CDUGKS is written in the [Regent]
 Refer to the Legion repository for instructions on how to build the runtime system.
 
 <h2>Quick Start Guide </h2>
-There are O(~10) test problems currently implemented, with `testProblem` id
+There are O(~10) test problems currently implemented, with the `testProblem` id
 
 1) Sod Shock Tube
 2) Kelvin-Helmholtz (Sharp Interface, wavelength = 1)
