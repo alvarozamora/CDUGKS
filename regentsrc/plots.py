@@ -7,6 +7,7 @@ import struct
 import glob
 import argparse
 import pdb
+import os
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -44,6 +45,8 @@ Efiles.reverse()
 #phasefiles.sort()
 #phasefiles.reverse()
 
+os.makedirs("Plots", exist_ok=True)
+
 plt.figure()
 if testproblem == 1:
 
@@ -58,8 +61,8 @@ if testproblem == 1:
 		plt.ylim(0,1.2)
 		plt.plot(np.linspace(0.5/len(X),1-0.5/len(X), len(X)), X)#, 'o-')
 		plt.grid()
-		plt.savefig('Check/Rho'+n+'.png')
-		print('Check/Rho'+n+'.png')
+		plt.savefig('Plots/Rho'+n+'.png')
+		print('Plots/Rho'+n+'.png')
 
 		plt.cla()
 		plt.clf()
@@ -102,8 +105,8 @@ if testproblem == 2:
 		#plt.contourf(xx, yy, X, levels = np.linspace(rhomin,rhomax,300))
 		plt.clim(0.5,2.5)
 		plt.colorbar(ticks = [0.5, 1.0, 1.5, 2.0, 2.5])
-		plt.savefig('Check/Rho'+n+'.png')
-		print('Check/Rho'+n+'.png')
+		plt.savefig('Plots/Rho'+n+'.png')
+		print('Plots/Rho'+n+'.png')
 
 		plt.cla()
 		plt.clf()
@@ -159,8 +162,8 @@ if testproblem == 5:
                 rhof.close()
 
                 #plt.imshow(X)
-                #plt.savefig('Check/VXmap'+n+'.png')
-                #print('Check/VXmap'+n+'.png')
+                #plt.savefig('Plots/VXmap'+n+'.png')
+                #print('Plots/VXmap'+n+'.png')
 
                 #plt.cla()
                 #plt.clf()
@@ -207,8 +210,8 @@ if testproblem == 5:
                 #plt.grid(alpha=0.2)
 
                 plt.tight_layout()
-                plt.savefig('Check/VXprof'+n+'.png', dpi=230, bbox_inches = 'tight', pad_inches = 1/10)
-                print('Check/VXprof'+n+'.png')
+                plt.savefig('Plots/VXprof'+n+'.png', dpi=230, bbox_inches = 'tight', pad_inches = 1/10)
+                print('Plots/VXprof'+n+'.png')
 
                 plt.clf()
 
@@ -227,14 +230,14 @@ if testproblem == 6:
 
 		F = F.reshape((num,num))
 		plt.imshow(F,origin='lower')
-		plt.savefig("Check/phase"+n+".png")
+		plt.savefig("Plots/phase"+n+".png")
 		plt.figure()
 		avg1 = F.mean(axis=0)
 		avgnum = F.mean(axis=1)
 
 		v = np.linspace(-10,10,num)
 		plt.plot(v, avg2)
-		plt.savefig('Check/phaseavg'+n+'.png')
+		plt.savefig('Plots/phaseavg'+n+'.png')
 		print(f"Problem 6: Finished {n[1:]}")
 		'''
 	for file in phasefiles:
@@ -291,7 +294,7 @@ if testproblem == 6:
 		#axavgy.set_xlim(0,1.5)
 		axavgy.set_ylim(axPhase.get_ylim())
 
-		plt.savefig("Check/phase"+n+'.png')
+		plt.savefig("Plots/phase"+n+'.png')
 		print(f"Problem 6: Finished {n[1:]}")
 
 
@@ -313,8 +316,8 @@ if testproblem == 10:
 		plt.ylabel('Density')
 		plt.title("Sine Wave Collapse")
 		plt.grid()
-		plt.savefig('Check/Rho'+n+'.png')
-		print('Check/Rho'+n+'.png')
+		plt.savefig('Plots/Rho'+n+'.png')
+		print('Plots/Rho'+n+'.png')
 
 		plt.cla()
 		plt.clf()
