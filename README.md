@@ -1,6 +1,6 @@
 <h1>Massively Parallel Coupled Discrete Unified Gas Kinetic Scheme</h1>
 
-Welcome to the MP-CDUGKS github repository. MP-CDUGKS is written in the [Regent](https://regent-lang.org) language, and uses the [Legion Runtime System](https://github.com/StanfordLegion/legion). I recommend using the `control_replication` branch, which as of writing this has better one-node performance for this code with the `-dm:exact` runtime flag.
+Welcome to the MP-CDUGKS github repository. MP-CDUGKS is written in the [Regent](https://regent-lang.org) language, which uses the [Legion Runtime System](https://github.com/StanfordLegion/legion). I recommend using the `control_replication` branch, which as of writing this has better one-node performance for this code with the `-dm:exact` runtime flag.
 
 The Regent implementation can be found in `regentsrc/`. A nonparallelized version was written (long ago, and is not tested extensively) in C++ and can be found in `src/`.
 
