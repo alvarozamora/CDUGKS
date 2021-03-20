@@ -30,6 +30,7 @@ The conserved variables will be output at every timestep to the relative `Data/`
 <h2>Adding Test Problems</h2>
 To add test problems, you will first need to set simulation parameters in the task `TestProblem`. Then, you will need to specify the initial conditions in `InitializeW`. For Non-Maxwellian initializations, you will need to modify `InitializeGrid`.
 
+
 No external initial conditions are currently implemented, but it is certainly on the to-do list.
 
 <h3>Planned Features</h3>
