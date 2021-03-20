@@ -34,7 +34,7 @@ To add test problems, you will first need to set simulation parameters in the ta
 
 No external initial conditions are currently implemented, but it is certainly on the to-do list.
 
-<h3>Planned Features</h3>
+<h2>Planned Features</h2>
 
 1) Comprehensive Unit Testing
 2) HDF5 I/O
