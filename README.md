@@ -8,7 +8,7 @@ Refer to the Legion repository for instructions on how to build the runtime syst
 
 <h2>Quick Start Guide </h2>
 
-There are O(~10) test problems currently implemented, with the test problem id `testProblem`
+There are O(~10) test problems currently implemented, with the `testProblem` id
 
 1) Sod Shock Tube
 2) Kelvin-Helmholtz (Sharp Interface, wavelength = 1)
