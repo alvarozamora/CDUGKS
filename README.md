@@ -25,7 +25,7 @@ To run one of these problems, run `path/to/regent/executable/regent.py Main.rg -
 
 If using the `control_replication` branch, also add the `-dm:exact` flag, which instructs the default mapper to map exact regions to cores when only using one node. Refer to the [Legion Documentation](https://legion.stanford.edu/profiling/index.html#machine-configuration) for more information regarding the Machine Configuration and Runtime flags.
 
-The conserved variables will be output at every timestep to the relative `Data/` path.
+The conserved variables will be output at every timestep to the relative `Data/` path unless the output boolean `-o 1` (default) is set to zero.
 
 <h2>Adding Test Problems</h2>
 To add test problems, you will first need to set simulation parameters in the task `TestProblem`. Then, you will need to specify the initial conditions in `InitializeW`. For Non-Maxwellian initializations, you will need to modify `InitializeGrid`.
