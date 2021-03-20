@@ -47,7 +47,7 @@ Efiles.reverse()
 plt.figure()
 if testproblem == 1:
 
-	for file in rhofiles[-2:]:
+	for file in rhofiles[:]:
 		n = file[9:13]
 		f = open(file, 'rb')
 
@@ -293,3 +293,29 @@ if testproblem == 6:
 
 		plt.savefig("Check/phase"+n+'.png')
 		print(f"Problem 6: Finished {n[1:]}")
+
+
+
+
+if testproblem == 10:
+
+	for file in rhofiles[:]:
+		n = file[9:13]
+		f = open(file, 'rb')
+
+		X = f.read(num*size)
+		X = np.array(struct.unpack(type*num, X))
+
+		plt.xlim(0,1)
+		plt.ylim(0,10)
+		plt.plot(np.linspace(0.5/len(X),1-0.5/len(X), len(X)), X)#, 'o-')
+		plt.xlabel('x')
+		plt.ylabel('Density')
+		plt.title("Sine Wave Collapse")
+		plt.grid()
+		plt.savefig('Check/Rho'+n+'.png')
+		print('Check/Rho'+n+'.png')
+
+		plt.cla()
+		plt.clf()
+		f.close()

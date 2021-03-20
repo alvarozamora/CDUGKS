@@ -1,4 +1,3 @@
-cat: 4: No such file or directory
 import "regent"
 
 -- Helper modules to handle command line arguments
@@ -96,7 +95,7 @@ do
       -- Dimensionality
       r_params[e].effD = 1
 
-      var num : int32 = 256
+      var num : int32 = 512
       -- Spatial Resolution
       r_params[e].N[0]  = num
       r_params[e].N[1]  = 1
@@ -108,11 +107,11 @@ do
       r_params[e].NV[2] = 1
                 
       -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -10
+      r_params[e].Vmin[0] = -8
       r_params[e].Vmin[1] = 0
       r_params[e].Vmin[2] = 0
                 
-      r_params[e].Vmax[0] = 10
+      r_params[e].Vmax[0] = 8
       r_params[e].Vmax[1] = 0
       r_params[e].Vmax[2] = 0
                 
@@ -134,7 +133,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-6                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 1.0                                   -- Prandtl Number
@@ -187,7 +186,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-4                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
@@ -241,7 +240,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.0                                   -- Viscosity exponent
+      r_params[e].w   = 0.0                                   -- Viscosity Exponent
       r_params[e].ur  = 1e2                                   -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 1.0                                   -- Prandtl Number
@@ -295,7 +294,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-4                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
@@ -350,7 +349,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-4                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
@@ -404,7 +403,7 @@ do
       r_params[e].K   = 0.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-4                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
@@ -458,7 +457,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-6                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
@@ -509,7 +508,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-3                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
@@ -562,7 +561,7 @@ do
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity exponent
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-6                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
@@ -570,6 +569,55 @@ do
       -- Simulation Parameters
       r_params[e].Tf = 2.0*PI/5.0                             -- Stop Time
       r_params[e].dtdump = r_params[e].Tf/200                 -- Time Between Dumps
+
+    -- Sine Wave Collapse
+    -- Sinusoidal Velocity Profile
+    elseif testProblem == 10 then
+
+      -- Dimensionality
+      r_params[e].effD = 1
+
+      -- Spatial Resolution
+      r_params[e].N[0]  = 128
+      r_params[e].N[1]  = 1
+      r_params[e].N[2]  = 1
+
+      -- Velocity Resolution
+      r_params[e].NV[0] = 16385
+      r_params[e].NV[1] = 1
+      r_params[e].NV[2] = 1
+
+      -- Velocity Grid (Min and Max)
+      r_params[e].Vmin[0] = -6
+      r_params[e].Vmin[1] = 0
+      r_params[e].Vmin[2] = 0
+
+      r_params[e].Vmax[0] = 6
+      r_params[e].Vmax[1] = 0
+      r_params[e].Vmax[2] = 0
+
+      -- Number of Cells
+      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+      -- Boundary Conditions
+      r_params[e].BCs[0] = 0
+      r_params[e].BCs[1] = 0
+      r_params[e].BCs[2] = 0
+
+      -- Physical Parameters
+      r_params[e].R   = 0.5                                   -- Gas Constant
+      r_params[e].K   = 2.0                                   -- Internal DOF
+      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
+      r_params[e].ur  = 1e-1                                  -- Reference Visc
+      r_params[e].Tr  = 1.0                                   -- Reference Temp
+      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+
+      -- Simulation Parameters
+      r_params[e].Tf = 1.0                            	-- Stop Time
+      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
 
     end
   end
@@ -588,7 +636,7 @@ do
   var a : double
   var dh : double
 
-  regentlib.assert(NV[0]%4 == 1 and NV[1]%1 == 1 and NV[2]%4 == 1), "4th Order Newton-Cotes weights require 4n+1 grid cells\n")
+  regentlib.assert((NV[0]%4 == 1 and NV[1]%4 == 1 and NV[2]%4 == 1), "4th Order Newton-Cotes weights require 4n+1 grid cells\n")
 
 
   -- First Dimension
@@ -986,9 +1034,9 @@ do
       r_W[e].rhoE = Cv*P/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
     end
 
-    -- Gresho Vortex (also known as Triangular Vortex)
-    -- Refer to Fabian Miczek 2013
-    elseif testProblem == 9 then
+  -- Gresho Vortex (also known as Triangular Vortex)
+  -- Refer to Fabian Miczek 2013
+  elseif testProblem == 9 then
 
     var um : double = 1.0                         -- Velocity Max
     var rho0 : double = 1                         -- Density
@@ -1030,7 +1078,29 @@ do
       r_W[e].rhov[1] = rho0 * ( cmath.cos(phi) * uphi + dv)
       r_W[e].rhov[2] = 0
       r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+
     end
+
+  -- Sine Wave Collapse
+  elseif testProblem == 10 then
+
+    -- Uniform Density
+    var rho0 : double = 1
+
+    -- Nonzero Width
+    var T : double = 0.1
+    var P : double = rho0 * R * T
+
+    for e in r_W do
+
+      r_W[e].rho = rho0
+      r_W[e].rhov[0] = rho0 * cmath.sin(2*PI*r_mesh[e].x)
+      r_W[e].rhov[1] = 0
+      r_W[e].rhov[2] = 0
+      r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0])/r_W[e].rho
+
+    end
+    
   end
 end
 
@@ -5289,9 +5359,9 @@ task toplevel()
   end
 
   -- Timestep
-  var CFL : double = 0.5 -- Safety Factor
+  var CFL : double = 0.9 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
-  var umax : double  = 2.5 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
+  var umax : double  = 0.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
   
   var Tsim : double = 0.0  -- Sim time
