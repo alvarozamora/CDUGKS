@@ -7,7 +7,8 @@ The Regent implementation can be found in `regentsrc/`. A nonparallelized versio
 Refer to the Legion repository for instructions on how to build the runtime system.
 
 <h2>Quick Start Guide </h2>
-There are O(~10) test problems currently implemented, with the test problem id
+
+There are O(~10) test problems currently implemented, with the test problem id `testProblem`
 
 1) Sod Shock Tube
 2) Kelvin-Helmholtz (Sharp Interface, wavelength = 1)
