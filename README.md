@@ -16,6 +16,7 @@ There are O(~10) test problems currently implemented, with the test problem id
 7) Cloud Crushing (Blob) Test. Note: No elongated box is used.
 8) Thermoacoustic Wave
 9) Gresho Vortex
+10) Sine Wave Collapse.
 
 To run one of these problems, run `path/to/regent/executable/regent.py Main.rg -p testProblem -c <subregions> -ll:cpu <cores/node> -ll:csize <mem/node>`. If using the `control_replication` branch, also add the `-dm:exact` flag, which instructs the default mapper to map exact regions to cores when only using one node.
 
