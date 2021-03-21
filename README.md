@@ -2,7 +2,7 @@
 
 Welcome to the MP-CDUGKS github repository. MP-CDUGKS is written in the [Regent](https://regent-lang.org) language, which uses the [Legion Runtime System](https://github.com/StanfordLegion/legion). I recommend using the `control_replication` branch, which as of writing this has better one-node performance for this code with the `-dm:exact` runtime flag.
 
-The Regent implementation can be found in `regentsrc/`. A nonparallelized version was written (long ago, and is not tested extensively) in C++ and can be found in `src/`.
+The Regent implementation of CDUGKS ([Liu et. al. 2018](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.98.053310)) can be found in `regentsrc/`. A nonparallelized version was written (long ago, and is not tested extensively) in C++ and can be found in `src/`.
 
 Refer to the Legion repository for instructions on how to build the runtime system.
 
