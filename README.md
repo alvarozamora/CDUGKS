@@ -16,7 +16,7 @@ There are O(~10) test problems currently implemented, with the `testProblem` id
 4) Ramped Kelvin-Helmholtz
 5) Nonuniform Shearing Box
 6) Maxwellian Relaxation (Nonstandard problem: Two blobs moving toward each other. Sine Wave Collapse is a better continuous/periodic version of this problem)
-7) Cloud Crushing (Blob) Test. Note: No elongated box is used.
+7) Cloud Crushing (Blob) Test. Note: 2D; no elongated box is used.
 8) Thermoacoustic Wave
 9) Gresho Vortex
 10) Sine Wave Collapse
