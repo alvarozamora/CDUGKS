@@ -34,7 +34,9 @@ fspace params{
   Vmin : double[3],
   Vmax : double[3],
   Tf : double,
-  dtdump: double
+  dtdump: double,
+  thermal_bath : bool,
+  thermal_T : double
 
 }
 
@@ -88,6 +90,10 @@ where
   reads writes(r_params)
 do
   for e in r_params do
+
+    -- Some Default Settings
+    r_params[e].thermal_bath = false
+    r_params[e].thermal_T = 0
 
     -- Sod Shock
     if testProblem == 1 then
@@ -614,6 +620,58 @@ do
       r_params[e].ur  = 1e-1                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+
+      -- Simulation Parameters
+      r_params[e].Tf = 1.0                            	-- Stop Time
+      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
+
+    -- Isothermal Shock
+    elseif testProblem == 11 then
+
+      -- Dimensionality
+      r_params[e].effD = 1
+
+      -- Spatial Resolution
+      r_params[e].N[0]  = 256
+      r_params[e].N[1]  = 1
+      r_params[e].N[2]  = 1
+
+      -- Velocity Resolution
+      r_params[e].NV[0] = 256
+      r_params[e].NV[1] = 1
+      r_params[e].NV[2] = 1
+
+      -- Velocity Grid (Min and Max)
+      r_params[e].Vmin[0] = -6
+      r_params[e].Vmin[1] = 0
+      r_params[e].Vmin[2] = 0
+
+      r_params[e].Vmax[0] = 6
+      r_params[e].Vmax[1] = 0
+      r_params[e].Vmax[2] = 0
+
+      -- Number of Cells
+      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+      -- Boundary Conditions
+      r_params[e].BCs[0] = 0
+      r_params[e].BCs[1] = 0
+      r_params[e].BCs[2] = 0
+
+      -- Physical Parameters
+      r_params[e].R   = 0.5                                   -- Gas Constant
+      r_params[e].K   = 2.0                                   -- Internal DOF
+      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
+      r_params[e].ur  = 1e-1                                  -- Reference Visc
+      r_params[e].Tr  = 1.0                                   -- Reference Temp
+      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+
+      -- Thermal Bath
+      r_params[e].thermal_bath = true
+      r_params[e].thermal_T = 1.0
 
       -- Simulation Parameters
       r_params[e].Tf = 1.0                            	-- Stop Time
@@ -1291,7 +1349,7 @@ task Step1a(r_grid : region(ispace(int8d), grid),
             vzmesh : region(ispace(int1d), vmesh),
             dt : double, R : double, K : double, Cv : double,
             g : double, w : double, ur : double, Tr : double,
-            Pr : double, effD : int32)
+            Pr : double, effD : int32, thermal_bath : bool, thermal_T : double)
 where
   reads(r_grid, r_W, vxmesh.v, vymesh.v, vzmesh.v), 
   reads writes(r_S),
@@ -1369,8 +1427,13 @@ do
       end
 
       -- Compute Equilibrium Distributions
-      g_eq = geq(c2, r_W[e3].rho, T, R, effD)
-      b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+      if thermal_bath then
+        g_eq = geq(c2, r_W[e3].rho, thermal_T, R, effD)
+        b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
+      else
+        g_eq = geq(c2, r_W[e3].rho, T, R, effD)
+        b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+      end
 
       -- Compute Auxilary Energy Term for b
       Z = 0
@@ -4012,7 +4075,8 @@ task Step2b(r_gridbarpb : region(ispace(int8d), grid),
             vymesh    : region(ispace(int1d), vmesh),
             vzmesh    : region(ispace(int1d), vmesh),
             dt : double, R : double, K : double, Cv : double, g : double,
-            w : double, ur : double, Tr : double, Pr : double, effD : int32)
+            w : double, ur : double, Tr : double, Pr : double, effD : int32,
+            thermal_bath : bool, thermal_T : double)
 where
   reads writes(r_gridbarpb),
   reads(r_Wb, vxmesh, vymesh, vzmesh)
@@ -4083,8 +4147,13 @@ do
         end
 
         -- Compute Equilibrium Distributions
-        g_eq = geq(c2, r_Wb[e4].rho, T, R, effD)
-        b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+        if thermal_bath then
+          g_eq = geq(c2, r_W[e4].rho, thermal_T, R, effD)
+          b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
+        else
+          g_eq = geq(c2, r_W[e4].rho, T, R, effD)
+          b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+        end
 
         if (isnan(g_eq) == 1 or isnan(b_eq) == 1) then
 
@@ -4277,7 +4346,8 @@ task Step4and5(r_grid : region(ispace(int8d), grid),
                vymesh : region(ispace(int1d), vmesh),
                vzmesh : region(ispace(int1d), vmesh),
                dt : double, BCs : int32[6], R : double, K : double, Cv : double, N : int32[3],
-               g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32)
+               g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32,
+               thermal_bath : bool, thermal_T : double)
 where
   reads(vxmesh, vymesh, vzmesh, r_mesh, r_F, r_S),
   reads writes(r_W, r_grid)
@@ -4354,8 +4424,13 @@ do
       for d = 0, effD do
         c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
       end
-      g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
-      b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*To)/2
+      if thermal_bath then
+        g_eqo = geq(c2, r_W[e3].rho, thermal_T, R, effD)
+        b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
+      else
+        g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
+        b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*To)/2.0
+      end
 
       -- First Update phi
       i = s.x
@@ -4453,8 +4528,13 @@ do
       for d = 0, effD do
         c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
       end
-      g_eq = geq(c2, r_W[e3].rho, T, R, effD)
-      b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3-effD+K)*R*T)/2
+      if thermal_bath then
+        g_eq = geq(c2, r_W[e3].rho, thermal_T, R, effD)
+        b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
+      else
+        g_eq = geq(c2, r_W[e3].rho, T, R, effD)
+        b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
+      end
 
 
       -- Second Update phi
@@ -5002,6 +5082,8 @@ task toplevel()
   var Vmax : double[3] = r_params[0].Vmax
   var Tf : double = r_params[0].Tf
   var dtdump : double = r_params[0].dtdump
+  var thermal_bath : bool = r_params[0].thermal_bath
+  var thermal_T : double = r_params[0].thermal_T
 
   __fence(__execution, __block) 
   c.printf("Simulation Parameters\n")
@@ -5401,7 +5483,7 @@ task toplevel()
     -- Step 1a
     __demand(__index_launch)
     for col8 in p_grid.colors do 
-      Step1a(p_grid[col8], p_gridbarp[col8], p_S[col8], p_W[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
+      Step1a(p_grid[col8], p_gridbarp[col8], p_S[col8], p_W[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T)
     end
     if config.debug == true then
       __fence(__execution, __block)
@@ -5599,7 +5681,7 @@ task toplevel()
     end
     __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
-      Step2b(p_gridbarpb[col8], p_Wb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD)
+      Step2b(p_gridbarpb[col8], p_Wb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T))
     end
     if config.debug == true then
       __fence(__execution, __block)
@@ -5640,7 +5722,7 @@ task toplevel()
     end
     __demand(__index_launch)
     for col8 in p_grid.colors do
-      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], p_S[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD)
+      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], p_S[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T))
     end
     if config.debug == true then
       __fence(__execution, __block)
