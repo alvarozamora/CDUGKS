@@ -36,7 +36,9 @@ fspace params{
   Tf : double,
   dtdump: double,
   thermal_bath : bool,
-  thermal_T : double
+  thermal_T : double,
+  coord : int32,
+  MeshType : int32,
 
 }
 
@@ -92,8 +94,10 @@ do
   for e in r_params do
 
     -- Some Default Settings
-    r_params[e].thermal_bath = false
-    r_params[e].thermal_T = 0
+    r_params[e].thermal_bath = false   -- Boolean Flag for thermal bath. Need to set thermal_T as well if true
+    r_params[e].thermal_T = 0          -- Global thermal bath temperature 
+    r_params[e].coord = 0              -- Coordinate system (0: Cartesian, 1: Spherical)
+    r_params[e].MeshType = 1           -- Mesh Type (0: user specified (TODO), 1: uniform grid, 2: logarithmic grid, 3: nested rectangular(TODO) )
 
     -- Sod Shock
     if testProblem == 1 then
@@ -508,6 +512,11 @@ do
       r_params[e].BCs[1] = 0
       r_params[e].BCs[2] = 0
 
+      -- Boundary Conditions
+      r_params[e].BCs[3] = 0
+      r_params[e].BCs[4] = 0
+      r_params[e].BCs[5] = 0
+
 
       -- Physical Parameters
       r_params[e].R   = 0.5                                   -- Gas Constant
@@ -561,6 +570,11 @@ do
       r_params[e].BCs[1] = 0
       r_params[e].BCs[2] = 0
 
+      -- Boundary Conditions
+      r_params[e].BCs[3] = 0
+      r_params[e].BCs[4] = 0
+      r_params[e].BCs[5] = 0
+
 
       -- Physical Parameters
       r_params[e].R   = 0.5                                   -- Gas Constant
@@ -611,6 +625,10 @@ do
       r_params[e].BCs[1] = 0
       r_params[e].BCs[2] = 0
 
+      r_params[e].BCs[3] = 0
+      r_params[e].BCs[4] = 0
+      r_params[e].BCs[5] = 0
+
       -- Physical Parameters
       r_params[e].R   = 0.5                                   -- Gas Constant
       r_params[e].K   = 2.0                                   -- Internal DOF
@@ -632,12 +650,68 @@ do
       r_params[e].effD = 1
 
       -- Spatial Resolution
+      r_params[e].N[0]  = 1024
+      r_params[e].N[1]  = 1
+      r_params[e].N[2]  = 1
+
+      -- Velocity Resolution
+      r_params[e].NV[0] = 256+1
+      r_params[e].NV[1] = 1
+      r_params[e].NV[2] = 1
+
+      -- Velocity Grid (Min and Max)
+      r_params[e].Vmin[0] = -10
+      r_params[e].Vmin[1] = 0
+      r_params[e].Vmin[2] = 0
+
+      r_params[e].Vmax[0] = 10
+      r_params[e].Vmax[1] = 0
+      r_params[e].Vmax[2] = 0
+
+      -- Number of Cells
+      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+      -- Boundary Conditions
+      r_params[e].BCs[0] = 2
+      r_params[e].BCs[1] = 0
+      r_params[e].BCs[2] = 0
+
+      r_params[e].BCs[3] = 2
+      r_params[e].BCs[4] = 0
+      r_params[e].BCs[5] = 0
+
+      -- Physical Parameters
+      r_params[e].R   = 0.5                                   -- Gas Constant
+      r_params[e].K   = 2.0                                   -- Internal DOF
+      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
+      r_params[e].ur  = 1e-4                                  -- Reference Visc
+      r_params[e].Tr  = 1.0                                   -- Reference Temp
+      r_params[e].Pr  = 1e-2 * 2.0/3.0                        -- Prandtl Number
+
+      -- Thermal Bath
+      r_params[e].thermal_bath = true
+      r_params[e].thermal_T = 2
+
+      -- Simulation Parameters
+      r_params[e].Tf = 1.0                            	-- Stop Time
+      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
+
+    -- Thermal Bath
+    elseif testProblem == 12 then
+
+      -- Dimensionality
+      r_params[e].effD = 1
+
+      -- Spatial Resolution
       r_params[e].N[0]  = 256
       r_params[e].N[1]  = 1
       r_params[e].N[2]  = 1
 
       -- Velocity Resolution
-      r_params[e].NV[0] = 256
+      r_params[e].NV[0] = 256+1
       r_params[e].NV[1] = 1
       r_params[e].NV[2] = 1
 
@@ -659,22 +733,82 @@ do
       r_params[e].BCs[1] = 0
       r_params[e].BCs[2] = 0
 
+      r_params[e].BCs[3] = 0
+      r_params[e].BCs[4] = 0
+      r_params[e].BCs[5] = 0
+
       -- Physical Parameters
       r_params[e].R   = 0.5                                   -- Gas Constant
       r_params[e].K   = 2.0                                   -- Internal DOF
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
       r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-1                                  -- Reference Visc
+      r_params[e].ur  = 1e-4                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
 
       -- Thermal Bath
       r_params[e].thermal_bath = true
-      r_params[e].thermal_T = 1.0
+      r_params[e].thermal_T = 0.75
 
       -- Simulation Parameters
-      r_params[e].Tf = 1.0                            	-- Stop Time
+      r_params[e].Tf = 0.5                             	-- Stop Time
+      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
+
+    -- Radial Test
+    elseif testProblem == 13 then
+
+      -- Dimensionality
+      r_params[e].effD = 3
+
+      -- Coordinate
+      r_params[e].coord = 1
+      r_params[e].MeshType = 1
+
+      -- Spatial Resolution
+      r_params[e].N[0]  = 128
+      r_params[e].N[1]  = 1
+      r_params[e].N[2]  = 1
+
+      -- Velocity Resolution
+      r_params[e].NV[0] = 128+1
+      r_params[e].NV[1] = 1
+      r_params[e].NV[2] = 1
+
+      -- Velocity Grid (Min and Max)
+      r_params[e].Vmin[0] = -6
+      r_params[e].Vmin[1] = -6
+      r_params[e].Vmin[2] = -6
+
+      r_params[e].Vmax[0] = 6
+      r_params[e].Vmax[1] = 6
+      r_params[e].Vmax[2] = 6
+
+      -- Number of Cells
+      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+      -- Boundary Conditions
+      r_params[e].BCs[0] = 3
+      r_params[e].BCs[1] = 0 
+      r_params[e].BCs[2] = 0
+
+      r_params[e].BCs[3] = 1
+      r_params[e].BCs[4] = 0
+      r_params[e].BCs[5] = 0
+
+      -- Physical Parameters
+      r_params[e].R   = 0.5                                   -- Gas Constant
+      r_params[e].K   = 2.0                                   -- Internal DOF
+      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
+      r_params[e].ur  = 1e-5                                  -- Reference Visc
+      r_params[e].Tr  = 1.0                                   -- Reference Temp
+      r_params[e].Pr  = 1.0                                   -- Prandtl Number
+
+      -- Simulation Parameters
+      r_params[e].Tf = 0.5                             	-- Stop Time
       r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
 
     end
@@ -836,6 +970,8 @@ do
   -- Rectangular Mesh
   elseif MeshType == 1 then
     
+    c.printf("Initializing Uniform Grid\n")
+    
     for e in r_mesh do
 
       var Nx : int32 = N[0]
@@ -855,8 +991,47 @@ do
       r_mesh[e].dz = dZ
 
     end
+  -- Logarithmic (For Radial)
+  elseif MeshType == 2 then
+
+    c.printf("Initializing Logarithmic Grid\n")
+
+    for e in r_mesh do
+
+      var Nx : int32 = N[0]
+      var Ny : int32 = N[1]
+
+      -- Specify Minimum and Maximum radius 
+      -- right edge of first bin, and right edge of last bin -- minimum always zero
+      var r_min : double = 5e-2
+      var r_max : double = 1.0
+      
+      var factor : double = cmath.pow(r_max/r_min, 1.0/double(Nx))
+
+      var f2 : double = cmath.pow(factor, e.x)
+      var f1 : double = cmath.pow(factor, e.x-1)
+      if e.x == 0 then f1 = 0 end
+
+      -- Cell Centers
+      -- x->r, y->theta
+      r_mesh[e].x = r_min * (f2 + f1)/2
+      r_mesh[e].y = PI * (double(e.y))/ Ny
+
+      -- Cell Sizes
+      r_mesh[e].dx = r_min * (f2 - f1)
+      r_mesh[e].dy = PI / Ny
+
+      -- Special case for center
+      if e.x == 0 then 
+        r_mesh[e].x = 0
+        r_mesh[e].dx = 2*r_min
+      end
+
+      c.printf("Logarithmic Setup: x[%d] = %.5f; dx[%d] = %.5f\n", e.x, r_mesh[e].x, e.x, r_mesh[e].dx)
+
+    end
   -- Nested Rectangular 
-  elseif MeshType == 2 then 
+  elseif MeshType == 3 then 
     -- TODO  
   end
 end
@@ -1139,23 +1314,92 @@ do
 
     end
 
-  -- Sine Wave Collapse
-  elseif testProblem == 10 then
+  -- Isothermal Shock
+  elseif testProblem == 11 then
 
-    -- Uniform Density
-    var rho0 : double = 1
+    -- Left and Right Density
+    var pL : double = 1.0
+    var pR : double = 1.0/2.0
 
-    -- Nonzero Width
-    var T : double = 0.1
-    var P : double = rho0 * R * T
+    -- Left and Right Pressure
+    var temp : double = 1.2
+    var PL : double = pL * R * temp
+    var PR : double = pR * R * temp
 
     for e in r_W do
 
-      r_W[e].rho = rho0
-      r_W[e].rhov[0] = rho0 * cmath.sin(2*PI*r_mesh[e].x)
+      -- Left Side
+      if r_mesh[e].x <= 0.3 then
+        r_W[e].rho = pL
+        r_W[e].rhov[0] = 0.5
+        r_W[e].rhov[1] = 0
+        r_W[e].rhov[2] = 0
+        r_W[e].rhoE = Cv*PL/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
+
+      -- Right Side
+      else
+        r_W[e].rho = pR
+        r_W[e].rhov[0] = 0
+        r_W[e].rhov[1] = 0
+        r_W[e].rhov[2] = 0
+        r_W[e].rhoE = Cv*PR/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
+      end
+    end
+
+  -- Thermal Bath
+  elseif testProblem == 12 then
+
+    -- Density 
+    var rho : double = 1.0
+
+    -- Pressure
+    var temp : double = 1.2
+    var P : double = rho * R * temp
+
+    for e in r_W do
+
+      r_W[e].rho = rho
+      r_W[e].rhov[0] = 0
       r_W[e].rhov[1] = 0
       r_W[e].rhov[2] = 0
-      r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0])/r_W[e].rho
+      r_W[e].rhoE = Cv*P/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
+      
+    end
+
+  -- Radial Test
+  elseif testProblem == 13 then
+
+    -- Density 
+    var rho1 : double = 1.0
+    var rho2 : double = 1.0
+
+    -- Pressure
+    var temp1 : double = 1.0
+    var temp2 : double = 1
+
+
+    for e in r_W do
+
+      if r_mesh[e].x < 0.1 then
+
+        var P : double = rho1 * R * temp1
+
+        r_W[e].rho = rho1
+        r_W[e].rhov[0] = 0
+      r_W[e].rhov[1] = 0
+      r_W[e].rhov[2] = 0
+        r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+      else 
+      
+        var P : double = rho2 * R * temp2
+
+        r_W[e].rho = rho2
+        r_W[e].rhov[0] = 0
+        r_W[e].rhov[1] = 0
+        r_W[e].rhov[2] = 0
+        r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
+      
+      end
 
     end
     
@@ -1200,6 +1444,17 @@ terra abs(x : double)
   -- abs returns the absolute value of x
   
   return x*sgn(x)
+end
+
+terra monotone(xL : double, xC : double, xR):
+
+  -- returns 1 if monotone, 0 if not
+
+  if sgn(xL - xC) == sgn(xC - sR) then
+    return 1
+  else
+    return 0
+  end
 end
 
 
@@ -1287,7 +1542,7 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32
   -- The grid size is added and then modded out because of a weird (intended) bug with moduloing negative numbers. 
   if Dim == 0 and BCs[0] == 0 then
       IL = (IL + N[0])%N[0]
-      IR = IR % N[0]
+      IR =  IR % N[0]
   elseif Dim == 1 and BCs[1] == 0 then
       JL = (JL + N[1])%N[1]
       JR =  JR % N[1]
@@ -1296,8 +1551,8 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32
       KR =  KR % N[2]
   
 
-  -- Dirichlet or Outflow Boundary Conditions
-  elseif (Dim == 0 and i == 0 and (BCs[0] == 1 or BCs[0] == 2)) then
+  -- Dirichlet or Outflow Boundary Conditions; Reflective Boundary Conditions (radial)
+  elseif (Dim == 0 and i == 0 and (BCs[0] == 1 or BCs[0] == 2 or BCs[0] == 3)) then
     IL = 0
   elseif (Dim == 0 and i == N[0]-1 and (BCs[3] == 1 or BCs[3] == 2)) then
     IR = i
@@ -1341,6 +1596,7 @@ end
 -- Step 1: Phibar at interface
 -- Step 1a: Phibar at Cell Center.
 task Step1a(r_grid : region(ispace(int8d), grid),
+            r_mesh : region(ispace(int8d), mesh),
             r_gridbarp : region(ispace(int8d), grid),
             r_S : region(ispace(int8d), grid),
             r_W : region(ispace(int8d), W),
@@ -1349,7 +1605,7 @@ task Step1a(r_grid : region(ispace(int8d), grid),
             vzmesh : region(ispace(int1d), vmesh),
             dt : double, R : double, K : double, Cv : double,
             g : double, w : double, ur : double, Tr : double,
-            Pr : double, effD : int32, thermal_bath : bool, thermal_T : double)
+            Pr : double, effD : int32, thermal_bath : bool, thermal_T : double, coord : int32, NV : int32[3])
 where
   reads(r_grid, r_W, vxmesh.v, vymesh.v, vzmesh.v), 
   reads writes(r_S),
@@ -1442,6 +1698,79 @@ do
       end 
       Z += -u*u/2
 
+      -- Initialize acceleration vector 
+      var a : double[3]
+      a[0] = 0
+      a[1] = 0
+      a[2] = 0
+
+      -- If spherical coordinates, there are coordinate-intrinsic 
+      -- accelerations to conserve angular momentum
+      if coord == 1 then
+
+        -- Derivatives of spherical coordinate velocities with respect to time
+        a[0] = (Xi[1]**2 + Xi[2]**2)/r_mesh[e3].x
+        a[1] = -Xi[0]*Xi[1]/r_mesh[e3].x + Xi[3]*cmath.tan()
+        a[2] = -Xi[0]*Xi[2]/r_mesh[e3].x
+
+        var grad_xi_g : double[3]
+        var grad_xi_b : double[3]
+
+        -- 1 cell difference if on edge
+        -- otherwise, central difference
+        if v.x == 0 then
+          vxL = 0
+          vxR = v.x + 1
+        elseif v.x == NV[0]-1 then 
+          vxL = v.x - 1
+          vxR = NV[0]-1
+        else
+          vxL = v.x - 1
+          vxR = v.x + 1
+        end
+
+        if v.y == 0 then
+          vyL = 0
+          vyR = v.y + 1
+        elseif v.y == NV[1]-1 then 
+          vyL = v.y - 1
+          vyR = NV[1]-1
+        else
+          vyL = v.y - 1
+          vyR = v.y + 1
+        end
+
+        if v.z == 0 then
+          vzL = 0
+          vzR = v.z + 1
+        elseif v.z == NV[2]-1 then 
+          vzL = v.z - 1
+          vzR = NV[2]-1
+        else
+          vzL = v.z - 1
+          vzR = v.z + 1
+        end
+
+        var e6vxL : int8d = {s.x, s.y, s.z, 0, 0, vxL, v.y, v.z} 
+        var e6vyL : int8d = {s.x, s.y, s.z, 0, 0, v.x, vyL, v.z} 
+        var e6vzL : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, vzL} 
+        var e6vxR : int8d = {s.x, s.y, s.z, 0, 0, vxR, v.y, v.z} 
+        var e6vyR : int8d = {s.x, s.y, s.z, 0, 0, v.x, vyR, v.z} 
+        var e6vzR : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, vzR} 
+
+        grad_xi_g[0] = (r_grid[e6vxR].g - r_grid[e6vxL].g) / (vxmesh[vxR]-vxmesh[vxL]) * monotone(r_grid[e6vxL].g, r_grid[e6].g, r_grid[e6vxR].g)
+        grad_xi_g[1] = (r_grid[e6vyR].g - r_grid[e6vyL].g) / (vxmesh[vyR]-vxmesh[vyL]) * monotone(r_grid[e6vyL].g, r_grid[e6].g, r_grid[e6vyR].g)
+        grad_xi_g[2] = (r_grid[e6vzR].g - r_grid[e6vzL].g) / (vxmesh[vzR]-vxmesh[vzL]) * monotone(r_grid[e6vzL].g, r_grid[e6].g, r_grid[e6vzR].g)
+
+        grad_xi_b[0] = (r_grid[e6vxR].b - r_grid[e6vxL].b) / (vxmesh[vxR]-vxmesh[vxL]) * monotone(r_grid[e6vxL].b, r_grid[e6].b, r_grid[e6vxR].b)
+        grad_xi_b[1] = (r_grid[e6vyR].b - r_grid[e6vyL].b) / (vxmesh[vyR]-vxmesh[vyL]) * monotone(r_grid[e6vyL].b, r_grid[e6].b, r_grid[e6vyR].b)
+        grad_xi_b[2] = (r_grid[e6vzR].b - r_grid[e6vzL].b) / (vxmesh[vzR]-vxmesh[vzL]) * monotone(r_grid[e6vzL].b, r_grid[e6].b, r_grid[e6vzR].b)
+
+        r_S[e6].g = - a[0]*grad_xi_g[0] - a[1]*grad_xi_g[1] - a[2]*grad_xi_g[2]
+        r_S[e6].b = - a[0]*grad_xi_b[0] - a[1]*grad_xi_b[1] - a[2]*grad_xi_b[2]
+
+      else
+
       -- Compute Source Terms (Combined with Step 1 to save compute since u is already calculated)
       r_S[e6].g = -0 -- -a dot grad_xi g 
       if (Pr == 1) then
@@ -1449,6 +1778,8 @@ do
         r_S[e6].b = 0 + 0 --a dot grad stuff
       else 
         r_S[e6].b = Z/tgb*(r_grid[e6].g - g_eq) + 0 --a dot grad stuff
+      end
+
       end
 
       -- Step 1a: Compute phibarplus
@@ -3968,6 +4299,7 @@ do
           e8 = {s.x, s.y, s.z, Dim, Dim2, v.x, v.y, v.z}
 
           -- Interpolate gridbarplus from boundary to velocity dependent location
+
           r_gridbarpb[e7].g = r_gridbarpb[e7].g - dt/2.0*Xi[Dim]*r_sigb[e8].g
           r_gridbarpb[e7].b = r_gridbarpb[e7].b - dt/2.0*Xi[Dim]*r_sigb[e8].b
     
@@ -4148,10 +4480,10 @@ do
 
         -- Compute Equilibrium Distributions
         if thermal_bath then
-          g_eq = geq(c2, r_W[e4].rho, thermal_T, R, effD)
+          g_eq = geq(c2, r_Wb[e4].rho, thermal_T, R, effD)
           b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
         else
-          g_eq = geq(c2, r_W[e4].rho, T, R, effD)
+          g_eq = geq(c2, r_Wb[e4].rho, T, R, effD)
           b_eq = g_eq*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*T)/2.0
         end
 
@@ -4195,7 +4527,7 @@ task Step2c(r_gridbarpb : region(ispace(int8d), grid),
             ply_gridbarpb : region(ispace(int8d), grid),
             plz_gridbarpb : region(ispace(int8d), grid),
             BCs : int32[6], R : double, K : double, Cv : double, g : double,
-            w : double, Tr : double, Pr : double, effD : int32, N : int32[3])
+            w : double, Tr : double, Pr : double, effD : int32, N : int32[3], coord : int32, dt: double)
 where
   reads(r_gridbarpb, vxmesh, vymesh, vzmesh, r_mesh, plx_gridbarpb, ply_gridbarpb, plz_gridbarpb),
   reads writes(r_F)
@@ -4237,10 +4569,25 @@ do
   for s in s3 do
     e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
+    if coord == 0 then
+
     -- Area for rectangular mesh
     A[0] = r_mesh[e3].dy*r_mesh[e3].dz
     A[1] = r_mesh[e3].dx*r_mesh[e3].dz
     A[2] = r_mesh[e3].dx*r_mesh[e3].dy
+
+    elseif coord == 1 then
+
+      regentlib.assert(effD <=2, "Dimensionality incompatible with spherical coordinates.")
+
+      -- Area for spherical shell
+      var r2 : double = r_mesh[e3].x + r_mesh[e3].dx/2
+      var r1 : double = r_mesh[e3].x - r_mesh[e3].dx/2
+      A[0] = 4*PI*r1*r1
+      A[1] = 4*PI*r2*r2
+
+    end 
+
 
 
     for Dim = 0, effD do
@@ -4276,10 +4623,16 @@ do
 
       for v in v3 do 
 
-        -- Gather Left Indices
+        -- Gather Indices
+        if coord == 1 and s.x == 0 then
+          e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
+          e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
+          eL7 = {IL, JL, KL, Dim, 0, vhi.x-v.x, v.y, v.z}
+        else
         e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
         e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
         eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
+        end
 
         -- Fill in Velocity Vector
         Xi[0] = vxmesh[v.x].v
@@ -4318,8 +4671,31 @@ do
         end
 
         -- Compute Flux  
+        if coord == 1 then
+
+          var r2 : double = r_mesh[e3].x + r_mesh[e3].dx/2
+          var r1 : double = r_mesh[e3].x - r_mesh[e3].dx/2
+          if s.x == 0 then 
+            r1 = 0
+
+            var r1v : double = (r1 - Xi[0]*dt)
+            var r2v : double = (r2 - Xi[0]*dt)
+
+            var V1_dt : double = 4 * PI * cmath.fabs(r1*r1*r1 - r1v*r1v*r1v) / (3 * dt)
+            var V2_dt : double = 4 * PI * cmath.fabs(r2*r2*r2 - r2v*r2v*r2v) / (3 * dt)
+            --r_F[e6].g = r_F[e6].g + (right*V2_dt*r_gridbarpb[e7].g - left*gL*V1_dt)
+            --r_F[e6].b = r_F[e6].b + (right*V2_dt*r_gridbarpb[e7].b - left*bL*V1_dt)
+    
+            r_F[e6].g = r_F[e6].g + Xi[Dim]*right*A[1]*r_gridbarpb[e7].g - left*gL*V1_dt
+            r_F[e6].b = r_F[e6].b + Xi[Dim]*right*A[1]*r_gridbarpb[e7].b - left*bL*V1_dt
+          else
+            r_F[e6].g = r_F[e6].g + Xi[Dim]*(right*A[1]*r_gridbarpb[e7].g - left*gL*A[0])
+            r_F[e6].b = r_F[e6].b + Xi[Dim]*(right*A[1]*r_gridbarpb[e7].b - left*bL*A[0])
+          end
+        else  
         r_F[e6].g = r_F[e6].g + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].g - left*gL)
         r_F[e6].b = r_F[e6].b + Xi[Dim]*A[Dim]*(right*r_gridbarpb[e7].b - left*bL)
+        end
 
         regentlib.assert(not [bool](isnan(r_F[e6].g)), "Step 2c\n")
         regentlib.assert(not [bool](isnan(r_F[e6].b)), "Step 2c\n")
@@ -4347,7 +4723,7 @@ task Step4and5(r_grid : region(ispace(int8d), grid),
                vzmesh : region(ispace(int1d), vmesh),
                dt : double, BCs : int32[6], R : double, K : double, Cv : double, N : int32[3],
                g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32,
-               thermal_bath : bool, thermal_T : double)
+               thermal_bath : bool, thermal_T : double, coord : int32)
 where
   reads(vxmesh, vymesh, vzmesh, r_mesh, r_F, r_S),
   reads writes(r_W, r_grid)
@@ -4391,7 +4767,17 @@ do
     e3 = {s.x, s.y, s.z, 0, 0, 0, 0, 0}
 
     -- Compute Volume
+    if coord == 0 then
     V = r_mesh[e3].dx*r_mesh[e3].dy*r_mesh[e3].dz
+    elseif coord == 1 then
+
+      var r2 : double = r_mesh[e3].x + r_mesh[e3].dx/2
+      var r1 : double = r_mesh[e3].x - r_mesh[e3].dx/2
+
+      if s.x == 0 then r1 = 0 end
+
+      V = 4 * PI * (r2*r2*r2 - r1*r1*r1)/3
+    end
 
     -- Compute Old Bulk Velocity
     uo = 0
@@ -4470,6 +4856,7 @@ do
       -- Dirichlet Boundary Conditions: No Change
       --r_W[e3].rho = r_W[e3].rho
 
+    
     else   
     
       for v in v3 do 
@@ -4486,7 +4873,10 @@ do
         for d = 0, effD do
           r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - r_S[e6].g)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
         end
+
+        if not thermal_bath then
         r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - r_S[e6].b)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w    
+        end
 
       end
     end
@@ -4517,6 +4907,12 @@ do
     -- Compute New Taus
     tg = visc(T, ur, Tr, w)/r_W[e3].rho/R/T 
     tb = tg/Pr 
+
+    -- When using a thermal bath, energy is not conserved.
+    -- Must recompute energy.
+    if thermal_bath then
+      r_W[e3].rhoE = 0
+    end
 
     for v in v3 do
       Xi[0] = vxmesh[v.x].v
@@ -4556,6 +4952,12 @@ do
 
         r_grid[e6].g = (r_grid[e6].g + dt/2.0*g_eq/tg)/(1+dt/2.0/tg)
         r_grid[e6].b = (r_grid[e6].b + dt/2.0*b_eq/tb)/(1+dt/2.0/tb)
+
+        -- When using a thermal bath, energy is not conserved.
+        -- Must recompute energy.
+        if thermal_bath then
+          r_W[e3].rhoE = r_W[e3].rhoE + r_grid[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
+        end
 
       end
 
@@ -5032,6 +5434,15 @@ do
   end
   c.fclose(phase)
 
+  var bphasefile : int8[1000]
+  c.sprintf([&int8](bphasefile), './Data/bphase_%04d',iter)
+  var bphase = c.fopen(bphasefile,'wb')
+
+  for e in r_grid do
+    dumpdouble(bphase, r_grid[e].b)
+  end
+  c.fclose(bphase)
+
   __fence(__execution, __block)
   return 1
 end
@@ -5084,6 +5495,8 @@ task toplevel()
   var dtdump : double = r_params[0].dtdump
   var thermal_bath : bool = r_params[0].thermal_bath
   var thermal_T : double = r_params[0].thermal_T
+  var coord : int32 = r_params[0].coord
+  var MeshType : int32 = r_params[0].MeshType
 
   __fence(__execution, __block) 
   c.printf("Simulation Parameters\n")
@@ -5092,6 +5505,8 @@ task toplevel()
   c.printf("BCs = {{%d, %d, %d}, {%d, %d, %d}}, Vmin = {%f, %f, %f}, Vmax = {%f, %f, %f}\n", BCs[0], BCs[1], BCs[2], BCs[3], BCs[4], BCs[5], Vmin[0], Vmin[1], Vmin[2], Vmax[0], Vmax[1], Vmax[2])
   c.printf("R = %f, K = %f, g = %f, Cv = %f\n", R, K, g, Cv)
   c.printf("w = %f, ur = %f, Tr = %f, Pr = %f\n", w, ur, Tr, Pr)
+  if thermal_bath then c.printf("thermal_bath = %B, themal_temp = %.2f\n", thermal_bath, thermal_T) end
+  c.printf("Coordinate System = %d\n", coord)
   c.printf("End Time = %f, dtdump %f\n", Tf, dtdump)
 
   -- Create regions for distribution functions and gradients
@@ -5413,7 +5828,6 @@ task toplevel()
   var pzmesh = partition(aliased, vzmesh, cvzmesh, p8)
 
   -- Initialize r_mesh
-  var MeshType : int32 = 1
   InitializeMesh(r_mesh, N, MeshType) --TODO Needs more input for nested, user-def etc.
   if config.debug == true then
     __fence(__execution, __block)
@@ -5465,7 +5879,7 @@ task toplevel()
   var End : double 
   
   var dt : double = 0
-  while Tsim < Tf do --and iter < 10 do
+  while Tsim < Tf do -- and iter < 5 do
     iter += 1
 
     if config.out == true then
@@ -5483,7 +5897,7 @@ task toplevel()
     -- Step 1a
     __demand(__index_launch)
     for col8 in p_grid.colors do 
-      Step1a(p_grid[col8], p_gridbarp[col8], p_S[col8], p_W[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T)
+      Step1a(p_grid[col8], p_gridbarp[col8], p_S[col8], p_W[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T, coord)
     end
     if config.debug == true then
       __fence(__execution, __block)
@@ -5681,7 +6095,7 @@ task toplevel()
     end
     __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
-      Step2b(p_gridbarpb[col8], p_Wb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T))
+      Step2b(p_gridbarpb[col8], p_Wb[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, R, K, Cv, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T)
     end
     if config.debug == true then
       __fence(__execution, __block)
@@ -5699,7 +6113,7 @@ task toplevel()
     fill(r_F.b, 0)
     __demand(__index_launch)
     for col8 in p_gridbarpb.colors do
-      Step2c(p_gridbarpb[col8], p_F[col8], p_mesh[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], plx_gridbarpb[col8], ply_gridbarpb[col8], plz_gridbarpb[col8], BCs, R, K, Cv, g, w, Tr, Pr, effD, N)
+      Step2c(p_gridbarpb[col8], p_F[col8], p_mesh[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], plx_gridbarpb[col8], ply_gridbarpb[col8], plz_gridbarpb[col8], BCs, R, K, Cv, g, w, Tr, Pr, effD, N, coord, dt)
     end
     if config.debug == true then
       __fence(__execution, __block)
@@ -5722,7 +6136,7 @@ task toplevel()
     end
     __demand(__index_launch)
     for col8 in p_grid.colors do
-      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], p_S[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T))
+      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], p_S[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T, coord)
     end
     if config.debug == true then
       __fence(__execution, __block)
