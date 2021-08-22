@@ -101,9 +101,9 @@ do
       -- Dimensionality
       r_params[e].effD = 1
 
-      var num : int32 = 512
+      var num : int32 = 16384
       -- Spatial Resolution
-      r_params[e].N[0]  = num
+      r_params[e].N[0]  = num*2
       r_params[e].N[1]  = 1
       r_params[e].N[2]  = 1
                 
@@ -1347,7 +1347,7 @@ terra abs(x : double)
   return x*sgn(x)
 end
 
-terra monotone(xL : double, xC : double, xR):
+terra monotone(xL : double, xC : double, xR : double):
 
   -- returns 1 if monotone, 0 if not
 
