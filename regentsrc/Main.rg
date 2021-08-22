@@ -5890,7 +5890,7 @@ task toplevel()
     end
     __demand(__index_launch)
     for col8 in p_grid.colors do
-      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], p_S[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T))
+      Step4and5(p_grid[col8], p_W[col8], p_mesh[col8], p_F[col8], p_S[col8], pxmesh[col8], pymesh[col8], pzmesh[col8], dt, BCs, R, K, Cv, N, g, w, ur, Tr, Pr, effD, thermal_bath, thermal_T)
     end
     if config.debug == true then
       __fence(__execution, __block)
