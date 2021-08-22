@@ -1347,18 +1347,6 @@ terra abs(x : double)
   return x*sgn(x)
 end
 
-terra monotone(xL : double, xC : double, xR : double):
-
-  -- returns 1 if monotone, 0 if not
-
-  if sgn(xL - xC) == sgn(xC - sR) then
-    return 1
-  else
-    return 0
-  end
-end
-
-
 
 terra VanLeer(L : double, C : double, R : double, xL : double, xC : double, xR : double)
 
