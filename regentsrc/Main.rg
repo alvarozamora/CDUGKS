@@ -695,62 +695,6 @@ do
       r_params[e].Tf = 0.5                             	-- Stop Time
       r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
 
-    -- Radial Test
-    elseif testProblem == 13 then
-
-      -- Dimensionality
-      r_params[e].effD = 3
-
-      -- Coordinate
-      r_params[e].coord = 1
-      r_params[e].MeshType = 1
-
-      -- Spatial Resolution
-      r_params[e].N[0]  = 128
-      r_params[e].N[1]  = 1
-      r_params[e].N[2]  = 1
-
-      -- Velocity Resolution
-      r_params[e].NV[0] = 128+1
-      r_params[e].NV[1] = 1
-      r_params[e].NV[2] = 1
-
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -6
-      r_params[e].Vmin[1] = -6
-      r_params[e].Vmin[2] = -6
-
-      r_params[e].Vmax[0] = 6
-      r_params[e].Vmax[1] = 6
-      r_params[e].Vmax[2] = 6
-
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
-
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 3
-      r_params[e].BCs[1] = 0 
-      r_params[e].BCs[2] = 0
-
-      r_params[e].BCs[3] = 1
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
-
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-5                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 1.0                                   -- Prandtl Number
-
-      -- Simulation Parameters
-      r_params[e].Tf = 0.5                             	-- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
-
     end
   end
 end
@@ -1267,43 +1211,6 @@ do
       
     end
 
-  -- Radial Test
-  elseif testProblem == 13 then
-
-    -- Density 
-    var rho1 : double = 1.0
-    var rho2 : double = 1.0
-
-    -- Pressure
-    var temp1 : double = 1.0
-    var temp2 : double = 1
-
-
-    for e in r_W do
-
-      if r_mesh[e].x < 0.1 then
-
-        var P : double = rho1 * R * temp1
-
-        r_W[e].rho = rho1
-        r_W[e].rhov[0] = 0
-      r_W[e].rhov[1] = 0
-      r_W[e].rhov[2] = 0
-        r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
-      else 
-      
-        var P : double = rho2 * R * temp2
-
-        r_W[e].rho = rho2
-        r_W[e].rhov[0] = 0
-      r_W[e].rhov[1] = 0
-      r_W[e].rhov[2] = 0
-        r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
-      
-      end
-
-    end
-    
   end
 end
 
