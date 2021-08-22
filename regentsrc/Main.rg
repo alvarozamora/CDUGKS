@@ -4246,7 +4246,7 @@ task Step2c(r_gridbarpb : region(ispace(int8d), grid),
             ply_gridbarpb : region(ispace(int8d), grid),
             plz_gridbarpb : region(ispace(int8d), grid),
             BCs : int32[6], R : double, K : double, Cv : double, g : double,
-            w : double, Tr : double, Pr : double, effD : int32, N : int32[3], coord : int32, dt: double)
+            w : double, Tr : double, Pr : double, effD : int32, N : int32[3])
 where
   reads(r_gridbarpb, vxmesh, vymesh, vzmesh, r_mesh, plx_gridbarpb, ply_gridbarpb, plz_gridbarpb),
   reads writes(r_F)
