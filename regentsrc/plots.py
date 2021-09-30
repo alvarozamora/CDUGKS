@@ -8,6 +8,8 @@ import glob
 import argparse
 import pdb
 import os
+import io
+import imageio as imo
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -322,3 +324,72 @@ if testproblem == 10:
 		plt.cla()
 		plt.clf()
 		f.close()
+
+
+if testproblem == 11:
+
+	with imo.get_writer('Problem11.mp4', fps=30) as writer:
+
+		
+		for q, file in enumerate(rhofiles):
+
+			fig, axes = plt.subplots(1,3, figsize=(15,4))
+
+			buf = io.BytesIO()
+
+			print(f"Working on file {q}")
+
+			n = file[9:13]
+
+			rho_file  = open(file, 'rb')
+			rho = rho_file.read(num*size)
+			rho = np.array(struct.unpack(type*num, rho))
+			print(rho)
+
+			rhovx_file = open(f'Data/rhovx_{n}','rb')
+			rho_vx = rhovx_file.read(num*size)
+			rho_vx = np.array(struct.unpack(type*num, rho_vx))
+			print(rho_vx.mean())
+			
+			rhoE_file = open(f'Data/rhoE_{n}','rb')
+			rho_E = rhoE_file.read(num*size)
+			rho_E = np.array(struct.unpack(type*num, rho_E))
+
+			axes[0].plot(np.linspace(0.5/len(rho),1-0.5/len(rho), len(rho)), rho)
+			axes[0].set_xlim(0,1)
+			axes[0].set_ylim(0,10)
+			axes[0].set_xlabel('x')
+			axes[0].set_ylabel('Density')
+			plt.grid()
+
+			vx = rho_vx/rho
+			axes[1].plot(np.linspace(0.5/len(vx),1-0.5/len(vx), len(vx)), vx)
+			axes[1].set_xlim(0,1)
+			axes[1].set_ylim(0,10)
+			axes[1].set_xlabel('x')
+			axes[1].set_ylabel('Velocity')
+			plt.grid()
+
+			R = 1/2
+			g = 7/5
+			T = (g - 1)/R*(rho_E - 0.5*rho_vx*rho_vx/rho)/rho
+			axes[2].plot(np.linspace(0.5/len(T),1-0.5/len(T), len(T)), T)
+			axes[2].set_xlim(0,1)
+			axes[2].set_ylim(0,10)
+			axes[2].set_xlabel('x')
+			axes[2].set_ylabel('Temperature')
+			plt.grid()
+						
+			plt.suptitle("Isothermal Shock")
+			
+			plt.savefig(buf,dpi=230)
+			buf.seek(0)
+			writer.append_data(imo.imread(buf))
+
+			plt.cla()
+			plt.clf()
+			rho_file.close()
+			rhovx_file.close()
+			rhoE_file.close()
+	
+		writer.close()
