@@ -646,7 +646,7 @@ do
       r_params[e].effD = 1
 
       -- Spatial Resolution
-      r_params[e].N[0]  = 256
+      r_params[e].N[0]  = 128
       r_params[e].N[1]  = 1
       r_params[e].N[2]  = 1
 
@@ -660,7 +660,7 @@ do
       r_params[e].Vmin[1] = 0
       r_params[e].Vmin[2] = 0
 
-      r_params[e].Vmax[0] = 6
+      r_params[e].Vmax[0] = 8
       r_params[e].Vmax[1] = 0
       r_params[e].Vmax[2] = 0
 
@@ -669,11 +669,11 @@ do
       r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
 
       -- Boundary Conditions
-      r_params[e].BCs[0] = 0
+      r_params[e].BCs[0] = 2
       r_params[e].BCs[1] = 0
       r_params[e].BCs[2] = 0
 
-      r_params[e].BCs[3] = 0
+      r_params[e].BCs[3] = 2
       r_params[e].BCs[4] = 0
       r_params[e].BCs[5] = 0
 
@@ -692,7 +692,7 @@ do
       r_params[e].thermal_T = 0.75
 
       -- Simulation Parameters
-      r_params[e].Tf = 0.5                             	-- Stop Time
+      r_params[e].Tf = 0.4                             	-- Stop Time
       r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
 
     end
@@ -1176,7 +1176,7 @@ do
       -- Left Side
       if r_mesh[e].x <= 0.3 then
         r_W[e].rho = pL
-        r_W[e].rhov[0] = 0.5
+        r_W[e].rhov[0] = pL*2
         r_W[e].rhov[1] = 0
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*PL/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
@@ -4478,6 +4478,8 @@ do
       if thermal_bath then
         g_eqo = geq(c2, r_W[e3].rho, thermal_T, R, effD)
         b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
+
+        r_W[e3].rhoE = r_W[e3].rhoE + dt*(r_grid[e6].b - b_eqo)/tbo*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
       else
         g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
         b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*To)/2.0
@@ -4538,9 +4540,7 @@ do
           r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - r_S[e6].g)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
         end
 
-        if not thermal_bath then
-          r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - r_S[e6].b)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w    
-        end
+        r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - r_S[e6].b)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
 
       end
     end
@@ -4574,9 +4574,6 @@ do
 
     -- When using a thermal bath, energy is not conserved.
     -- Must recompute energy.
-    if thermal_bath then
-      r_W[e3].rhoE = 0
-    end
 
     for v in v3 do
       Xi[0] = vxmesh[v.x].v
@@ -4616,12 +4613,6 @@ do
 
         r_grid[e6].g = (r_grid[e6].g + dt/2.0*g_eq/tg)/(1+dt/2.0/tg)
         r_grid[e6].b = (r_grid[e6].b + dt/2.0*b_eq/tb)/(1+dt/2.0/tb)
-
-        -- When using a thermal bath, energy is not conserved.
-        -- Must recompute energy.
-        if thermal_bath then
-          r_W[e3].rhoE = r_W[e3].rhoE + r_grid[e6].b*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
-        end
 
       end
 
@@ -5518,7 +5509,7 @@ task toplevel()
   -- Timestep
   var CFL : double = 0.9 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
-  var umax : double  = 0.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
+  var umax : double  = 1.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
   
   var Tsim : double = 0.0  -- Sim time
