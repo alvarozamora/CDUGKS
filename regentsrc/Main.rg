@@ -2,6 +2,7 @@ import "regent"
 
 -- Helper modules to handle command line arguments
 local Config = require("config")
+Config.methods.initialize_from_command.replicable = true
 
 -- This is simlifies the coloring syntax a bit
 local coloring   = require("coloring_util")
@@ -12,6 +13,9 @@ local sqrt  = regentlib.sqrt(double)
 local cmath = terralib.includec("math.h")
 local PI = cmath.M_PI
 local isnan = regentlib.isnan(double)
+
+-- Replicable
+cmath.fmax.replicable = true
 
 -- Field space for Simulation Parameters
 fspace params{
@@ -101,9 +105,9 @@ do
       -- Dimensionality
       r_params[e].effD = 1
 
-      var num : int32 = 16384
+      var num : int32 = 128
       -- Spatial Resolution
-      r_params[e].N[0]  = num*2
+      r_params[e].N[0]  = num
       r_params[e].N[1]  = 1
       r_params[e].N[2]  = 1
                 
@@ -631,7 +635,7 @@ do
       r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
       r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
       r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-1                                  -- Reference Visc
+      r_params[e].ur  = 1e-2                                   -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
       r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
 
@@ -651,7 +655,7 @@ do
       r_params[e].N[2]  = 1
 
       -- Velocity Resolution
-      r_params[e].NV[0] = 256+1
+      r_params[e].NV[0] = 128+1
       r_params[e].NV[1] = 1
       r_params[e].NV[2] = 1
 
@@ -685,11 +689,11 @@ do
       r_params[e].w   = 0.5                                   -- Viscosity Exponent
       r_params[e].ur  = 1e-4                                  -- Reference Visc
       r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+      r_params[e].Pr  = 2./3                                   -- Prandtl Number
 
       -- Thermal Bath
       r_params[e].thermal_bath = true
-      r_params[e].thermal_T = 0.75
+      r_params[e].thermal_T = 0.8
 
       -- Simulation Parameters
       r_params[e].Tf = 0.4                             	-- Stop Time
@@ -1159,6 +1163,26 @@ do
 
     end
 
+   -- Sine Wave Collapse
+  elseif testProblem == 10 then
+
+    -- Uniform Density
+    var rho0 : double = 1
+
+    -- Nonzero Width
+    var T : double = 0.1
+    var P : double = rho0 * R * T
+
+    for e in r_W do
+
+      r_W[e].rho = rho0
+      r_W[e].rhov[0] = rho0 * cmath.sin(2*PI*r_mesh[e].x)
+      r_W[e].rhov[1] = 0
+      r_W[e].rhov[2] = 0
+      r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0])/r_W[e].rho
+
+    end
+
   -- Isothermal Shock
   elseif testProblem == 11 then
 
@@ -1184,7 +1208,7 @@ do
       -- Right Side
       else
         r_W[e].rho = pR
-        r_W[e].rhov[0] = 0
+        r_W[e].rhov[0] = pR*0
         r_W[e].rhov[1] = 0
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*PR/R + 0.5*r_W[e].rhov[0]*r_W[e].rhov[0]/r_W[e].rho
@@ -1373,6 +1397,7 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32
 
   return LR
 end
+BC.replicable = true;
 
 
 terra TimeStep(calcdt : double, dumptime : double, tend : double)
@@ -1385,7 +1410,7 @@ terra TimeStep(calcdt : double, dumptime : double, tend : double)
   var timestep : double = cmath.fmin(cmath.fmin(calcdt, dumptime), tend)
   return timestep
 end 
-
+TimeStep.replicable = true
 
 -- Refer to original CDUGKS paper for steps
 -- Hongtao Liu et. al. 2018
@@ -4479,7 +4504,7 @@ do
         g_eqo = geq(c2, r_W[e3].rho, thermal_T, R, effD)
         b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
 
-        r_W[e3].rhoE = r_W[e3].rhoE + dt*(r_grid[e6].b - b_eqo)/tbo*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
+        r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_grid[e6].b - b_eqo)/tbo*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
       else
         g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
         b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*To)/2.0
@@ -5007,7 +5032,6 @@ do
   return 1
 end
 
-
 -- Helper I/O Functions
 -- Given a file and value, output type to binary
 terra dumpdouble(f : &c.FILE, val : double)
@@ -5121,9 +5145,70 @@ do
   return 1
 end
 
+terra get_config() 
+
+  var config: Config
+  config:initialize_from_command()
+
+  return config
+end
+
+get_config.replicable = true
+c.printf.replicable = true
+
+
+task PrintDump(d: int32)
+  c.printf("Dump %d\n", d)
+  return 1
+end
+
+task PrintPartition(x : int32, y : int32, z : int32, w : int32, u : int32, v : int32)
+  c.printf("Partitioning as {%d, %d, %d, %d, %d, %d, %d, %d}\n", x, y, z, 1, 1, w, v, u)
+  return 1
+end
+
+task FinishSimulation(End: double, Start: double)
+  c.printf("Finished simulation in %.4f seconds.\n", (End-Start)*1e-9)
+end
+
+task PrintParams(
+  testProblem : int32,
+  N : int32[3],
+  NV : int32[3],
+  effD : int32,
+  BCs : int32[6],
+  Vmin : double[3],
+  Vmax : double[3],
+  R : float,
+  K : float,
+  g : float,
+  Cv : float,
+  w : float,
+  ur : float,
+  Tr : float,
+  Pr : float,
+  Tf : float,
+  dtdump : float
+)
+  c.printf("Simulation Parameters\n")
+  if testProblem > 0 then c.printf("testProblem = %d\n", testProblem) end
+  c.printf("N = {%d, %d, %d}, NV = {%d, %d, %d}, effD = %d\n", N[0], N[1], N[2], NV[0], NV[1], NV[2], effD)
+  c.printf("BCs = {{%d, %d, %d}, {%d, %d, %d}}, Vmin = {%f, %f, %f}, Vmax = {%f, %f, %f}\n", BCs[0], BCs[1], BCs[2], BCs[3], BCs[4], BCs[5], Vmin[0], Vmin[1], Vmin[2], Vmax[0], Vmax[1], Vmax[2])
+  c.printf("R = %f, K = %f, g = %f, Cv = %f\n", R, K, g, Cv)
+  c.printf("w = %f, ur = %f, Tr = %f, Pr = %f\n", w, ur, Tr, Pr)
+  c.printf("End Time = %f, dtdump %f\n", Tf, dtdump)
+  return 1
+end
+
+task PrintIteration(iter: int32, Tsim: double, End: double, Start: double)
+  c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, (End-Start)*1e-9)
+  c.fflush(c.stdout)
+  return 1
+end
+
+__demand(__replicable)
 task toplevel()
-  var config : Config
-  config:initialize_from_command() -- TODO : CPUs, output bool
+  var config = get_config()
 
   -- Simulation Parameters
   var testProblem : int32 = config.testproblem
@@ -5151,14 +5236,7 @@ task toplevel()
   var thermal_bath : bool = r_params[0].thermal_bath
   var thermal_T : double = r_params[0].thermal_T
 
-  __fence(__execution, __block) 
-  c.printf("Simulation Parameters\n")
-  if testProblem > 0 then c.printf("testProblem = %d\n", testProblem) end
-  c.printf("N = {%d, %d, %d}, NV = {%d, %d, %d}, effD = %d\n", N[0], N[1], N[2], NV[0], NV[1], NV[2], effD)
-  c.printf("BCs = {{%d, %d, %d}, {%d, %d, %d}}, Vmin = {%f, %f, %f}, Vmax = {%f, %f, %f}\n", BCs[0], BCs[1], BCs[2], BCs[3], BCs[4], BCs[5], Vmin[0], Vmin[1], Vmin[2], Vmax[0], Vmax[1], Vmax[2])
-  c.printf("R = %f, K = %f, g = %f, Cv = %f\n", R, K, g, Cv)
-  c.printf("w = %f, ur = %f, Tr = %f, Pr = %f\n", w, ur, Tr, Pr)
-  c.printf("End Time = %f, dtdump %f\n", Tf, dtdump)
+  PrintParams(testProblem, N, NV, effD, BCs, Vmin, Vmax, R, K, g, Cv, w, ur, Tr, Pr, Tf, dtdump)
 
   -- Create regions for distribution functions and gradients
   var r_grid      = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
@@ -5193,7 +5271,7 @@ task toplevel()
   -- Create partitions for regions
   var f6 : int6d = factorize(config.cpus, fdims)  
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
-  c.printf("Partitioning as {%d, %d, %d, %d, %d, %d, %d, %d}\n", f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u)
+  PrintPartition(f6.x, f6.y, f6.z, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
   var p_grid = partition(equal, r_grid, p8)
   var p_gridbarp = partition(equal, r_gridbarp, p8)
@@ -5507,9 +5585,9 @@ task toplevel()
   end
 
   -- Timestep
-  var CFL : double = 0.9 -- Safety Factor
+  var CFL : double = 0.5 -- Safety Factor
   var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
-  var umax : double  = 1.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
+  var umax : double  = 2.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
   
   var Tsim : double = 0.0  -- Sim time
@@ -5524,7 +5602,7 @@ task toplevel()
       DumpPhase(r_grid, dumpiter)
     end
 
-    c.printf("Dump %d\n", dumpiter)
+    PrintDump(dumpiter)
   end
   
   var Start : double = c.legion_get_current_time_in_nanos()
@@ -5816,14 +5894,13 @@ task toplevel()
 
     __fence(__execution, __block)
     End = c.legion_get_current_time_in_nanos()
-    c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, (End-Start)*1e-9)
-    c.fflush(c.stdout)
+    PrintIteration(iter, Tsim, End, Start)
   end
 
 
   __fence(__execution, __block)
   End = c.legion_get_current_time_in_nanos()
-  c.printf("Finished simulation in %.4f seconds.\n", (End-Start)*1e-9)
+  FinishSimulation(End, Start)
   c.fflush(c.stdout)
 end
 

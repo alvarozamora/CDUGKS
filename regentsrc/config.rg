@@ -53,7 +53,7 @@ terra Config:initialize_from_command()
     elseif cstring.strcmp(args.argv[i], "-d") == 0 then
       i = i + 1
       self.debug = [bool](c.atoi(args.argv[i]))
-    elseif cstring.strcmp(args.argv[i], "-f") == 0 then
+    elseif cstring.strcmp(args.argv[i], "-z") == 0 then
       i = i + 1
       self.phase = [bool](c.atoi(args.argv[i]))
     end
