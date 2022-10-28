@@ -6130,7 +6130,7 @@ task toplevel()
 
 
   __fence(__execution, __block)
-  End = c.legion_get_current_time_in_nanos()
+  var End = c.legion_get_current_time_in_nanos()
   FinishSimulation(End, Start)
   c.fflush(c.stdout)
 end
