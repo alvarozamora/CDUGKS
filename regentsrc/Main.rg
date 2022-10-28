@@ -705,6 +705,60 @@ do
       r_params[e].Tf = 0.4                             	-- Stop Time
       r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
 
+    -- TODO: problem 12
+    
+    -- Einfeldt Rarefaction
+    elseif testProblem == 13 then
+
+       -- Dimensionality
+      r_params[e].effD = 1
+
+      -- Spatial Resolution
+      r_params[e].N[0]  = 128
+      r_params[e].N[1]  = 1
+      r_params[e].N[2]  = 1
+
+      -- Velocity Resolution
+      r_params[e].NV[0] = 128+1
+      r_params[e].NV[1] = 1
+      r_params[e].NV[2] = 1
+
+      -- Velocity Grid (Min and Max)
+      r_params[e].Vmin[0] = -8
+      r_params[e].Vmin[1] = 0
+      r_params[e].Vmin[2] = 0
+
+      r_params[e].Vmax[0] = 8
+      r_params[e].Vmax[1] = 0
+      r_params[e].Vmax[2] = 0
+
+      -- Number of Cells
+      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
+      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+
+      -- Boundary Conditions
+      r_params[e].BCs[0] = 2
+      r_params[e].BCs[1] = 0
+      r_params[e].BCs[2] = 0
+
+      r_params[e].BCs[3] = 2
+      r_params[e].BCs[4] = 0
+      r_params[e].BCs[5] = 0
+
+      -- Physical Parameters
+      r_params[e].R   = 0.5                                   -- Gas Constant
+      r_params[e].K   = 2.0                                   -- Internal DOF
+      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
+      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
+      r_params[e].w   = 0.5                                   -- Viscosity Exponent
+      r_params[e].ur  = 1e-5                                  -- Reference Visc
+      r_params[e].Tr  = 1.0                                   -- Reference Temp
+      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+
+      -- Simulation Parameters
+      r_params[e].Tf = 1.0                            	-- Stop Time
+      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
+
     end
   end
 end
@@ -1241,6 +1295,42 @@ do
       
     end
 
+  -- Einfeldt Rarefaction (1-2-0-3)
+  elseif testProblem == 13 then
+
+    -- Problem Parameters (1-2-0-3)
+    var rho : double = 1.0
+    var m: double = 2.0
+    var n: double = 0.0
+    -- var name e is taken by index
+    var e_: double = 3.0
+
+    -- Density 
+    var rhoL : double = rho
+    var rhoR : double = rho
+
+    -- Velocities
+    var vL : double = -m
+    var vR : double =  m
+
+    for e in r_W do
+
+      if r_mesh[e].x <= 0.5 then
+        r_W[e].rho = rhoL
+        r_W[e].rhov[0] = vL
+        r_W[e].rhov[1] = n
+        r_W[e].rhov[2] = 0
+        r_W[e].rhoE = e_
+      else 
+        r_W[e].rho = rhoR
+        r_W[e].rhov[0] = vR
+        r_W[e].rhov[1] = n
+        r_W[e].rhov[2] = 0
+        r_W[e].rhoE = e_
+      end
+      
+    end
+
   end
 end
 
@@ -1381,7 +1471,7 @@ task BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32[
   elseif Dim == 1 and BCs[1] == 0 then
       JL = (JL + N[1])%N[1]
       JR =  JR % N[1]
-  elseif Dim == 2 and BCs[0] == 0 then
+  elseif Dim == 2 and BCs[2] == 0 then
       KL = (KL + N[2])%N[2]
       KR =  KR % N[2]
   
