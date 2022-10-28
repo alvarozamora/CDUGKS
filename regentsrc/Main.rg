@@ -9,10 +9,16 @@ local coloring   = require("coloring_util")
 
 -- Some C APIs
 local c     = regentlib.c
+local atan2 = regentlib.atan2(double)
+local cos   = regentlib.cos(double)
+local exp   = regentlib.exp(double)
+local isnan = regentlib.isnan(double)
+local log   = regentlib.log(double)
+local pow   = regentlib.pow(double)
+local sin   = regentlib.sin(double)
 local sqrt  = regentlib.sqrt(double)
 local cmath = terralib.includec("math.h")
 local PI = cmath.M_PI
-local isnan = regentlib.isnan(double)
 
 -- Replicable
 cmath.fmax.replicable = true
@@ -947,7 +953,7 @@ do
       if (0.25 <= r_mesh[e].y) and (r_mesh[e].y <= 0.75) then
         r_W[e].rho = rho1
         r_W[e].rhov[0] = r_W[e].rho*(vrel/2.0)
-        r_W[e].rhov[1] = amp*cmath.sin(2*PI*r_mesh[e].x)*r_W[e].rho
+        r_W[e].rhov[1] = amp*sin(2*PI*r_mesh[e].x)*r_W[e].rho
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P1/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
       
@@ -955,7 +961,7 @@ do
       else
         r_W[e].rho = rho2
         r_W[e].rhov[0] = r_W[e].rho*(-vrel/2.0)
-        r_W[e].rhov[1] = amp*cmath.sin(2*PI*r_mesh[e].x)*r_W[e].rho
+        r_W[e].rhov[1] = amp*sin(2*PI*r_mesh[e].x)*r_W[e].rho
         r_W[e].rhov[2] = 0
         r_W[e].rhoE = Cv*P2/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
         
@@ -974,7 +980,7 @@ do
 
     for e in r_W do
       r_W[e].rho = rho
-      r_W[e].rhov[0] = r_W[e].rho*(v + amp*cmath.cos(2*PI*r_mesh[e].y))
+      r_W[e].rhov[0] = r_W[e].rho*(v + amp*cos(2*PI*r_mesh[e].y))
       r_W[e].rhov[1] = 0
       r_W[e].rhov[2] = 0
       r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
@@ -998,10 +1004,10 @@ do
     var delta : double = 0.05
 
     for e in r_W do
-      var Ramp : double = 1/(1 + cmath.exp(-2*(r_mesh[e].y - 0.25)/delta)) * 1/(1 + cmath.exp(-2*(0.75 - r_mesh[e].y)/delta))
+      var Ramp : double = 1/(1 + exp(-2*(r_mesh[e].y - 0.25)/delta)) * 1/(1 + exp(-2*(0.75 - r_mesh[e].y)/delta))
       var vx : double = vb - vrel/2 + Ramp*(vrel)
       var rho : double = rho2 + Ramp*(rho1 - rho2) 
-      var vy : double = amp*cmath.sin(2*PI*r_mesh[e].x)
+      var vy : double = amp*sin(2*PI*r_mesh[e].x)
 
       r_W[e].rho = rho
       r_W[e].rhov[0] = rho*vx
@@ -1022,10 +1028,10 @@ do
 
     for e in r_W do
       
-      var Temp : double = 1 + amp*cmath.cos(2*PI*r_mesh[e].y) 
+      var Temp : double = 1 + amp*cos(2*PI*r_mesh[e].y) 
 
       r_W[e].rho = P/Temp -- (Ideal Gas: P \propto rho T)
-      r_W[e].rhov[0] = r_W[e].rho*(v + amp*cmath.cos(2*PI*r_mesh[e].y))
+      r_W[e].rhov[0] = r_W[e].rho*(v + amp*cos(2*PI*r_mesh[e].y))
       r_W[e].rhov[1] = 0
       r_W[e].rhov[2] = 0
       r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
@@ -1044,8 +1050,8 @@ do
 
     for e in r_W do
 
-      r_W[e].rho = a + (1-a)*cmath.pow(cmath.cos(2*PI*r_mesh[e].x - PI/2), 2*n)
-      r_W[e].rhov[0] = 2*r_W[e].rho*(2/(1 + cmath.exp(100*(r_mesh[e].x-1.0/2))) -1)
+      r_W[e].rho = a + (1-a)*pow(cos(2*PI*r_mesh[e].x - PI/2), 2*n)
+      r_W[e].rhov[0] = 2*r_W[e].rho*(2/(1 + exp(100*(r_mesh[e].x-1.0/2))) -1)
       r_W[e].rhov[1] = 0
       r_W[e].rhov[2] = 0
 
@@ -1066,7 +1072,7 @@ do
     -- Surrounding Medium Parameters
     var rhoS : double = 1.0                  -- Density
     var PS : double = 1.0                    -- Pressure
-    var cS : double = cmath.sqrt(g*PS/rhoS)  -- Speed of Sound
+    var cS : double = sqrt(g*PS/rhoS)        -- Speed of Sound
     var vS : double = 2.7*cS                 -- Bulk Motion (M = 2.7)
 
     for e in r_W do
@@ -1104,7 +1110,7 @@ do
 
     for e in r_W do
 
-      var v : double = dv*cmath.sin(4*PI*r_mesh[e].x)
+      var v : double = dv*sin(4*PI*r_mesh[e].x)
 
       r_W[e].rho = rho * (1 - v/c)
       
@@ -1122,7 +1128,7 @@ do
 
     var um : double = 1.0                         -- Velocity Max
     var rho0 : double = 1                         -- Density
-    var M : double = cmath.sqrt(rho0*um*um/5/g)   -- Mach Number
+    var M : double = sqrt(rho0*um*um/5/g)   -- Mach Number
     var P0 : double = rho0*um*um/g/M/M            -- Pressure 
 
     -- Declarations for Velocity, Pressure
@@ -1139,8 +1145,8 @@ do
       var y : double = r_mesh[e].y - 0.5
 
       -- Transform to Polar Coordinates
-      var r : double = cmath.sqrt(x*x + y*y)
-      var phi : double = cmath.atan2(y, x)
+      var r : double = sqrt(x*x + y*y)
+      var phi : double = atan2(y, x)
 
       -- Piecewise Function 
       -- Refer to Fabian Miczek 2013
@@ -1148,16 +1154,16 @@ do
         P = P0 + 25.0/2.0*r*r
         uphi = 5*r
       elseif ((0.2 <= r) and (r < 0.4)) then
-        P = P0 + 25.0/2.0*r*r + 4*(1 - 5*r - cmath.log(0.2) + cmath.log(r))
+        P = P0 + 25.0/2.0*r*r + 4*(1 - 5*r - log(0.2) + log(r))
         uphi = 2.0 - 5.0*r
       elseif r >= 0.4 then
-        P = P0 - 2.0 + 4.0*cmath.log(2)
+        P = P0 - 2.0 + 4.0*log(2)
         uphi = 0
       end
 
       r_W[e].rho = rho0
-      r_W[e].rhov[0] = rho0 * (-cmath.sin(phi) * uphi + dv)
-      r_W[e].rhov[1] = rho0 * ( cmath.cos(phi) * uphi + dv)
+      r_W[e].rhov[0] = rho0 * (-sin(phi) * uphi + dv)
+      r_W[e].rhov[1] = rho0 * ( cos(phi) * uphi + dv)
       r_W[e].rhov[2] = 0
       r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
 
@@ -1176,7 +1182,7 @@ do
     for e in r_W do
 
       r_W[e].rho = rho0
-      r_W[e].rhov[0] = rho0 * cmath.sin(2*PI*r_mesh[e].x)
+      r_W[e].rhov[0] = rho0 * sin(2*PI*r_mesh[e].x)
       r_W[e].rhov[1] = 0
       r_W[e].rhov[2] = 0
       r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0])/r_W[e].rho
@@ -1240,30 +1246,34 @@ end
 
 -- Helper terra functions to simplify inline representations:
 
-terra Temperature(E : double, u : double, g : double, R : double)
+__demand(__inline)
+task Temperature(E : double, u : double, g : double, R : double)
  
   -- Temperature computes temperatue given total energy E, bulk/mean velocity, adiabatic index g, gas constant R
 
   return (g - 1)/R*(E - 0.5*u*u)
 end
 
-terra geq(c2 : double, rho : double, T : double, R : double, effD : int32)
+__demand(__inline)
+task geq(c2 : double, rho : double, T : double, R : double, effD : int32)
 
   -- geq computes the equilibrium distribution for g given squared peculiar velocity c2, density rho, temperature T, gas constnat R, and dimensionality effD
   
-  var x : double = rho*cmath.exp(-c2/(2*R*T))*cmath.pow(2*PI*R*T, -double(effD)/2.0)
+  var x : double = rho*exp(-c2/(2*R*T))*pow(2*PI*R*T, -double(effD)/2.0)
 
   return x
 end
 
-terra visc(T : double, ur : double, Tr : double, w : double)
+__demand(__inline)
+task visc(T : double, ur : double, Tr : double, w : double)
 
   -- visc computes viscosity according to exponent model given temperature T, reference values ur (mu_r) and Tr, and exponent w.
 
-  return ur*cmath.pow(T/Tr,w)
+  return ur*pow(T/Tr,w)
 end
 
-terra sgn(x : double)
+__demand(__inline)
+task sgn(x : double)
 
   -- sgn returns the sign of x
 
@@ -1271,7 +1281,8 @@ terra sgn(x : double)
   return sx
 end
 
-terra abs(x : double)
+__demand(__inline)
+task abs(x : double)
 
   -- abs returns the absolute value of x
   
@@ -1279,7 +1290,8 @@ terra abs(x : double)
 end
 
 
-terra VanLeer(L : double, C : double, R : double, xL : double, xC : double, xR : double)
+__demand(__inline)
+task VanLeer(L : double, C : double, R : double, xL : double, xC : double, xR : double)
 
   -- The Van Leer Limiter
   -- Input: left, middle (center) and right values (L, C, R), and respective cell positions (xL, xC, xR)
@@ -1294,30 +1306,33 @@ terra VanLeer(L : double, C : double, R : double, xL : double, xC : double, xR :
   var s1 : double = (C - L)/(xC - xL)
   var s2 : double = (R - C)/(xR - xC)
 
+  var result : double
   if (C == L and C == R) then
 
     -- If one of the slopes is zero, then return zero.
     -- To be completely honest, I forgot why I included this case but I'm too afraid to remove it and it doesnt hurt keeping it.
     -- It's actually more efficient than multiplying zero by a few factors and then returning the value so...
 
-    return 0.
+    result = 0.
   elseif (xC == xL or xC == xR) then
 
     -- xC == xL or xC == xR if and only if at the boundary and BC not periodic.
     -- If Dirichlet, slope doesn't matter since cell is not updated. Return zero.
     -- If Outflow, slope should be zero (in the constant approximation). Return zero.
 
-    return 0.
+    result = 0.
   else 
 
     -- if s1 and s2 have the same sign, then return harmonic mean. Otherwise, zero.
 
-    return (sgn(s1) + sgn(s2))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2))
-  end  
+    result = (sgn(s1) + sgn(s2))*(abs(s1) * abs(s2))/(abs(s1) + abs(s2))
+  end
+  return result
 end
 
 
-terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32[3])
+__demand(__inline)
+task BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32[3])
 
   -- This function takes in a set of spatial indices (i, j, k)
   -- and grid size information N and computes the set of 
@@ -1397,20 +1412,19 @@ terra BC(i : int32, j : int32, k : int32, Dim : int32, BCs : int32[6], N : int32
 
   return LR
 end
-BC.replicable = true;
 
 
-terra TimeStep(calcdt : double, dumptime : double, tend : double)
+__demand(__inline)
+task TimeStep(calcdt : double, dumptime : double, tend : double)
 
   -- This simple helper function computes the minimum of several timesteps
   -- calcdt is the usual (CFL * dx/umax) from the CFL criterion
   -- dumptime is the time until the next dump
   -- tend is the time until final simulation time
 
-  var timestep : double = cmath.fmin(cmath.fmin(calcdt, dumptime), tend)
+  var timestep : double = min(min(calcdt, dumptime), tend)
   return timestep
 end 
-TimeStep.replicable = true
 
 -- Refer to original CDUGKS paper for steps
 -- Hongtao Liu et. al. 2018
@@ -4960,7 +4974,7 @@ task factorize1d(parallelism : int) : int3d
 end
 
 task factorize2d(parallelism : int) : int3d
-  var limit = [int](cmath.sqrt([double](parallelism)))
+  var limit = [int](sqrt([double](parallelism)))
   var size_x : int32 = 1
   var size_y : int32 = parallelism
   for i = 1, limit + 1 do
@@ -4975,7 +4989,7 @@ task factorize2d(parallelism : int) : int3d
 end
 
 task factorize3d(parallelism : int) : int3d
-  var limit = [int](cmath.pow([double](parallelism), 1/3))
+  var limit = [int](pow([double](parallelism), 1/3))
   var size_x = 1
   var size_y = 1
   var size_z = parallelism
@@ -5586,7 +5600,7 @@ task toplevel()
 
   -- Timestep
   var CFL : double = 0.5 -- Safety Factor
-  var dxmin : double = 1.0/cmath.fmax(cmath.fmax(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
+  var dxmin : double = 1.0/max(max(N[0],N[1]),N[2]) -- Smallest Cell Width (TODO : Non-Uniform Meshes)
   var umax : double  = 2.0 -- Estimated maximum flow velocity, TODO calculate at each iteration for stronger problems
   var calcdt : double = CFL*dxmin/(umax + sqrt(Vmax[0]*Vmax[0] + Vmax[1]*Vmax[1] + Vmax[2]*Vmax[2]))
   
@@ -5904,4 +5918,8 @@ task toplevel()
   c.fflush(c.stdout)
 end
 
-regentlib.start(toplevel)
+if os.getenv("SAVEOBJ") == "1" then
+  regentlib.saveobj(toplevel, "cdugks_exe", "executable", nil, {"-lm"})
+else
+  regentlib.start(toplevel)
+end
