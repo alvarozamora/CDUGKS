@@ -22,47 +22,38 @@ def sort_nicely(l):
     l.sort(key=alphanum_key)
 
 print("Making Gif")
-file_names = glob.glob("Check/Rho*.png")
-phase_names = glob.glob("Check/phase_*.png")
+file_names = glob.glob("Plots/Rho*.png")
+phase_names = glob.glob("Plots/phase_*.png")
 sort_nicely(file_names)
 sort_nicely(phase_names)
 #print(file_names)
 #making animation
 
-import pdb
-pdb.set_trace()
-
-if problem != 2:
-	dur = 1/30.
-elif problem == 2:
-	dur = 1/30.
-	file_names2 = glob.glob("Check2/*.png")
-	sort_nicely(file_names2)
-
+problem = int(input("which problem (int)"))
+phase_bool = False
+if problem in [10]:
+	phase_bool = bool(input("phase space (bool)?"))
 #with io.get_writer('cdugks.gif', duration=dur) as writer:
 #    for filename in file_names:
 #        image = io.imread(filename)
 #        writer.append_data(image)
 #    writer.close()
+filename = f"cdugks{problem}.mp4"
+pfilename = f"cdugks{problem}_phase.mp4"
+print(filename)
+with io.get_writer(filename, fps=30) as writer:
+	for fname in file_names:
+		image = io.imread(fname)
+		writer.append_data(image)
+	writer.close()
+print("MP4 Complete")
 
-
-if problem == 2:
-	with io.get_writer('cdugks2.gif', duration=dur) as writer:
-		for filename in file_names2:
-			image = io.imread(filename)
-			writer.append_data(image)
-		writer.close()
-if problem == 6:
-	with io.get_writer('cdugks6.gif', duration=dur) as writer:
-		for filename in phase_names:
-			image = io.imread(filename)
-			writer.append_data(image)
-		writer.close()
-	print("GIF Complete")
-	with io.get_writer('cdugks6.mp4', duration=dur) as writer:
-		for filename in phase_names:
-			image = io.imread(filename)
+if phase_bool:
+	with io.get_writer(pfilename, fps=30) as writer:
+		for fname in phase_names:
+			image = io.imread(fname)
 			writer.append_data(image)
 		writer.close()
 	print("MP4 Complete")
+
 
