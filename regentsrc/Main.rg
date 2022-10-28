@@ -95,672 +95,671 @@ fspace vmesh
 
 
 -- This task updates r_params given a value of testProblem
-task TestProblem(r_params : region(ispace(int1d), params), testProblem : int32)
-where
-  reads writes(r_params)
-do
-  for e in r_params do
+__demand(__local, __inner)
+task TestProblem(testProblem : int32)
+  var r_params : params
 
-    -- Some Default Settings
-    r_params[e].thermal_bath = false
-    r_params[e].thermal_T = 0
+  -- Some Default Settings
+  r_params.thermal_bath = false
+  r_params.thermal_T = 0
 
-    -- Sod Shock
-    if testProblem == 1 then
+  -- Sod Shock
+  if testProblem == 1 then
 
-      -- Dimensionality
-      r_params[e].effD = 1
+    -- Dimensionality
+    r_params.effD = 1
 
-      var num : int32 = 128
-      -- Spatial Resolution
-      r_params[e].N[0]  = num
-      r_params[e].N[1]  = 1
-      r_params[e].N[2]  = 1
-                
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = 1
-      r_params[e].NV[2] = 1
-                
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -8
-      r_params[e].Vmin[1] = 0
-      r_params[e].Vmin[2] = 0
-                
-      r_params[e].Vmax[0] = 8
-      r_params[e].Vmax[1] = 0
-      r_params[e].Vmax[2] = 0
-                
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
-
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 2 
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
-      r_params[e].BCs[3] = 2 
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
-
-
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-6                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 1.0                                   -- Prandtl Number
-
-      -- Simulation Parameters
-      r_params[e].Tf = 0.15                                   -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/200                 -- Time Between Dumps
- 
-    -- Kelvin-Helmholtz
-    elseif testProblem == 2 then 
-
-      -- Dimensionality
-      r_params[e].effD = 2
-
-      var num : int32 = 100
-      -- Spatial Resolution
-      r_params[e].N[0]  = num
-      r_params[e].N[1]  = num
-      r_params[e].N[2]  = 1
-                
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = num+1
-      r_params[e].NV[2] = 1
-             
-      -- Velocity Grid (Min and Max)   
-      r_params[e].Vmin[0] = -10
-      r_params[e].Vmin[1] = -10
-      r_params[e].Vmin[2] = 0
-                
-      r_params[e].Vmax[0] = 10
-      r_params[e].Vmax[1] = 10
-      r_params[e].Vmax[2] = 0
-                
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
-
-
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
-
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-4                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
-
-      -- Simulation Parameters
-      r_params[e].Tf = 1.6                                    -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
-
-    -- Uniform Density Shear
-    elseif testProblem == 3 then 
-
-      -- Dimensionality
-      r_params[e].effD = 2
-
-      var num : int32 = 64
-      -- Spatial Resolution
-      r_params[e].N[0]  = 1
-      r_params[e].N[1]  = num
-      r_params[e].N[2]  = 1
-                
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = num+1
-      r_params[e].NV[2] = 1
-
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -10
-      r_params[e].Vmin[1] = -10
-      r_params[e].Vmin[2] = 0
-                
-      r_params[e].Vmax[0] = 10
-      r_params[e].Vmax[1] = 10
-      r_params[e].Vmax[2] = 0
-                
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
-
-
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
-
-
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.0                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e2                                   -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 1.0                                   -- Prandtl Number
-
-      -- Simulation Parameters
-      r_params[e].Tf = 4.0                                    -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
-
-    -- Ramped Kelvin-Helmholtz
-    elseif testProblem == 4 then 
-
-      -- Dimensionality
-      r_params[e].effD = 2
-
-      var num : int32 = 128
-      -- Spatial Resolution
-      r_params[e].N[0]  = num
-      r_params[e].N[1]  = num
-      r_params[e].N[2]  = 1
-                
-      -- Velocity Resolution
-      r_params[e].NV[0] = 128+1
-      r_params[e].NV[1] = 128+1
-      r_params[e].NV[2] = 1
-                
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -10
-      r_params[e].Vmin[1] = -10
-      r_params[e].Vmin[2] = 0
-                
-      r_params[e].Vmax[0] = 10
-      r_params[e].Vmax[1] = 10
-      r_params[e].Vmax[2] = 0
-                
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
-
-
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
-
-
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-4                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
-
-      -- Simulation Parameters
-      r_params[e].Tf = 2.0                                    -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
-
-    -- Nonuniform Density Shear
-    -- Adds a sinusoidal temperature/density profile which preserves isobaricity
-    elseif testProblem == 5 then 
-
-      -- Dimensionality
-      r_params[e].effD = 2
-
-      var num : int32 = 64
-      -- Spatial Resolution
-      r_params[e].N[0]  = 2
-      r_params[e].N[1]  = num
-      r_params[e].N[2]  = 1
-                
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = num+1
-      r_params[e].NV[2] = 1
-
-      -- Velocity Grid (Min and Max)       
-      r_params[e].Vmin[0] = -10
-      r_params[e].Vmin[1] = -10
-      r_params[e].Vmin[2] = 0
+    var num : int32 = 128
+    -- Spatial Resolution
+    r_params.N[0]  = num
+    r_params.N[1]  = 1
+    r_params.N[2]  = 1
               
-      r_params[e].Vmax[0] = 10
-      r_params[e].Vmax[1] = 10
-      r_params[e].Vmax[2] = 0
-                
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = 1
+    r_params.NV[2] = 1
+              
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -8
+    r_params.Vmin[1] = 0
+    r_params.Vmin[2] = 0
+              
+    r_params.Vmax[0] = 8
+    r_params.Vmax[1] = 0
+    r_params.Vmax[2] = 0
+              
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
+
+    -- Boundary Conditions
+    r_params.BCs[0] = 2 
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
+    r_params.BCs[3] = 2 
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
 
 
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-6                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 1.0                                   -- Prandtl Number
+
+    -- Simulation Parameters
+    r_params.Tf = 0.15                                   -- Stop Time
+    r_params.dtdump = r_params.Tf/200                 -- Time Between Dumps
+ 
+  -- Kelvin-Helmholtz
+  elseif testProblem == 2 then 
+
+    -- Dimensionality
+    r_params.effD = 2
+
+    var num : int32 = 100
+    -- Spatial Resolution
+    r_params.N[0]  = num
+    r_params.N[1]  = num
+    r_params.N[2]  = 1
+              
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = num+1
+    r_params.NV[2] = 1
+           
+    -- Velocity Grid (Min and Max)   
+    r_params.Vmin[0] = -10
+    r_params.Vmin[1] = -10
+    r_params.Vmin[2] = 0
+              
+    r_params.Vmax[0] = 10
+    r_params.Vmax[1] = 10
+    r_params.Vmax[2] = 0
+              
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
 
 
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-4                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
 
-      -- Simulation Parameters
-      r_params[e].Tf = 4.0                                    -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-4                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
 
-    -- Maxwellian Relaxation
-    elseif testProblem == 6 then 
+    -- Simulation Parameters
+    r_params.Tf = 1.6                                    -- Stop Time
+    r_params.dtdump = r_params.Tf/400                 -- Time Between Dumps
 
-      -- Dimensionality
-      r_params[e].effD = 1
+  -- Uniform Density Shear
+  elseif testProblem == 3 then 
 
-      var num : int32 = 128
-      -- Spatial Resolution
-      r_params[e].N[0]  = num
-      r_params[e].N[1]  = 1
-      r_params[e].N[2]  = 1
-                
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = 1
-      r_params[e].NV[2] = 1
-                
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -10
-      r_params[e].Vmin[1] = 0
-      r_params[e].Vmin[2] = 0
-                
-      r_params[e].Vmax[0] = 10
-      r_params[e].Vmax[1] = 0
-      r_params[e].Vmax[2] = 0
-                
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+    -- Dimensionality
+    r_params.effD = 2
 
+    var num : int32 = 64
+    -- Spatial Resolution
+    r_params.N[0]  = 1
+    r_params.N[1]  = num
+    r_params.N[2]  = 1
+              
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = num+1
+    r_params.NV[2] = 1
 
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 1
-      r_params[e].BCs[1] = 1
-      r_params[e].BCs[2] = 1
-      r_params[e].BCs[3] = 1
-      r_params[e].BCs[4] = 1
-      r_params[e].BCs[5] = 1
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -10
+    r_params.Vmin[1] = -10
+    r_params.Vmin[2] = 0
+              
+    r_params.Vmax[0] = 10
+    r_params.Vmax[1] = 10
+    r_params.Vmax[2] = 0
+              
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
 
 
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 0.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-4                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
 
-      -- Simulation Parameters
-      r_params[e].Tf = 2.0                                    -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
+
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.0                                   -- Viscosity Exponent
+    r_params.ur  = 1e2                                   -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 1.0                                   -- Prandtl Number
+
+    -- Simulation Parameters
+    r_params.Tf = 4.0                                    -- Stop Time
+    r_params.dtdump = r_params.Tf/400                 -- Time Between Dumps
+
+  -- Ramped Kelvin-Helmholtz
+  elseif testProblem == 4 then 
+
+    -- Dimensionality
+    r_params.effD = 2
+
+    var num : int32 = 128
+    -- Spatial Resolution
+    r_params.N[0]  = num
+    r_params.N[1]  = num
+    r_params.N[2]  = 1
+              
+    -- Velocity Resolution
+    r_params.NV[0] = 128+1
+    r_params.NV[1] = 128+1
+    r_params.NV[2] = 1
+              
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -10
+    r_params.Vmin[1] = -10
+    r_params.Vmin[2] = 0
+              
+    r_params.Vmax[0] = 10
+    r_params.Vmax[1] = 10
+    r_params.Vmax[2] = 0
+              
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
+
+
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
+
+
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-4                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
+
+    -- Simulation Parameters
+    r_params.Tf = 2.0                                    -- Stop Time
+    r_params.dtdump = r_params.Tf/400                 -- Time Between Dumps
+
+  -- Nonuniform Density Shear
+  -- Adds a sinusoidal temperature/density profile which preserves isobaricity
+  elseif testProblem == 5 then 
+
+    -- Dimensionality
+    r_params.effD = 2
+
+    var num : int32 = 64
+    -- Spatial Resolution
+    r_params.N[0]  = 2
+    r_params.N[1]  = num
+    r_params.N[2]  = 1
+              
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = num+1
+    r_params.NV[2] = 1
+
+    -- Velocity Grid (Min and Max)       
+    r_params.Vmin[0] = -10
+    r_params.Vmin[1] = -10
+    r_params.Vmin[2] = 0
+            
+    r_params.Vmax[0] = 10
+    r_params.Vmax[1] = 10
+    r_params.Vmax[2] = 0
+              
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
+
+
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
+
+
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-4                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
+
+    -- Simulation Parameters
+    r_params.Tf = 4.0                                    -- Stop Time
+    r_params.dtdump = r_params.Tf/400                 -- Time Between Dumps
+
+  -- Maxwellian Relaxation
+  elseif testProblem == 6 then 
+
+    -- Dimensionality
+    r_params.effD = 1
+
+    var num : int32 = 128
+    -- Spatial Resolution
+    r_params.N[0]  = num
+    r_params.N[1]  = 1
+    r_params.N[2]  = 1
+              
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = 1
+    r_params.NV[2] = 1
+              
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -10
+    r_params.Vmin[1] = 0
+    r_params.Vmin[2] = 0
+              
+    r_params.Vmax[0] = 10
+    r_params.Vmax[1] = 0
+    r_params.Vmax[2] = 0
+              
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
+
+
+    -- Boundary Conditions
+    r_params.BCs[0] = 1
+    r_params.BCs[1] = 1
+    r_params.BCs[2] = 1
+    r_params.BCs[3] = 1
+    r_params.BCs[4] = 1
+    r_params.BCs[5] = 1
+
+
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 0.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-4                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
+
+    -- Simulation Parameters
+    r_params.Tf = 2.0                                    -- Stop Time
+    r_params.dtdump = r_params.Tf/400                 -- Time Between Dumps
+  
+  -- Blob Test
+  elseif testProblem == 7 then 
+
+    -- Dimensionality
+    r_params.effD = 2
+
+    var num : int32 = 100
+    -- Spatial Resolution
+    r_params.N[0]  = num
+    r_params.N[1]  = num
+    r_params.N[2]  = 1
+              
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = num+1
+    r_params.NV[2] = 1
+              
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -20
+    r_params.Vmin[1] = -20
+    r_params.Vmin[2] = 0
+              
+    r_params.Vmax[0] = 20
+    r_params.Vmax[1] = 20
+    r_params.Vmax[2] = 0
+              
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
+
+
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
+
+
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-6                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
+
+    -- Simulation Parameters
+    r_params.Tf = 2.0                    -- Stop Time
+    r_params.dtdump = r_params.Tf/400            -- Time Between Dumps
     
-    -- Blob Test
-    elseif testProblem == 7 then 
+  -- Thermoacoustic
+  elseif testProblem == 8 then
 
-      -- Dimensionality
-      r_params[e].effD = 2
+    -- Dimensionality
+    r_params.effD = 1
 
-      var num : int32 = 100
-      -- Spatial Resolution
-      r_params[e].N[0]  = num
-      r_params[e].N[1]  = num
-      r_params[e].N[2]  = 1
-                
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = num+1
-      r_params[e].NV[2] = 1
-                
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -20
-      r_params[e].Vmin[1] = -20
-      r_params[e].Vmin[2] = 0
-                
-      r_params[e].Vmax[0] = 20
-      r_params[e].Vmax[1] = 20
-      r_params[e].Vmax[2] = 0
-                
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+    var num : int32 = 512
+    -- Spatial Resolution
+    r_params.N[0]  = num
+    r_params.N[1]  = 1
+    r_params.N[2]  = 1
 
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = 1
+    r_params.NV[2] = 1
 
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -10
+    r_params.Vmin[1] = 0
+    r_params.Vmin[2] = 0
+
+    r_params.Vmax[0] = 10
+    r_params.Vmax[1] = 0
+    r_params.Vmax[2] = 0
+
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
 
 
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-6                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
 
-      -- Simulation Parameters
-      r_params[e].Tf = 2.0                    -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/400            -- Time Between Dumps
+    -- Boundary Conditions
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
+
+
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-3                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
+
+    -- Simulation Parameters
+    r_params.Tf = 4.0                                    -- Stop Time
+    r_params.dtdump = r_params.Tf/400                 -- Time Between Dumps
       
-    -- Thermoacoustic
-    elseif testProblem == 8 then
+  -- Gresho Vortex (also known as Triangular Vortex)
+  -- Refer to Fabian Miczek 2013
+  elseif testProblem == 9 then
 
-      -- Dimensionality
-      r_params[e].effD = 1
+    -- Dimensionality
+    r_params.effD = 2
 
-      var num : int32 = 512
-      -- Spatial Resolution
-      r_params[e].N[0]  = num
-      r_params[e].N[1]  = 1
-      r_params[e].N[2]  = 1
+    var num : int32 = 100
+    -- Spatial Resolution
+    r_params.N[0]  = num
+    r_params.N[1]  = num
+    r_params.N[2]  = 1
 
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = 1
-      r_params[e].NV[2] = 1
+    -- Velocity Resolution
+    r_params.NV[0] = num+1
+    r_params.NV[1] = num+1
+    r_params.NV[2] = 1
 
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -10
-      r_params[e].Vmin[1] = 0
-      r_params[e].Vmin[2] = 0
+    -- Velocity Grid (Min and Max)
+    var dv : double = 9/(2*PI/5) -- Number of passes through box divided by max ring speed
+    r_params.Vmin[0] = -10 + dv
+    r_params.Vmin[1] = -10 + dv
+    r_params.Vmin[2] = 0
 
-      r_params[e].Vmax[0] = 10
-      r_params[e].Vmax[1] = 0
-      r_params[e].Vmax[2] = 0
+    r_params.Vmax[0] = 10 + dv
+    r_params.Vmax[1] = 10 + dv
+    r_params.Vmax[2] = 0
 
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
-
-
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
-
-      -- Boundary Conditions
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
 
 
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-3                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
 
-      -- Simulation Parameters
-      r_params[e].Tf = 4.0                                    -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/400                 -- Time Between Dumps
-        
-    -- Gresho Vortex (also known as Triangular Vortex)
-    -- Refer to Fabian Miczek 2013
-    elseif testProblem == 9 then
-
-      -- Dimensionality
-      r_params[e].effD = 2
-
-      var num : int32 = 100
-      -- Spatial Resolution
-      r_params[e].N[0]  = num
-      r_params[e].N[1]  = num
-      r_params[e].N[2]  = 1
-
-      -- Velocity Resolution
-      r_params[e].NV[0] = num+1
-      r_params[e].NV[1] = num+1
-      r_params[e].NV[2] = 1
-
-      -- Velocity Grid (Min and Max)
-      var dv : double = 9/(2*PI/5) -- Number of passes through box divided by max ring speed
-      r_params[e].Vmin[0] = -10 + dv
-      r_params[e].Vmin[1] = -10 + dv
-      r_params[e].Vmin[2] = 0
-
-      r_params[e].Vmax[0] = 10 + dv
-      r_params[e].Vmax[1] = 10 + dv
-      r_params[e].Vmax[2] = 0
-
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+    -- Boundary Conditions
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
 
 
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-6                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
 
-      -- Boundary Conditions
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
+    -- Simulation Parameters
+    r_params.Tf = 2.0*PI/5.0                             -- Stop Time
+    r_params.dtdump = r_params.Tf/200                 -- Time Between Dumps
 
+  -- Sine Wave Collapse
+  -- Sinusoidal Velocity Profile
+  elseif testProblem == 10 then
 
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-6                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+    -- Dimensionality
+    r_params.effD = 1
 
-      -- Simulation Parameters
-      r_params[e].Tf = 2.0*PI/5.0                             -- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/200                 -- Time Between Dumps
+    -- Spatial Resolution
+    r_params.N[0]  = 128
+    r_params.N[1]  = 1
+    r_params.N[2]  = 1
 
-    -- Sine Wave Collapse
-    -- Sinusoidal Velocity Profile
-    elseif testProblem == 10 then
+    -- Velocity Resolution
+    r_params.NV[0] = 16385
+    r_params.NV[1] = 1
+    r_params.NV[2] = 1
 
-      -- Dimensionality
-      r_params[e].effD = 1
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -6
+    r_params.Vmin[1] = 0
+    r_params.Vmin[2] = 0
 
-      -- Spatial Resolution
-      r_params[e].N[0]  = 128
-      r_params[e].N[1]  = 1
-      r_params[e].N[2]  = 1
+    r_params.Vmax[0] = 6
+    r_params.Vmax[1] = 0
+    r_params.Vmax[2] = 0
 
-      -- Velocity Resolution
-      r_params[e].NV[0] = 16385
-      r_params[e].NV[1] = 1
-      r_params[e].NV[2] = 1
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
 
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -6
-      r_params[e].Vmin[1] = 0
-      r_params[e].Vmin[2] = 0
+    -- Boundary Conditions
+    r_params.BCs[0] = 0
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
 
-      r_params[e].Vmax[0] = 6
-      r_params[e].Vmax[1] = 0
-      r_params[e].Vmax[2] = 0
+    r_params.BCs[3] = 0
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
 
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-2                                   -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
 
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 0
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
+    -- Simulation Parameters
+    r_params.Tf = 1.0                            	-- Stop Time
+    r_params.dtdump = r_params.Tf/200          	-- Time Between Dumps
 
-      r_params[e].BCs[3] = 0
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
+  -- Isothermal Shock
+  elseif testProblem == 11 then
 
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-2                                   -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
+    -- Dimensionality
+    r_params.effD = 1
 
-      -- Simulation Parameters
-      r_params[e].Tf = 1.0                            	-- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
+    -- Spatial Resolution
+    r_params.N[0]  = 128
+    r_params.N[1]  = 1
+    r_params.N[2]  = 1
 
-    -- Isothermal Shock
-    elseif testProblem == 11 then
+    -- Velocity Resolution
+    r_params.NV[0] = 128+1
+    r_params.NV[1] = 1
+    r_params.NV[2] = 1
 
-      -- Dimensionality
-      r_params[e].effD = 1
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -6
+    r_params.Vmin[1] = 0
+    r_params.Vmin[2] = 0
 
-      -- Spatial Resolution
-      r_params[e].N[0]  = 128
-      r_params[e].N[1]  = 1
-      r_params[e].N[2]  = 1
+    r_params.Vmax[0] = 8
+    r_params.Vmax[1] = 0
+    r_params.Vmax[2] = 0
 
-      -- Velocity Resolution
-      r_params[e].NV[0] = 128+1
-      r_params[e].NV[1] = 1
-      r_params[e].NV[2] = 1
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
 
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -6
-      r_params[e].Vmin[1] = 0
-      r_params[e].Vmin[2] = 0
+    -- Boundary Conditions
+    r_params.BCs[0] = 2
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
 
-      r_params[e].Vmax[0] = 8
-      r_params[e].Vmax[1] = 0
-      r_params[e].Vmax[2] = 0
+    r_params.BCs[3] = 2
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
 
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-4                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2./3                                   -- Prandtl Number
 
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 2
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
+    -- Thermal Bath
+    r_params.thermal_bath = true
+    r_params.thermal_T = 0.8
 
-      r_params[e].BCs[3] = 2
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
+    -- Simulation Parameters
+    r_params.Tf = 0.4                             	-- Stop Time
+    r_params.dtdump = r_params.Tf/200          	-- Time Between Dumps
 
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-4                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2./3                                   -- Prandtl Number
+  -- TODO: problem 12
+  
+  -- Einfeldt Rarefaction
+  elseif testProblem == 13 then
 
-      -- Thermal Bath
-      r_params[e].thermal_bath = true
-      r_params[e].thermal_T = 0.8
+     -- Dimensionality
+    r_params.effD = 1
 
-      -- Simulation Parameters
-      r_params[e].Tf = 0.4                             	-- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
+    -- Spatial Resolution
+    r_params.N[0]  = 128
+    r_params.N[1]  = 1
+    r_params.N[2]  = 1
 
-    -- TODO: problem 12
-    
-    -- Einfeldt Rarefaction
-    elseif testProblem == 13 then
+    -- Velocity Resolution
+    r_params.NV[0] = 128+1
+    r_params.NV[1] = 1
+    r_params.NV[2] = 1
 
-       -- Dimensionality
-      r_params[e].effD = 1
+    -- Velocity Grid (Min and Max)
+    r_params.Vmin[0] = -8
+    r_params.Vmin[1] = 0
+    r_params.Vmin[2] = 0
 
-      -- Spatial Resolution
-      r_params[e].N[0]  = 128
-      r_params[e].N[1]  = 1
-      r_params[e].N[2]  = 1
+    r_params.Vmax[0] = 8
+    r_params.Vmax[1] = 0
+    r_params.Vmax[2] = 0
 
-      -- Velocity Resolution
-      r_params[e].NV[0] = 128+1
-      r_params[e].NV[1] = 1
-      r_params[e].NV[2] = 1
+    -- Number of Cells
+    r_params.Nc = r_params.N[0]*r_params.N[1]*r_params.N[2]
+    r_params.Nv = r_params.NV[0]*r_params.NV[1]*r_params.NV[2]
 
-      -- Velocity Grid (Min and Max)
-      r_params[e].Vmin[0] = -8
-      r_params[e].Vmin[1] = 0
-      r_params[e].Vmin[2] = 0
+    -- Boundary Conditions
+    r_params.BCs[0] = 2
+    r_params.BCs[1] = 0
+    r_params.BCs[2] = 0
 
-      r_params[e].Vmax[0] = 8
-      r_params[e].Vmax[1] = 0
-      r_params[e].Vmax[2] = 0
+    r_params.BCs[3] = 2
+    r_params.BCs[4] = 0
+    r_params.BCs[5] = 0
 
-      -- Number of Cells
-      r_params[e].Nc = r_params[e].N[0]*r_params[e].N[1]*r_params[e].N[2]
-      r_params[e].Nv = r_params[e].NV[0]*r_params[e].NV[1]*r_params[e].NV[2]
+    -- Physical Parameters
+    r_params.R   = 0.5                                   -- Gas Constant
+    r_params.K   = 2.0                                   -- Internal DOF
+    r_params.Cv  = (3+r_params.K)*r_params.R/2.0   -- Specific Heat
+    r_params.g   = (r_params.K+5)/(r_params.K+3.0) -- Adiabatic Index
+    r_params.w   = 0.5                                   -- Viscosity Exponent
+    r_params.ur  = 1e-5                                  -- Reference Visc
+    r_params.Tr  = 1.0                                   -- Reference Temp
+    r_params.Pr  = 2.0/3.0                               -- Prandtl Number
 
-      -- Boundary Conditions
-      r_params[e].BCs[0] = 2
-      r_params[e].BCs[1] = 0
-      r_params[e].BCs[2] = 0
+    -- Simulation Parameters
+    r_params.Tf = 1.0                            	-- Stop Time
+    r_params.dtdump = r_params.Tf/200          	-- Time Between Dumps
 
-      r_params[e].BCs[3] = 2
-      r_params[e].BCs[4] = 0
-      r_params[e].BCs[5] = 0
-
-      -- Physical Parameters
-      r_params[e].R   = 0.5                                   -- Gas Constant
-      r_params[e].K   = 2.0                                   -- Internal DOF
-      r_params[e].Cv  = (3+r_params[e].K)*r_params[e].R/2.0   -- Specific Heat
-      r_params[e].g   = (r_params[e].K+5)/(r_params[e].K+3.0) -- Adiabatic Index
-      r_params[e].w   = 0.5                                   -- Viscosity Exponent
-      r_params[e].ur  = 1e-5                                  -- Reference Visc
-      r_params[e].Tr  = 1.0                                   -- Reference Temp
-      r_params[e].Pr  = 2.0/3.0                               -- Prandtl Number
-
-      -- Simulation Parameters
-      r_params[e].Tf = 1.0                            	-- Stop Time
-      r_params[e].dtdump = r_params[e].Tf/200          	-- Time Between Dumps
-
-    end
   end
+
+  return r_params
 end
 
 task NewtonCotes(vxmesh : region(ispace(int1d), vmesh), vymesh : region(ispace(int1d), vmesh),
@@ -5310,35 +5309,34 @@ task PrintIteration(iter: int32, Tsim: double, End: double, Start: double)
   return 1
 end
 
-__demand(__replicable)
+__demand(__replicable, __inner)
 task toplevel()
   var config = get_config()
 
   -- Simulation Parameters
   var testProblem : int32 = config.testproblem
-  var r_params = region(ispace(int1d, 1), params)
-  TestProblem(r_params, testProblem)
+  var r_params = TestProblem(testProblem)
   -- Unpack TestProblem
-  var N  : int32[3] = r_params[0].N
-  var NV : int32[3] = r_params[0].NV
-  var Nc : int64 = r_params[0].Nc
-  var Nv : int64 = r_params[0].Nv
-  var R : double = r_params[0].R
-  var K : double = r_params[0].K
-  var g : double = r_params[0].g
-  var w : double = r_params[0].w
-  var Cv : double = r_params[0].Cv
-  var ur : double = r_params[0].ur
-  var Tr : double = r_params[0].Tr
-  var Pr : double = r_params[0].Pr
-  var effD : int32 = r_params[0].effD
-  var BCs : int32[6] = r_params[0].BCs
-  var Vmin : double[3] = r_params[0].Vmin
-  var Vmax : double[3] = r_params[0].Vmax
-  var Tf : double = r_params[0].Tf
-  var dtdump : double = r_params[0].dtdump
-  var thermal_bath : bool = r_params[0].thermal_bath
-  var thermal_T : double = r_params[0].thermal_T
+  var N  : int32[3] = r_params.N
+  var NV : int32[3] = r_params.NV
+  var Nc : int64 = r_params.Nc
+  var Nv : int64 = r_params.Nv
+  var R : double = r_params.R
+  var K : double = r_params.K
+  var g : double = r_params.g
+  var w : double = r_params.w
+  var Cv : double = r_params.Cv
+  var ur : double = r_params.ur
+  var Tr : double = r_params.Tr
+  var Pr : double = r_params.Pr
+  var effD : int32 = r_params.effD
+  var BCs : int32[6] = r_params.BCs
+  var Vmin : double[3] = r_params.Vmin
+  var Vmax : double[3] = r_params.Vmax
+  var Tf : double = r_params.Tf
+  var dtdump : double = r_params.dtdump
+  var thermal_bath : bool = r_params.thermal_bath
+  var thermal_T : double = r_params.thermal_T
 
   PrintParams(testProblem, N, NV, effD, BCs, Vmin, Vmax, R, K, g, Cv, w, ur, Tr, Pr, Tf, dtdump)
 
