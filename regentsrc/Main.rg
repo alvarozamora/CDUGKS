@@ -6122,7 +6122,7 @@ task toplevel()
     end -- end trace
 
     if iter < 10 or iter % 100 == 0 then
-      __fence(__execution, block)
+      __fence(__execution, __block)
       var End = c.legion_get_current_time_in_nanos()
       PrintIteration(iter, Tsim, End, Start)
     end
