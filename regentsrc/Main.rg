@@ -96,7 +96,7 @@ fspace vmesh
 
 -- This task updates r_params given a value of testProblem
 __demand(__local, __inner)
-task TestProblem(testProblem : int32)
+task TestProblem(testProblem : int32, config: Config)
   var r_params : params
 
   -- Some Default Settings
@@ -269,10 +269,22 @@ task TestProblem(testProblem : int32)
     -- Dimensionality
     r_params.effD = 2
 
+    var xmultiplier: int32 = 1
+    var ymultiplier: int32 = 1
+    var num_nodes: int32 = config.nodes
+    while num_nodes > 2 do
+      num_nodes = num_nodes / 2
+      if xmultiplier < ymultiplier then
+        xmultiplier = xmultiplier * 2
+      else
+        ymultiplier = ymultiplier * 2
+      end
+    end
+
     var num : int32 = 128
     -- Spatial Resolution
-    r_params.N[0]  = num
-    r_params.N[1]  = num
+    r_params.N[0]  = num * xmultiplier
+    r_params.N[1]  = num * ymultiplier
     r_params.N[2]  = 1
               
     -- Velocity Resolution
@@ -5429,7 +5441,7 @@ task toplevel()
 
   -- Simulation Parameters
   var testProblem : int32 = config.testproblem
-  var r_params = TestProblem(testProblem)
+  var r_params = TestProblem(testProblem, config)
   -- Unpack TestProblem
   var N  : int32[3] = r_params.N
   var NV : int32[3] = r_params.NV
