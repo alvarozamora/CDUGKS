@@ -272,7 +272,7 @@ task TestProblem(testProblem : int32, config: Config)
     var xmultiplier: int32 = 1
     var ymultiplier: int32 = 1
     var num_nodes: int32 = config.nodes
-    while num_nodes > 2 do
+    while num_nodes >= 2 do
       num_nodes = num_nodes / 2
       if xmultiplier < ymultiplier then
         xmultiplier = xmultiplier * 2
@@ -280,6 +280,7 @@ task TestProblem(testProblem : int32, config: Config)
         ymultiplier = ymultiplier * 2
       end
     end
+    regentlib.assert(xmultiplier * ymultiplier == config.nodes, "unable to factor nodes")
 
     var num : int32 = 128
     -- Spatial Resolution
