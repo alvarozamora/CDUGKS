@@ -5844,7 +5844,7 @@ task toplevel()
   var Start = c.legion_get_current_time_in_nanos()
 
   var dt : double = 0
-  var cont = Tsim < Tf --and iter < 10
+  var cont = Tsim < Tf and iter < 210
   while cont do
     __demand(__trace)
     do -- begin trace
@@ -6130,7 +6130,7 @@ task toplevel()
 
     Tsim += dt
 
-    cont = Tsim < Tf --and iter < 10
+    cont = Tsim < Tf and iter < 210
 
     end -- end trace
 
