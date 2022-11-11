@@ -762,8 +762,8 @@ task TestProblem(testProblem : int32)
   return r_params
 end
 
-task NewtonCotes(vxmesh : region(ispace(int1d), vmesh), vymesh : region(ispace(int1d), vmesh),
-                 vzmesh : region(ispace(int1d), vmesh),
+task NewtonCotes(vxmesh : region(ispace(int2d), vmesh), vymesh : region(ispace(int2d), vmesh),
+                 vzmesh : region(ispace(int2d), vmesh),
                  NV : int32[3], Vmin : double[3], Vmax : double[3])
 where
   reads writes(vxmesh, vymesh, vzmesh)
@@ -777,6 +777,9 @@ do
 
   regentlib.assert((NV[0]%4 == 1 and NV[1]%4 == 1 and NV[2]%4 == 1), "4th Order Newton-Cotes weights require 4n+1 grid cells\n")
 
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- First Dimension
   a = Vmin[0]
@@ -785,33 +788,33 @@ do
   dh = (b-a)/(NV[0]-1)*4 
 
   for kx = 0, NV[0] do
-    vxmesh[kx].v = Vmin[0] + kx*dh/4
+    vxmesh[{ kx, vlo2x }].v = Vmin[0] + kx*dh/4
   end 
 
   for kx = 0, n do
 
-    vxmesh[4*kx].w   = 14.0
-    vxmesh[4*kx+1].w = 32.0
-    vxmesh[4*kx+2].w = 12.0
-    vxmesh[4*kx+3].w = 32.0
+    vxmesh[{ 4*kx, vlo2x }].w   = 14.0
+    vxmesh[{ 4*kx+1, vlo2x }].w = 32.0
+    vxmesh[{ 4*kx+2, vlo2x }].w = 12.0
+    vxmesh[{ 4*kx+3, vlo2x }].w = 32.0
 
   end
 
-  vxmesh[0].w = 7.0
-  vxmesh[NV[0]-1].w = 7.0
+  vxmesh[{ 0, vlo2x }].w = 7.0
+  vxmesh[{ NV[0]-1, vlo2x }].w = 7.0
 
 
 
   for kx = 0, NV[0] do
-    vxmesh[kx].w = vxmesh[kx].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
+    vxmesh[{ kx, vlo2x }].w = vxmesh[{ kx, vlo2x }].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
   end
 
   -- Check Weights
   --for kx = 0, NV[0] do
-  --  c.printf("Main.hh vxmesh[%d].v = %f\n", kx, vxmesh[kx].v)
+  --  c.printf("Main.hh vxmesh[%d].v = %f\n", kx, vxmesh[{ kx, vlo2x }].v)
   --end
   --for kx = 0, NV[0] do
-  --  c.printf("Main.hh vxmesh[%d].w = %f\n", kx, vxmesh[kx].w)
+  --  c.printf("Main.hh vxmesh[%d].w = %f\n", kx, vxmesh[{ kx, vlo2x }].w)
   --end
   
 
@@ -823,30 +826,30 @@ do
     dh = (b-a)/(NV[1]-1)*4 
 
     for ky = 0, NV[1] do
-      vymesh[ky].v = Vmin[1] + ky*dh/4
+      vymesh[{ ky, vlo2y }].v = Vmin[1] + ky*dh/4
     end 
 
     for ky = 0, n do
 
-      vymesh[4*ky].w   = 14.0
-      vymesh[4*ky+1].w = 32.0
-      vymesh[4*ky+2].w = 12.0
-      vymesh[4*ky+3].w = 32.0
+      vymesh[{ 4*ky, vlo2y }].w   = 14.0
+      vymesh[{ 4*ky+1, vlo2y }].w = 32.0
+      vymesh[{ 4*ky+2, vlo2y }].w = 12.0
+      vymesh[{ 4*ky+3, vlo2y }].w = 32.0
 
     end
 
-    vymesh[0].w = 7.0
-    vymesh[NV[1]-1].w = 7.0
+    vymesh[{ 0, vlo2y }].w = 7.0
+    vymesh[{ NV[1]-1, vlo2y }].w = 7.0
 
     for ky = 0, NV[1] do
-      vymesh[ky].w = vymesh[ky].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
+      vymesh[{ ky, vlo2y }].w = vymesh[{ ky, vlo2y }].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
     end 
 
   elseif NV[1] == 1 then
 
     -- i.e. if 1-Dimensional Problem
-    vymesh[0].v = 0
-    vymesh[0].w = 1
+    vymesh[{ 0, vlo2y }].v = 0
+    vymesh[{ 0, vlo2y }].w = 1
 
   else
     c.printf("Error with Newton Cotes (number of vy points)\n")
@@ -854,10 +857,10 @@ do
 
   -- Check Weights
   --for ky = 0, NV[1] do
-  --  c.printf("Main.hh vymesh[%d].v = %f\n", ky, vymesh[ky].v)
+  --  c.printf("Main.hh vymesh[%d].v = %f\n", ky, vymesh[{ ky, vlo2y }].v)
   --end
   --for ky = 0, NV[1] do
-  --  c.printf("Main.hh vymesh[%d].w = %f\n", ky, vymesh[ky].w)
+  --  c.printf("Main.hh vymesh[%d].w = %f\n", ky, vymesh[{ ky, vlo2y }].w)
   --end
 
   -- Third Dimension
@@ -868,29 +871,29 @@ do
     dh = (b-a)/(NV[2]-1)*4 
 
     for kz = 0, NV[2] do
-      vzmesh[kz].v = Vmin[2] + k*dh/4
+      vzmesh[{ kz, vlo2z }].v = Vmin[2] + k*dh/4
     end 
 
     for kz = 0, n do
-      vzmesh[4*kz].w   = 14.0
-      vzmesh[4*kz+1].w = 32.0
-      vzmesh[4*kz+2].w = 12.0
-      vzmesh[4*kz+3].w = 32.0
+      vzmesh[{ 4*kz, vlo2z }].w   = 14.0
+      vzmesh[{ 4*kz+1, vlo2z }].w = 32.0
+      vzmesh[{ 4*kz+2, vlo2z }].w = 12.0
+      vzmesh[{ 4*kz+3, vlo2z }].w = 32.0
 
     end
 
-    vzmesh[0].w = 7.0
-    vzmesh[NV[2]-1].w = 7.0
+    vzmesh[{ 0, vlo2z }].w = 7.0
+    vzmesh[{ NV[2]-1, vlo2z }].w = 7.0
 
 
     for kz = 0, NV[2] do
-      vzmesh[kz].w = vzmesh[kz].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
+      vzmesh[{ kz, vlo2z }].w = vzmesh[{ kz, vlo2z }].w*dh/90. -- TODO Trying Lower Order Integration old factor was /90.}
     end
   elseif NV[2] == 1 then
 
     -- i.e. if 2-Dimensional Problem
-    vzmesh[0].v = 0
-    vzmesh[0].w = 1
+    vzmesh[{ 0, vlo2z }].v = 0
+    vzmesh[{ 0, vlo2z }].w = 1
 
   else
     c.printf("Error with Newton Cotes (number of vz points)\n")
@@ -898,10 +901,10 @@ do
 
   -- Check Weights
   --for kz = 0, NV[2] do
-  --  c.printf("Main.hh vzmesh[%d].v = %f\n", kz, vzmesh[kz].v)
+  --  c.printf("Main.hh vzmesh[%d].v = %f\n", kz, vzmesh[{ kz, vlo2z }].v)
   --end
   --for kz = 0, NV[2] do
-  --  c.printf("Main.hh vzmesh[%d].w = %f\n", kz, vzmesh[kz].w)
+  --  c.printf("Main.hh vzmesh[%d].w = %f\n", kz, vzmesh[{ kz, vlo2z }].w)
   --end
 
 end
@@ -1523,9 +1526,9 @@ task Step1a(r_grid : region(ispace(int8d), grid),
             r_gridbarp : region(ispace(int8d), grid),
             r_S : region(ispace(int8d), grid),
             r_W : region(ispace(int8d), W),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             dt : double, R : double, K : double, Cv : double,
             g : double, w : double, ur : double, Tr : double,
             Pr : double, effD : int32, thermal_bath : bool, thermal_T : double)
@@ -1538,11 +1541,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
   var shi : int3d = {r_grid.bounds.hi.x, r_grid.bounds.hi.y, r_grid.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Relaxation Times
   var tg : double
@@ -1598,9 +1604,9 @@ do
 
       -- Compute Peculiar Velocity squared
       c2 = 0
-      Xi[0] = vxmesh[v.x].v
-      Xi[1] = vymesh[v.y].v
-      Xi[2] = vzmesh[v.z].v     
+      Xi[0] = vxmesh[{ v.x, vlo2x }].v
+      Xi[1] = vymesh[{ v.y, vlo2y }].v
+      Xi[2] = vzmesh[{ v.z, vlo2z }].v     
       for d = 0, effD do
         c2 += (Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)*(Xi[d]-r_W[e3].rhov[d]/r_W[e3].rho)
       end
@@ -1661,9 +1667,9 @@ task Step1b_sigx(r_gridbarp : region(ispace(int8d), grid),
             prx_mesh : region(ispace(int8d), mesh),
             plx_gridbarp : region(ispace(int8d), grid),
             prx_gridbarp : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),            
-            vymesh : region(ispace(int1d), vmesh),            
-            vzmesh : region(ispace(int1d), vmesh),            
+            vxmesh : region(ispace(int2d), vmesh),            
+            vymesh : region(ispace(int2d), vmesh),            
+            vzmesh : region(ispace(int2d), vmesh),            
             BCs : int32[6], N : int32[3], effD : int32)
 where 
   reads(r_gridbarp, r_mesh, plx_mesh, prx_mesh, plx_gridbarp, prx_gridbarp),
@@ -1681,10 +1687,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -1782,9 +1792,9 @@ task Step1b_sigy(r_gridbarp : region(ispace(int8d), grid),
             pry_mesh : region(ispace(int8d), mesh),
             ply_gridbarp : region(ispace(int8d), grid),
             pry_gridbarp : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),            
-            vymesh : region(ispace(int1d), vmesh),            
-            vzmesh : region(ispace(int1d), vmesh),            
+            vxmesh : region(ispace(int2d), vmesh),            
+            vymesh : region(ispace(int2d), vmesh),            
+            vzmesh : region(ispace(int2d), vmesh),            
             BCs : int32[6], N : int32[3], effD : int32)
 where 
   reads(r_gridbarp, r_mesh, ply_mesh, pry_mesh, ply_gridbarp, pry_gridbarp),
@@ -1801,8 +1811,8 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
 
@@ -1902,9 +1912,9 @@ task Step1b_sigz(r_gridbarp : region(ispace(int8d), grid),
             prz_mesh : region(ispace(int8d), mesh),
             plz_gridbarp : region(ispace(int8d), grid),
             prz_gridbarp : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),            
-            vymesh : region(ispace(int1d), vmesh),            
-            vzmesh : region(ispace(int1d), vmesh),            
+            vxmesh : region(ispace(int2d), vmesh),            
+            vymesh : region(ispace(int2d), vmesh),            
+            vzmesh : region(ispace(int2d), vmesh),            
             BCs : int32[6], N : int32[3], effD : int32)
 where 
   reads(r_gridbarp, r_mesh, plz_mesh, prz_mesh, plz_gridbarp, prz_gridbarp),
@@ -1921,10 +1931,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2027,9 +2041,9 @@ task Step1b_sigx_x(r_sig : region(ispace(int8d), grid),
             prx_mesh : region(ispace(int8d), mesh),
             plx_sig : region(ispace(int8d), grid),
             prx_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
@@ -2049,10 +2063,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2140,9 +2158,9 @@ task Step1b_sigy_x(r_sig : region(ispace(int8d), grid),
             prx_mesh : region(ispace(int8d), mesh),
             plx_sig : region(ispace(int8d), grid),
             prx_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
@@ -2162,10 +2180,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2254,9 +2276,9 @@ task Step1b_sigz_x(r_sig : region(ispace(int8d), grid),
             prx_mesh : region(ispace(int8d), mesh),
             plx_sig : region(ispace(int8d), grid),
             prx_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plx_mesh, prx_mesh, plx_sig, prx_sig),
@@ -2276,10 +2298,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2367,9 +2393,9 @@ task Step1b_sigx_y(r_sig : region(ispace(int8d), grid),
             pry_mesh : region(ispace(int8d), mesh),
             ply_sig : region(ispace(int8d), grid),
             pry_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
@@ -2389,10 +2415,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2480,9 +2510,9 @@ task Step1b_sigy_y(r_sig : region(ispace(int8d), grid),
             pry_mesh : region(ispace(int8d), mesh),
             ply_sig : region(ispace(int8d), grid),
             pry_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
@@ -2502,10 +2532,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2593,9 +2627,9 @@ task Step1b_sigz_y(r_sig : region(ispace(int8d), grid),
             pry_mesh : region(ispace(int8d), mesh),
             ply_sig : region(ispace(int8d), grid),
             pry_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, ply_mesh, pry_mesh, ply_sig, pry_sig),
@@ -2615,10 +2649,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2706,9 +2744,9 @@ task Step1b_sigx_z(r_sig : region(ispace(int8d), grid),
             prz_mesh : region(ispace(int8d), mesh),
             plz_sig : region(ispace(int8d), grid),
             prz_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
@@ -2728,10 +2766,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2819,9 +2861,9 @@ task Step1b_sigy_z(r_sig : region(ispace(int8d), grid),
             prz_mesh : region(ispace(int8d), mesh),
             plz_sig : region(ispace(int8d), grid),
             prz_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
@@ -2841,10 +2883,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -2932,9 +2978,9 @@ task Step1b_sigz_z(r_sig : region(ispace(int8d), grid),
             prz_mesh : region(ispace(int8d), mesh),
             plz_sig : region(ispace(int8d), grid),
             prz_sig : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_mesh, plz_mesh, prz_mesh, plz_sig, prz_sig),
@@ -2954,10 +3000,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var bc : int32[6]
@@ -3048,9 +3098,9 @@ task Step1b_sigx_x2(r_sig : region(ispace(int8d), grid),
             prx_mesh : region(ispace(int8d), mesh),
             prx_sig : region(ispace(int8d), grid),
             prx_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prx_mesh, prx_sig, prx_sig2),
@@ -3064,10 +3114,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3111,7 +3165,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vxmesh[v.x].v < 0 and Dim2 == 0) then
+      if (vxmesh[{ v.x, vlo2x }].v < 0 and Dim2 == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
           bsig = prx_sig[eR7].b
@@ -3150,9 +3204,9 @@ task Step1b_sigy_x2(r_sig : region(ispace(int8d), grid),
             prx_mesh : region(ispace(int8d), mesh),
             prx_sig : region(ispace(int8d), grid),
             prx_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prx_mesh, prx_sig, prx_sig2),
@@ -3166,10 +3220,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3213,7 +3271,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vxmesh[v.x].v < 0 and Dim2 == 0) then
+      if (vxmesh[{ v.x, vlo2x }].v < 0 and Dim2 == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
           bsig = prx_sig[eR7].b
@@ -3252,9 +3310,9 @@ task Step1b_sigz_x2(r_sig : region(ispace(int8d), grid),
             prx_mesh : region(ispace(int8d), mesh),
             prx_sig : region(ispace(int8d), grid),
             prx_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prx_mesh, prx_sig, prx_sig2),
@@ -3268,10 +3326,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3315,7 +3377,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vxmesh[v.x].v < 0 and Dim2 == 0) then
+      if (vxmesh[{ v.x, vlo2x }].v < 0 and Dim2 == 0) then
         if s.x == r_sigb.bounds.hi.x then
           gsig = prx_sig[eR7].g
           bsig = prx_sig[eR7].b
@@ -3354,9 +3416,9 @@ task Step1b_sigx_y2(r_sig : region(ispace(int8d), grid),
             pry_mesh : region(ispace(int8d), mesh),
             pry_sig : region(ispace(int8d), grid),
             pry_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, pry_mesh, pry_sig, pry_sig2),
@@ -3370,10 +3432,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3417,7 +3483,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vymesh[v.y].v < 0 and Dim2 == 1) then
+      if (vymesh[{ v.y, vlo2y }].v < 0 and Dim2 == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -3456,9 +3522,9 @@ task Step1b_sigy_y2(r_sig : region(ispace(int8d), grid),
             pry_mesh : region(ispace(int8d), mesh),
             pry_sig : region(ispace(int8d), grid),
             pry_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, pry_mesh, pry_sig, pry_sig2),
@@ -3472,10 +3538,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3519,7 +3589,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vymesh[v.y].v < 0 and Dim2 == 1) then
+      if (vymesh[{ v.y, vlo2y }].v < 0 and Dim2 == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -3558,9 +3628,9 @@ task Step1b_sigz_y2(r_sig : region(ispace(int8d), grid),
             pry_mesh : region(ispace(int8d), mesh),
             pry_sig : region(ispace(int8d), grid),
             pry_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, pry_mesh, pry_sig, pry_sig2),
@@ -3574,10 +3644,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3621,7 +3695,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vymesh[v.y].v < 0 and Dim2 == 1) then
+      if (vymesh[{ v.y, vlo2y }].v < 0 and Dim2 == 1) then
         if s.y == r_sigb.bounds.hi.y then
           gsig = pry_sig[eR7].g
           bsig = pry_sig[eR7].b
@@ -3660,9 +3734,9 @@ task Step1b_sigx_z2(r_sig : region(ispace(int8d), grid),
             prz_mesh : region(ispace(int8d), mesh),
             prz_sig : region(ispace(int8d), grid),
             prz_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prz_mesh, prz_sig, prz_sig2),
@@ -3676,10 +3750,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3723,7 +3801,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vzmesh[v.z].v < 0 and Dim2 == 2) then
+      if (vzmesh[{ v.z, vlo2z }].v < 0 and Dim2 == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -3762,9 +3840,9 @@ task Step1b_sigy_z2(r_sig : region(ispace(int8d), grid),
             prz_mesh : region(ispace(int8d), mesh),
             prz_sig : region(ispace(int8d), grid),
             prz_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prz_mesh, prz_sig, prz_sig2),
@@ -3778,10 +3856,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3825,7 +3907,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vzmesh[v.z].v < 0 and Dim2 == 2) then
+      if (vzmesh[{ v.z, vlo2z }].v < 0 and Dim2 == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -3864,9 +3946,9 @@ task Step1b_sigz_z2(r_sig : region(ispace(int8d), grid),
             prz_mesh : region(ispace(int8d), mesh),
             prz_sig : region(ispace(int8d), grid),
             prz_sig2 : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             BCs : int32[6], N : int32[3])
 where
   reads(r_sig, r_sig2, r_mesh, vxmesh, vymesh, vzmesh, prz_mesh, prz_sig, prz_sig2),
@@ -3880,10 +3962,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double
  
@@ -3927,7 +4013,7 @@ do
       -- If v < 0, gather right values 
       -- otherwise, use cell center values
       swap = 1.0
-      if (vzmesh[v.z].v < 0 and Dim2 == 2) then
+      if (vzmesh[{ v.z, vlo2z }].v < 0 and Dim2 == 2) then
         if s.z == r_sigb.bounds.hi.z then
           gsig = prz_sig[eR7].g
           bsig = prz_sig[eR7].b
@@ -3974,9 +4060,9 @@ task Step1b_b(r_sig : region(ispace(int8d), grid),
           prx_mesh : region(ispace(int8d), mesh),
           pry_mesh : region(ispace(int8d), mesh),
           prz_mesh : region(ispace(int8d), mesh),
-              vxmesh : region(ispace(int1d), vmesh),
-              vymesh : region(ispace(int1d), vmesh),
-              vzmesh : region(ispace(int1d), vmesh),
+              vxmesh : region(ispace(int2d), vmesh),
+              vymesh : region(ispace(int2d), vmesh),
+              vzmesh : region(ispace(int2d), vmesh),
               BCs : int32[6], N : int32[3], effD : int32)
 where
   reads writes(r_gridbarpb),
@@ -3987,10 +4073,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var sC : double[3]
   
@@ -4047,7 +4137,7 @@ do
 
         -- If v < 0, gather right values 
         -- otherwise, use cell center values
-        if (vxmesh[v.x].v < 0 and Dim == 0) then
+        if (vxmesh[{ v.x, vlo2x }].v < 0 and Dim == 0) then
           swap = -1 -- need minus sign when interpolating from right
           if s.x == r_mesh.bounds.hi.x then
             gsig = prx_sig[eR7].g
@@ -4062,7 +4152,7 @@ do
             bb = r_gridbarp[eR6].b
             sC[Dim] = r_mesh[eR3].dx
            end
-        elseif (vymesh[v.y].v < 0 and Dim == 1) then
+        elseif (vymesh[{ v.y, vlo2y }].v < 0 and Dim == 1) then
           swap = -1
           if s.y == r_mesh.bounds.hi.y then
             gsig = pry_sig[eR7].g
@@ -4077,7 +4167,7 @@ do
             bb = r_gridbarp[eR6].b
             sC[Dim] = r_mesh[eR3].dy
           end
-        elseif (vzmesh[v.z].v < 0 and Dim == 2) then
+        elseif (vzmesh[{ v.z, vlo2z }].v < 0 and Dim == 2) then
           swap = -1
           if s.z == r_mesh.bounds.hi.z then
             gsig = prz_sig[eR7].g
@@ -4110,9 +4200,9 @@ end
 -- Note: Memory is being recycled, i.e. the gridbarpb region originally used to
 -- store phibarplus is now being used to store phibar
 task Step1c(r_gridbarpb : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),        
-            vymesh : region(ispace(int1d), vmesh),        
-            vzmesh : region(ispace(int1d), vmesh),        
+            vxmesh : region(ispace(int2d), vmesh),        
+            vymesh : region(ispace(int2d), vmesh),        
+            vzmesh : region(ispace(int2d), vmesh),        
             r_sigb : region(ispace(int8d), grid),
             dt : double, BCs : int32[6],  N : int32[3], effD : int32)
 where
@@ -4125,18 +4215,22 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_gridbarpb.bounds.lo.x, r_gridbarpb.bounds.lo.y, r_gridbarpb.bounds.lo.z}
   var shi : int3d = {r_gridbarpb.bounds.hi.x, r_gridbarpb.bounds.hi.y, r_gridbarpb.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var e7 : int8d
   var e8 : int8d
 
   for v in v3 do
-    Xi[0] = vxmesh[v.x].v
-    Xi[1] = vymesh[v.y].v
-    Xi[2] = vzmesh[v.z].v
+    Xi[0] = vxmesh[{ v.x, vlo2x }].v
+    Xi[1] = vymesh[{ v.y, vlo2y }].v
+    Xi[2] = vzmesh[{ v.z, vlo2z }].v
 
     for s in s3 do
       for Dim = 0, effD do
@@ -4162,9 +4256,9 @@ end
 --Step 2: Microflux
 --Step 2a: Compute W at interface.
 task Step2a(r_gridbarpb : region(ispace(int8d), grid),
-            vxmesh : region(ispace(int1d), vmesh),
-            vymesh : region(ispace(int1d), vmesh),
-            vzmesh : region(ispace(int1d), vmesh),
+            vxmesh : region(ispace(int2d), vmesh),
+            vymesh : region(ispace(int2d), vmesh),
+            vzmesh : region(ispace(int2d), vmesh),
             r_Wb   : region(ispace(int8d), W),
             dt : double, effD : int32)
 where
@@ -4174,10 +4268,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_Wb.bounds.lo.x, r_Wb.bounds.lo.y, r_Wb.bounds.lo.z}
   var shi : int3d = {r_Wb.bounds.hi.x, r_Wb.bounds.hi.y, r_Wb.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   var e4 : int8d
   var e7 : int8d
@@ -4193,7 +4291,7 @@ do
       -- Fourth Order Newton Cotes
       for v in v3 do
         e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
-        r_Wb[e4].rho = r_Wb[e4].rho + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].g
+        r_Wb[e4].rho = r_Wb[e4].rho + vxmesh[{ v.x, vlo2x }].w*vymesh[{ v.y, vlo2y }].w*vzmesh[{ v.z, vlo2z }].w*r_gridbarpb[e7].g
       end
     end
   end
@@ -4214,9 +4312,9 @@ do
 
       for v in v3 do
 
-        U[0] = vxmesh[v.x].v
-        U[1] = vymesh[v.y].v
-        U[2] = vzmesh[v.z].v
+        U[0] = vxmesh[{ v.x, vlo2x }].v
+        U[1] = vymesh[{ v.y, vlo2y }].v
+        U[2] = vzmesh[{ v.z, vlo2z }].v
  
 
         e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}    
@@ -4224,9 +4322,9 @@ do
         -- Add up all phase space contributions to momentum and energy
         -- Fourth Order Newton Cotes
         for d = 0, effD do
-          r_Wb[e4].rhov[d] = r_Wb[e4].rhov[d] + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*U[d]*r_gridbarpb[e7].g 
+          r_Wb[e4].rhov[d] = r_Wb[e4].rhov[d] + vxmesh[{ v.x, vlo2x }].w*vymesh[{ v.y, vlo2y }].w*vzmesh[{ v.z, vlo2z }].w*U[d]*r_gridbarpb[e7].g 
         end
-        r_Wb[e4].rhoE = r_Wb[e4].rhoE + vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w*r_gridbarpb[e7].b
+        r_Wb[e4].rhoE = r_Wb[e4].rhoE + vxmesh[{ v.x, vlo2x }].w*vymesh[{ v.y, vlo2y }].w*vzmesh[{ v.z, vlo2z }].w*r_gridbarpb[e7].b
 
       end
     end
@@ -4250,9 +4348,9 @@ end
 -- store phibarplus is now being used to store phibar
 task Step2b(r_gridbarpb : region(ispace(int8d), grid), 
             r_Wb      : region(ispace(int8d), W),
-            vxmesh    : region(ispace(int1d), vmesh),
-            vymesh    : region(ispace(int1d), vmesh),
-            vzmesh    : region(ispace(int1d), vmesh),
+            vxmesh    : region(ispace(int2d), vmesh),
+            vymesh    : region(ispace(int2d), vmesh),
+            vzmesh    : region(ispace(int2d), vmesh),
             dt : double, R : double, K : double, Cv : double, g : double,
             w : double, ur : double, Tr : double, Pr : double, effD : int32,
             thermal_bath : bool, thermal_T : double)
@@ -4263,10 +4361,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_Wb.bounds.lo.x, r_Wb.bounds.lo.y, r_Wb.bounds.lo.z}
   var shi : int3d = {r_Wb.bounds.hi.x, r_Wb.bounds.hi.y, r_Wb.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
   
   var tg : double      -- tau_g
   var tb : double      -- tau_b
@@ -4315,9 +4417,9 @@ do
 
         e7 = {s.x, s.y, s.z, Dim, 0, v.x, v.y, v.z}
 
-        Xi[0] = vxmesh[v.x].v
-        Xi[1] = vymesh[v.y].v
-        Xi[2] = vzmesh[v.z].v
+        Xi[0] = vxmesh[{ v.x, vlo2x }].v
+        Xi[1] = vymesh[{ v.y, vlo2y }].v
+        Xi[2] = vzmesh[{ v.z, vlo2z }].v
 
         -- Compute Peculiar Velocity squared
         c2 = 0
@@ -4367,9 +4469,9 @@ end
 task Step2c(r_gridbarpb : region(ispace(int8d), grid),
             r_F       : region(ispace(int8d), grid),
             r_mesh    : region(ispace(int8d), mesh),
-            vxmesh    : region(ispace(int1d), vmesh),
-            vymesh    : region(ispace(int1d), vmesh),
-            vzmesh    : region(ispace(int1d), vmesh),
+            vxmesh    : region(ispace(int2d), vmesh),
+            vymesh    : region(ispace(int2d), vmesh),
+            vzmesh    : region(ispace(int2d), vmesh),
             plx_gridbarpb : region(ispace(int8d), grid),
             ply_gridbarpb : region(ispace(int8d), grid),
             plz_gridbarpb : region(ispace(int8d), grid),
@@ -4385,10 +4487,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_mesh.bounds.lo.x, r_mesh.bounds.lo.y, r_mesh.bounds.lo.z}
   var shi : int3d = {r_mesh.bounds.hi.x, r_mesh.bounds.hi.y, r_mesh.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var e3 : int8d
@@ -4461,9 +4567,9 @@ do
         eL7 = {IL, JL, KL, Dim, 0, v.x, v.y, v.z}
 
         -- Fill in Velocity Vector
-        Xi[0] = vxmesh[v.x].v
-        Xi[1] = vymesh[v.y].v
-        Xi[2] = vzmesh[v.z].v
+        Xi[0] = vxmesh[{ v.x, vlo2x }].v
+        Xi[1] = vymesh[{ v.y, vlo2y }].v
+        Xi[2] = vzmesh[{ v.z, vlo2z }].v
   
         -- Gather Left Values
         if Dim == 0 then
@@ -4521,9 +4627,9 @@ task Step4and5(r_grid : region(ispace(int8d), grid),
                r_mesh : region(ispace(int8d), mesh),
                r_F    : region(ispace(int8d), grid),
                r_S    : region(ispace(int8d), grid),
-               vxmesh : region(ispace(int1d), vmesh),
-               vymesh : region(ispace(int1d), vmesh),
-               vzmesh : region(ispace(int1d), vmesh),
+               vxmesh : region(ispace(int2d), vmesh),
+               vymesh : region(ispace(int2d), vmesh),
+               vzmesh : region(ispace(int2d), vmesh),
                dt : double, BCs : int32[6], R : double, K : double, Cv : double, N : int32[3],
                g : double, w : double, ur : double, Tr : double, Pr : double, effD : int32,
                thermal_bath : bool, thermal_T : double)
@@ -4553,10 +4659,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_F.bounds.lo.x, r_F.bounds.lo.y, r_F.bounds.lo.z}
   var shi : int3d = {r_F.bounds.hi.x, r_F.bounds.hi.y, r_F.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   -- Indices
   var e3 : int8d 
@@ -4593,9 +4703,9 @@ do
       e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
 
       -- Fill in Velocity Vector
-      Xi[0] = vxmesh[v.x].v
-      Xi[1] = vymesh[v.y].v
-      Xi[2] = vzmesh[v.z].v
+      Xi[0] = vxmesh[{ v.x, vlo2x }].v
+      Xi[1] = vymesh[{ v.y, vlo2y }].v
+      Xi[2] = vzmesh[{ v.z, vlo2z }].v
 
       -- Compute Old Equilibrium Distributions
       -- Need squared Peculiar Velocity
@@ -4607,7 +4717,7 @@ do
         g_eqo = geq(c2, r_W[e3].rho, thermal_T, R, effD)
         b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*thermal_T)/2.0
 
-        r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_grid[e6].b - b_eqo)/tbo*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
+        r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_grid[e6].b - b_eqo)/tbo*vxmesh[{ v.x, vlo2x }].w*vymesh[{ v.y, vlo2y }].w*vzmesh[{ v.z, vlo2z }].w   
       else
         g_eqo = geq(c2, r_W[e3].rho, To, R, effD)
         b_eqo = g_eqo*(Xi[0]*Xi[0] + Xi[1]*Xi[1] + Xi[2]*Xi[2] + (3.0-effD+K)*R*To)/2.0
@@ -4658,17 +4768,17 @@ do
         e6 = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
 
         -- Fill in Velocity Vector
-        Xi[0] = vxmesh[v.x].v
-        Xi[1] = vymesh[v.y].v
-        Xi[2] = vzmesh[v.z].v
+        Xi[0] = vxmesh[{ v.x, vlo2x }].v
+        Xi[1] = vymesh[{ v.y, vlo2y }].v
+        Xi[2] = vzmesh[{ v.z, vlo2z }].v
         
         -- Add all phase space contributions to density, momentum, and energy
-        r_W[e3].rho = r_W[e3].rho - dt*(r_F[e6].g/V - r_S[e6].g)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+        r_W[e3].rho = r_W[e3].rho - dt*(r_F[e6].g/V - r_S[e6].g)*vxmesh[{ v.x, vlo2x }].w*vymesh[{ v.y, vlo2y }].w*vzmesh[{ v.z, vlo2z }].w
         for d = 0, effD do
-          r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - r_S[e6].g)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w
+          r_W[e3].rhov[d] = r_W[e3].rhov[d] - dt*Xi[d]*(r_F[e6].g/V - r_S[e6].g)*vxmesh[{ v.x, vlo2x }].w*vymesh[{ v.y, vlo2y }].w*vzmesh[{ v.z, vlo2z }].w
         end
 
-        r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - r_S[e6].b)*vxmesh[v.x].w*vymesh[v.y].w*vzmesh[v.z].w   
+        r_W[e3].rhoE = r_W[e3].rhoE - dt*(r_F[e6].b/V - r_S[e6].b)*vxmesh[{ v.x, vlo2x }].w*vymesh[{ v.y, vlo2y }].w*vzmesh[{ v.z, vlo2z }].w   
 
       end
     end
@@ -4704,9 +4814,9 @@ do
     -- Must recompute energy.
 
     for v in v3 do
-      Xi[0] = vxmesh[v.x].v
-      Xi[1] = vymesh[v.y].v
-      Xi[2] = vzmesh[v.z].v
+      Xi[0] = vxmesh[{ v.x, vlo2x }].v
+      Xi[1] = vymesh[{ v.y, vlo2y }].v
+      Xi[2] = vzmesh[{ v.z, vlo2z }].v
 
       -- Compute New Equilibrium Distributions
       c2 = 0 
@@ -4974,9 +5084,9 @@ end
 task MaxwellianInitialization(r_grid  : region(ispace(int8d), grid),
          r_mesh : region(ispace(int8d), mesh),
          r_W    : region(ispace(int8d), W),
-         vxmesh : region(ispace(int1d), vmesh),
-         vymesh : region(ispace(int1d), vmesh),
-         vzmesh : region(ispace(int1d), vmesh),
+         vxmesh : region(ispace(int2d), vmesh),
+         vymesh : region(ispace(int2d), vmesh),
+         vzmesh : region(ispace(int2d), vmesh),
          testProblem: int32, R : double, K : double, Cv : double, 
          g : double, w : double, ur : double, Tr : double, Pr : double,
          N : int32[3], NV : int32[3], effD : int32)
@@ -4992,10 +5102,14 @@ do
   -- Generate Index Spaces for Iteration
   var slo : int3d = {r_grid.bounds.lo.x, r_grid.bounds.lo.y, r_grid.bounds.lo.z}
   var shi : int3d = {r_grid.bounds.hi.x, r_grid.bounds.hi.y, r_grid.bounds.hi.z}
-  var vlo : int3d = {vxmesh.bounds.lo, vymesh.bounds.lo, vzmesh.bounds.lo}
-  var vhi : int3d = {vxmesh.bounds.hi, vymesh.bounds.hi, vzmesh.bounds.hi}
+  var vlo : int3d = {vxmesh.bounds.lo.x, vymesh.bounds.lo.x, vzmesh.bounds.lo.x}
+  var vhi : int3d = {vxmesh.bounds.hi.x, vymesh.bounds.hi.x, vzmesh.bounds.hi.x}
   var s3 = ispace(int3d, shi - slo + {1,1,1}, slo)
   var v3 = ispace(int3d, vhi - vlo + {1,1,1}, vlo)
+
+  var vlo2x = vxmesh.bounds.lo.y
+  var vlo2y = vymesh.bounds.lo.y
+  var vlo2z = vzmesh.bounds.lo.y
 
   for s in s3 do
 
@@ -5016,9 +5130,9 @@ do
       var e6 : int8d = {s.x, s.y, s.z, 0, 0, v.x, v.y, v.z}
 
       -- Fill in Velocity Vector
-      Xi[0] = vxmesh[v.x].v
-      Xi[1] = vymesh[v.y].v
-      Xi[2] = vzmesh[v.z].v
+      Xi[0] = vxmesh[{ v.x, vlo2x }].v
+      Xi[1] = vymesh[{ v.y, vlo2y }].v
+      Xi[2] = vzmesh[{ v.z, vlo2z }].v
 
       -- Compute Peculiar Velocity squared
       var c2 : double = 0
@@ -5037,9 +5151,9 @@ end
 task InitializeGrid(r_grid  : region(ispace(int8d), grid),
                 r_mesh : region(ispace(int8d), mesh),
         r_W    : region(ispace(int8d), W),
-        vxmesh : region(ispace(int1d), vmesh),
-        vymesh : region(ispace(int1d), vmesh),
-        vzmesh : region(ispace(int1d), vmesh),
+        vxmesh : region(ispace(int2d), vmesh),
+        vymesh : region(ispace(int2d), vmesh),
+        vzmesh : region(ispace(int2d), vmesh),
                 testProblem: int32, R : double, K : double, Cv : double, g : double, w : double, ur : double, Tr : double, Pr : double,
         N : int32[3], NV : int32[3], effD : int32)
 where
@@ -5353,16 +5467,6 @@ task toplevel()
   var r_W    = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, 1, 1, 1}), W)
   var r_Wb   = region(ispace(int8d, {N[0], N[1], N[2], effD, 1, 1, 1, 1}), W)
  
-  -- Create regions for velocity space and initialize
-  var vxmesh = region(ispace(int1d, NV[0]), vmesh) 
-  var vymesh = region(ispace(int1d, NV[1]), vmesh) 
-  var vzmesh = region(ispace(int1d, NV[2]), vmesh) 
-  NewtonCotes(vxmesh, vymesh, vzmesh, NV, Vmin, Vmax)
-
-  -- Create regions for source terms and flux
-  var r_S = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
-  var r_F = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
-
   -- Check Dimensions for Factorization
   -- Need at least 8 cells before parallelization is considered along that dimension
   var fdims : int32[3]
@@ -5370,11 +5474,21 @@ task toplevel()
   if N[1] >= 8 then fdims[1] = 1 else fdims[1] = 0 end
   if N[2] >= 8 then fdims[2] = 1 else fdims[2] = 0 end
 
-  -- Create partitions for regions
-  var f6 : int6d = factorize(config.cpus, fdims)  
+  var f6 : int6d = factorize(config.cpus, fdims)
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   PrintPartition(f6.x, f6.y, f6.z, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
+
+  -- Create regions for velocity space and initialize
+  var vxmesh = region(ispace(int2d, { NV[0], p8.volume }), vmesh)
+  var vymesh = region(ispace(int2d, { NV[1], p8.volume }), vmesh)
+  var vzmesh = region(ispace(int2d, { NV[2], p8.volume }), vmesh)
+
+  -- Create regions for source terms and flux
+  var r_S = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
+  var r_F = region(ispace(int8d, {N[0], N[1], N[2], 1, 1, NV[0], NV[1], NV[2]}), grid)
+
+  -- Create partitions for regions
   var p_grid = partition(equal, r_grid, p8)
   var p_gridbarp = partition(equal, r_gridbarp, p8)
   var p_gridbarpb = partition(equal, r_gridbarpb, p8)
@@ -5423,11 +5537,12 @@ task toplevel()
   var c8Rx = coloring.create()
   var c8Ry = coloring.create()
   var c8Rz = coloring.create()
- 
+
   var cvxmesh = coloring.create()
   var cvymesh = coloring.create()
   var cvzmesh = coloring.create()
   -- Create Rects for colorings for partitions
+  var vidx = 0
   for col8 in p_sig2.colors do
     var bounds = p_sig2[col8].bounds
     
@@ -5516,10 +5631,11 @@ task toplevel()
     var rrightz8 : rect8d = { {bounds.lo.x, bounds.lo.y, rz, bounds.lo.w, bounds.lo.v, bounds.lo.u, bounds.lo.t, bounds.lo.s},
                          {bounds.hi.x, bounds.hi.y, rz, bounds.hi.w, bounds.hi.v, bounds.hi.u, bounds.hi.t, bounds.hi.s}}
 
-    var rvx : rect1d = {vxmesh.bounds.lo, vxmesh.bounds.hi}
-    var rvy : rect1d = {vymesh.bounds.lo, vymesh.bounds.hi}
-    var rvz : rect1d = {vzmesh.bounds.lo, vzmesh.bounds.hi}
-    
+    var rvx : rect2d = { { vxmesh.bounds.lo.x, vidx }, { vxmesh.bounds.hi.x, vidx } }
+    var rvy : rect2d = { { vymesh.bounds.lo.x, vidx }, { vymesh.bounds.hi.x, vidx } }
+    var rvz : rect2d = { { vzmesh.bounds.lo.x, vidx }, { vzmesh.bounds.hi.x, vidx } }
+    vidx += 1
+
     if config.debug == true then
       __fence(__execution, __block)
       c.printf("rect8d Done\n")
@@ -5576,9 +5692,9 @@ task toplevel()
     coloring.color_domain(c8Ry, col8, rrighty8)
     coloring.color_domain(c8Rz, col8, rrightz8)
 
-    coloring.color_domain(cvxmesh, col8, rvx) 
-    coloring.color_domain(cvymesh, col8, rvy) 
-    coloring.color_domain(cvzmesh, col8, rvz) 
+    coloring.color_domain(cvxmesh, col8, rvx)
+    coloring.color_domain(cvymesh, col8, rvy)
+    coloring.color_domain(cvzmesh, col8, rvz)
 
     if config.debug == true then
       __fence(__execution, __block)
@@ -5654,9 +5770,14 @@ task toplevel()
     c.printf("Left/Right Strip Partitioning Done\n")
   end
 
-  var pxmesh = partition(aliased, vxmesh, cvxmesh, p8)
-  var pymesh = partition(aliased, vymesh, cvymesh, p8)
-  var pzmesh = partition(aliased, vzmesh, cvzmesh, p8)
+  var pxmesh = partition(disjoint, vxmesh, cvxmesh, p8)
+  var pymesh = partition(disjoint, vymesh, cvymesh, p8)
+  var pzmesh = partition(disjoint, vzmesh, cvzmesh, p8)
+
+  __demand(__index_launch)
+  for col8 in pxmesh.colors do
+    NewtonCotes(pxmesh[col8], pymesh[col8], pzmesh[col8], NV, Vmin, Vmax)
+  end
 
   -- Initialize r_mesh
   var MeshType : int32 = 1
