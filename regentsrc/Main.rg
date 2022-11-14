@@ -1071,7 +1071,7 @@ do
       r_W[e].rhov[2] = 0
       r_W[e].rhoE = Cv*P/R + 0.5*(r_W[e].rhov[0]*r_W[e].rhov[0] + r_W[e].rhov[1]*r_W[e].rhov[1])/r_W[e].rho
 
-      c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
+      --c.printf("W[{%d, %d}] = {%f, {%f, %f}, %f}\n", e.x, e.y, r_W[e].rho, r_W[e].rhov[0], r_W[e].rhov[1], r_W[e].rhoE)
     end
 
   -- Nonuniform Shear Problem
@@ -5176,22 +5176,32 @@ task factorize1d(parallelism : int) : int3d
   return int3d {sizex, 1, 1} 
 end
 
-task factorize2d(parallelism : int) : int3d
+task factorize2d(parallelism : int, N: int32[3]) : int3d
   var limit = [int](sqrt([double](parallelism)))
   var size_x : int32 = 1
   var size_y : int32 = parallelism
   for i = 1, limit + 1 do
     if parallelism % i == 0 then
       size_x, size_y =  i, parallelism / i
-      if size_x > size_y then
+
+      -- First put larger number on x (really only for n=2)
+      if size_x < size_y then
         size_x, size_y = size_y, size_x
       end
+
+
     end
   end
+
+  -- If y has more grid cells, switch
+  if N[1] > N[0] then
+    size_x, size_y = size_y, size_x
+  end
+
   return int3d { size_x, size_y, 1 }
 end
 
-task factorize3d(parallelism : int) : int3d
+task factorize3d(parallelism : int, N: int32[3]) : int3d
   var limit = [int](pow([double](parallelism), 1/3))
   var size_x = 1
   var size_y = 1
@@ -5199,7 +5209,7 @@ task factorize3d(parallelism : int) : int3d
   for i = 1, limit + 1 do
     if parallelism % i == 0 then
       size_x, size_z = i, parallelism / i
-      if size_x > size_z then
+      if size_x < size_z then
         size_x, size_z = size_z, size_x
       end
     end
@@ -5208,10 +5218,28 @@ task factorize3d(parallelism : int) : int3d
       size_x, size_y, size_z = i, i, parallelism/i*i
     end
   end
+
+
+  -- if z has more partitions but has less grid cells than y, switch
+  if N[2] < N[1] and size_z > size_y then
+    size_z, size_y = size_y, size_z
+  end
+
+  -- if z has more partitions but has less grid cells than x, switch
+  if N[2] < N[0] and size_z > size_x then
+    size_z, size_x = size_x, size_z
+  end
+
+  -- if y has more partitions but has less grid cells than x, switch
+  if N[1] < N[0] and size_y > size_x then
+    size_y, size_x = size_x, size_y
+  end
+  
+
   return int3d { size_x, size_y, size_z }
 end
 
-task factorize(parallelism: int, fdims : int32[3])
+task factorize(parallelism: int, fdims : int32[3], N: int32[3])
 
   var d : int32 = 0
   if fdims[0] == 1 then d += 1 end
@@ -5225,7 +5253,7 @@ task factorize(parallelism: int, fdims : int32[3])
     elseif fdims[1] == 1 then f6.y = f3.x
     elseif fdims[2] == 1 then f6.z = f3.x end
   elseif d == 2 then
-    var f3 = factorize2d(parallelism)
+    var f3 = factorize2d(parallelism, N)
     if fdims[0] == 1 then
       f6.x = f3.x
       if fdims[1] == 1 then f6.y = f3.y elseif fdims[2] == 1 then f6.z = f3.y end
@@ -5233,7 +5261,7 @@ task factorize(parallelism: int, fdims : int32[3])
       f6.y, f6.z = f6.x, f6.y
     end
   elseif d == 3 then
-    var f3 = factorize3d(parallelism)
+    var f3 = factorize3d(parallelism, N)
     f6.x, f6.y, f6.z = f3.x, f3.y, f3.z
   end
 
@@ -5474,7 +5502,8 @@ task toplevel()
   if N[1] >= 8 then fdims[1] = 1 else fdims[1] = 0 end
   if N[2] >= 8 then fdims[2] = 1 else fdims[2] = 0 end
 
-  var f6 : int6d = factorize(config.cpus, fdims)
+  -- Get partition dimensions
+  var f6 : int6d = factorize(config.cpus, fdims, N)
   var f8 : int8d = {f6.x, f6.y, f6.z, 1, 1, f6.w, f6.v, f6.u}
   PrintPartition(f6.x, f6.y, f6.z, f6.w, f6.v, f6.u)
   var p8 = ispace(int8d, f8)
