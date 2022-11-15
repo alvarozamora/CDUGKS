@@ -5445,8 +5445,8 @@ task PrintParams(
   return 1
 end
 
-task PrintIteration(iter: int32, Tsim: double, End: double, Start: double)
-  c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, (End-Start)*1e-9)
+task PrintIteration(iter: int32, Tsim: double, End: uint64, Start: uint64)
+  c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, double(End-Start)*1e-9)
   c.fflush(c.stdout)
   return 1
 end
@@ -5857,11 +5857,13 @@ task toplevel()
     PrintDump(dumpiter)
   end
   
-  var Start : double = c.legion_get_current_time_in_nanos()
-  var End : double 
-  
+  var Start = c.legion_get_current_time_in_nanos()
+
   var dt : double = 0
-  while Tsim < Tf do --and iter < 10 do
+  var cont = Tsim < Tf --and iter < 10
+  while cont do
+    __demand(__trace)
+    do -- begin trace
     iter += 1
 
     if config.out == true then
@@ -6144,14 +6146,20 @@ task toplevel()
 
     Tsim += dt
 
-    __fence(__execution, __block)
-    End = c.legion_get_current_time_in_nanos()
-    PrintIteration(iter, Tsim, End, Start)
-  end
+    cont = Tsim < Tf --and iter < 10
+
+    end -- end trace
+
+    if iter < 10 or iter % 100 == 0 then
+      __fence(__execution, __block)
+      var End = c.legion_get_current_time_in_nanos()
+      PrintIteration(iter, Tsim, End, Start)
+    end
+  end -- end while
 
 
   __fence(__execution, __block)
-  End = c.legion_get_current_time_in_nanos()
+  var End = c.legion_get_current_time_in_nanos()
   FinishSimulation(End, Start)
   c.fflush(c.stdout)
 end
