@@ -96,7 +96,7 @@ fspace vmesh
 
 -- This task updates r_params given a value of testProblem
 __demand(__local, __inner)
-task TestProblem(testProblem : int32)
+task TestProblem(testProblem : int32, config: Config)
   var r_params : params
 
   -- Some Default Settings
@@ -269,10 +269,23 @@ task TestProblem(testProblem : int32)
     -- Dimensionality
     r_params.effD = 2
 
+    var xmultiplier: int32 = 1
+    var ymultiplier: int32 = 1
+    var num_nodes: int32 = config.nodes
+    while num_nodes >= 2 do
+      num_nodes = num_nodes / 2
+      if xmultiplier < ymultiplier then
+        xmultiplier = xmultiplier * 2
+      else
+        ymultiplier = ymultiplier * 2
+      end
+    end
+    regentlib.assert(xmultiplier * ymultiplier == config.nodes, "unable to factor nodes")
+
     var num : int32 = 128
     -- Spatial Resolution
-    r_params.N[0]  = num
-    r_params.N[1]  = num
+    r_params.N[0]  = num * xmultiplier
+    r_params.N[1]  = num * ymultiplier
     r_params.N[2]  = 1
               
     -- Velocity Resolution
@@ -5445,8 +5458,8 @@ task PrintParams(
   return 1
 end
 
-task PrintIteration(iter: int32, Tsim: double, End: double, Start: double)
-  c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, (End-Start)*1e-9)
+task PrintIteration(iter: int32, Tsim: double, End: uint64, Start: uint64)
+  c.printf("Iteration = %d, Tsim = %f, Realtime = %f\n", iter, Tsim, double(End-Start)*1e-9)
   c.fflush(c.stdout)
   return 1
 end
@@ -5457,7 +5470,7 @@ task toplevel()
 
   -- Simulation Parameters
   var testProblem : int32 = config.testproblem
-  var r_params = TestProblem(testProblem)
+  var r_params = TestProblem(testProblem, config)
   -- Unpack TestProblem
   var N  : int32[3] = r_params.N
   var NV : int32[3] = r_params.NV
@@ -5803,6 +5816,43 @@ task toplevel()
   var pymesh = partition(disjoint, vymesh, cvymesh, p8)
   var pzmesh = partition(disjoint, vzmesh, cvzmesh, p8)
 
+  -- Destroy colorings
+  coloring.destroy(c3Lx)
+  coloring.destroy(c3Ly)
+  coloring.destroy(c3Lz)
+  coloring.destroy(c4Lx)
+  coloring.destroy(c4Ly)
+  coloring.destroy(c4Lz)
+  coloring.destroy(c6Lx)
+  coloring.destroy(c6Ly)
+  coloring.destroy(c6Lz)
+  coloring.destroy(c7Lx)
+  coloring.destroy(c7Ly)
+  coloring.destroy(c7Lz)
+  coloring.destroy(c8Lx)
+  coloring.destroy(c8Ly)
+  coloring.destroy(c8Lz)
+
+  coloring.destroy(c3Rx)
+  coloring.destroy(c3Ry)
+  coloring.destroy(c3Rz)
+  coloring.destroy(c4Rx)
+  coloring.destroy(c4Ry)
+  coloring.destroy(c4Rz)
+  coloring.destroy(c6Rx)
+  coloring.destroy(c6Ry)
+  coloring.destroy(c6Rz)
+  coloring.destroy(c7Rx)
+  coloring.destroy(c7Ry)
+  coloring.destroy(c7Rz)
+  coloring.destroy(c8Rx)
+  coloring.destroy(c8Ry)
+  coloring.destroy(c8Rz)
+
+  coloring.destroy(cvxmesh)
+  coloring.destroy(cvymesh)
+  coloring.destroy(cvzmesh)
+
   __demand(__index_launch)
   for col8 in pxmesh.colors do
     NewtonCotes(pxmesh[col8], pymesh[col8], pzmesh[col8], NV, Vmin, Vmax)
@@ -5857,11 +5907,13 @@ task toplevel()
     PrintDump(dumpiter)
   end
   
-  var Start : double = c.legion_get_current_time_in_nanos()
-  var End : double 
-  
+  var Start = c.legion_get_current_time_in_nanos()
+
   var dt : double = 0
-  while Tsim < Tf do --and iter < 10 do
+  var cont = Tsim < Tf and iter < 210
+  while cont do
+    __demand(__trace)
+    do -- begin trace
     iter += 1
 
     if config.out == true then
@@ -6144,14 +6196,20 @@ task toplevel()
 
     Tsim += dt
 
-    __fence(__execution, __block)
-    End = c.legion_get_current_time_in_nanos()
-    PrintIteration(iter, Tsim, End, Start)
-  end
+    cont = Tsim < Tf and iter < 210
+
+    end -- end trace
+
+    if iter < 10 or iter % 100 == 0 then
+      __fence(__execution, __block)
+      var End = c.legion_get_current_time_in_nanos()
+      PrintIteration(iter, Tsim, End, Start)
+    end
+  end -- end while
 
 
   __fence(__execution, __block)
-  End = c.legion_get_current_time_in_nanos()
+  var End = c.legion_get_current_time_in_nanos()
   FinishSimulation(End, Start)
   c.fflush(c.stdout)
 end

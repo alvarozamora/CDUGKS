@@ -7,6 +7,7 @@ struct Config
   time : bool,
   testproblem : int32,
   cpus  : int32,
+  nodes : int32,
   out : bool,
   debug : bool,
   phase : bool
@@ -28,6 +29,7 @@ end
 
 terra Config:initialize_from_command()
   self.testproblem = -1
+  self.nodes = 1
   self.cpus = 1 
   self.out = true
   self.debug = false
@@ -56,6 +58,9 @@ terra Config:initialize_from_command()
     elseif cstring.strcmp(args.argv[i], "-z") == 0 then
       i = i + 1
       self.phase = [bool](c.atoi(args.argv[i]))
+    elseif cstring.strcmp(args.argv[i], "-n") == 0 then
+      i = i + 1
+      self.nodes = c.atoi(args.argv[i])
     end
     i = i + 1
   end
