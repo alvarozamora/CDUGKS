@@ -5189,26 +5189,32 @@ task factorize1d(parallelism : int) : int3d
   return int3d {sizex, 1, 1} 
 end
 
-task factorize2d(parallelism : int, N: int32[3]) : int3d
+task factorize2d(parallelism : int, N : int32[3]) : int3d
   var limit = [int](sqrt([double](parallelism)))
-  var size_x : int32 = 1
-  var size_y : int32 = parallelism
+  var size_x : int32 = parallelism
+  var size_y : int32 = 1
+  var winner : int32 = 2147483647 -- max
   for i = 1, limit + 1 do
     if parallelism % i == 0 then
-      size_x, size_y =  i, parallelism / i
+      -- Get small and big edge
+      var small : int32 = min(i, parallelism / i)
+      var big : int32 = max(i, parallelism / i)
+      var smalledge : int32 = max(min(N[0], N[1]) / small, 1)
+      var bigedge : int32 = max(max(N[0], N[1]) / big, 1)
 
-      -- First put larger number on x (really only for n=2)
-      if size_x < size_y then
-        size_x, size_y = size_y, size_x
+      -- Check perimeter, perimeter is twice this but doesn't matter for optimization
+      var perimeter = smalledge + bigedge
+
+      -- If new minimum, change factorization
+      if perimeter <= winner then
+        winner = perimeter
+        if N[0] >= N[1] then
+          size_x, size_y = big, small
+        else
+          size_x, size_y = small, big
+        end
       end
-
-
     end
-  end
-
-  -- If y has more grid cells, switch
-  if N[1] > N[0] then
-    size_x, size_y = size_y, size_x
   end
 
   return int3d { size_x, size_y, 1 }
